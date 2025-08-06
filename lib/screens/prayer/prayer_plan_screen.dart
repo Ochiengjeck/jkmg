@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../provider/api_providers.dart';
 import 'deeper_prayer.dart';
 import 'prayer_schedule.dart';
 import 'request_prayer.dart'; // Hypothetical API service
 
-class PrayerPlanScreen extends StatefulWidget {
+class PrayerPlanScreen extends ConsumerStatefulWidget {
   const PrayerPlanScreen({super.key});
 
   @override
-  State<PrayerPlanScreen> createState() => _PrayerPlanScreenState();
+  ConsumerState<PrayerPlanScreen> createState() => _PrayerPlanScreenState();
 }
 
-class _PrayerPlanScreenState extends State<PrayerPlanScreen> {
+class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
   bool _isLoading = false;
   Map<String, dynamic>? _prayerSchedule;
   Map<String, dynamic>? _deeperPrayerInfo;
@@ -42,6 +44,7 @@ class _PrayerPlanScreenState extends State<PrayerPlanScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final name = ref.watch(prayerScheduleProvider);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(

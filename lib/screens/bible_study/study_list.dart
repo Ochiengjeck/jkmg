@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../models/bible_study.dart';
+
 class StudyList extends StatefulWidget {
-  final List<Map<String, dynamic>> studies;
+  final List<BibleStudy> studies;
   final String searchQuery;
   final DateTime? startDate;
   final DateTime? endDate;
@@ -84,7 +86,7 @@ class _StudyListState extends State<StudyList> {
     );
   }
 
-  Widget _buildStudyCard(BuildContext context, Map<String, dynamic> study) {
+  Widget _buildStudyCard(BuildContext context, BibleStudy study) {
     return Card(
       color: Theme.of(context).cardColor,
       shape: RoundedRectangleBorder(
@@ -94,7 +96,7 @@ class _StudyListState extends State<StudyList> {
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
         title: Text(
-          study['topic'],
+          study.topic,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: const Color(0xFFB8860B),
             fontWeight: FontWeight.w600,
@@ -104,7 +106,7 @@ class _StudyListState extends State<StudyList> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Scripture: ${study['scripture']}',
+              'Scripture: ${study.scripture}',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white70
@@ -113,7 +115,7 @@ class _StudyListState extends State<StudyList> {
               ),
             ),
             Text(
-              'Date: ${study['date']}',
+              'Date: ${study.date}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white70
@@ -133,14 +135,14 @@ class _StudyListState extends State<StudyList> {
     );
   }
 
-  Widget _buildStudyDetails(BuildContext context, Map<String, dynamic> study) {
+  Widget _buildStudyDetails(BuildContext context, BibleStudy study) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            study['topic'],
+            study.topic,
             style: Theme.of(context).textTheme.titleLarge?.copyWith(
               color: const Color(0xFFB8860B),
               fontWeight: FontWeight.bold,
@@ -148,7 +150,7 @@ class _StudyListState extends State<StudyList> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Scripture: ${study['scripture']}',
+            'Scripture: ${study.scripture}',
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white70
@@ -158,7 +160,7 @@ class _StudyListState extends State<StudyList> {
           ),
           const SizedBox(height: 8),
           Text(
-            study['devotional'],
+            study.devotional,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white70
@@ -166,33 +168,33 @@ class _StudyListState extends State<StudyList> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            'Key Points:',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(color: const Color(0xFFB8860B)),
-          ),
-          ...?study['discussion_json']['key_points']?.map<Widget>(
-            (point) => Padding(
-              padding: const EdgeInsets.only(left: 16, top: 4),
-              child: Row(
-                children: [
-                  const Icon(Icons.circle, size: 8, color: Color(0xFFB8860B)),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      point,
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white70
-                            : Colors.black87,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // Text(
+          //   'Key Points:',
+          //   style: Theme.of(
+          //     context,
+          //   ).textTheme.titleMedium?.copyWith(color: const Color(0xFFB8860B)),
+          // ),
+          // ...?study.discussionJson['key_points']?.map<Widget>(
+          //   (point) => Padding(
+          //     padding: const EdgeInsets.only(left: 16, top: 4),
+          //     child: Row(
+          //       children: [
+          //         const Icon(Icons.circle, size: 8, color: Color(0xFFB8860B)),
+          //         const SizedBox(width: 8),
+          //         Expanded(
+          //           child: Text(
+          //             point,
+          //             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          //               color: Theme.of(context).brightness == Brightness.dark
+          //                   ? Colors.white70
+          //                   : Colors.black87,
+          //             ),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 16),
           Text(
             'Discussion Questions:',
@@ -200,7 +202,7 @@ class _StudyListState extends State<StudyList> {
               context,
             ).textTheme.titleMedium?.copyWith(color: const Color(0xFFB8860B)),
           ),
-          ...?study['discussion_json']['questions']?.map<Widget>(
+          ...?study.discussionJson['questions']?.map<Widget>(
             (question) => Padding(
               padding: const EdgeInsets.only(left: 16, top: 4),
               child: Row(

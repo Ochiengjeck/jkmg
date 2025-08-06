@@ -32,7 +32,7 @@ final registerProvider = FutureProvider.family<User, Map<String, dynamic>>((
     passwordConfirmation: params['password_confirmation'] as String,
     email: params['email'] as String?,
     timezone: params['timezone'] as String?,
-    prayerTimes: params['prayer_times'] as List<String>?,
+    prayerTimes: (params['prayer_times'] as List<dynamic>?)?.cast<String>(),
   );
 });
 
@@ -66,7 +66,7 @@ final updateProfileProvider = FutureProvider.family<User, Map<String, dynamic>>(
       email: params['email'] as String?,
       country: params['country'] as String?,
       timezone: params['timezone'] as String?,
-      prayerTimes: params['prayer_times'] as List<String>?,
+      prayerTimes: (params['prayer_times'] as List<dynamic>?)?.cast<String>(),
     );
   },
 );
@@ -159,7 +159,7 @@ final registerForEventProvider =
       return apiService.registerForEvent(
         eventId: params['event_id'] as String,
         attendance: params['attendance'] as String,
-        volunteer: params['volunteer'] as bool,
+        volunteer: params['volunteer'] as bool? ?? false,
       );
     });
 
@@ -286,7 +286,7 @@ final recordSalvationDecisionProvider =
       final apiService = ref.read(apiServiceProvider);
       return apiService.recordSalvationDecision(
         type: params['type'] as String,
-        audioSent: params['audio_sent'] as bool,
+        audioSent: params['audio_sent'] as bool? ?? false,
       );
     });
 

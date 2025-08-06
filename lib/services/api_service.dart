@@ -243,9 +243,13 @@ class ApiService {
       ).replace(queryParameters: queryParameters),
       headers: _getHeaders(),
     );
-
+    print('API Response Status: ${response.statusCode}');
+    print('API Response Body: ${response.body}');
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print(
+        "There are ${PaginatedResponse.fromJson(data, (json) => BibleStudy.fromJson(json)).data.length} sessions today",
+      );
       return PaginatedResponse.fromJson(
         data,
         (json) => BibleStudy.fromJson(json),

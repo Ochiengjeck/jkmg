@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jkmg/provider/api_providers.dart';
 
+import '../../models/bible_study.dart';
 import 'study_list.dart';
 import 'todays_study.dart';
 
@@ -14,8 +16,6 @@ class BibleStudyCornerScreen extends ConsumerStatefulWidget {
 
 class _BibleStudyCornerScreenState
     extends ConsumerState<BibleStudyCornerScreen> {
-  bool _isLoading = false;
-  Map<String, dynamic>? _todaysStudy;
   List<Map<String, dynamic>> _studies = [];
   String _searchQuery = '';
   DateTime? _startDate;
@@ -30,7 +30,6 @@ class _BibleStudyCornerScreenState
     setState(() {
       _searchQuery = query;
     });
-    // _fetchStudyData();
   }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
@@ -48,40 +47,57 @@ class _BibleStudyCornerScreenState
           _endDate = picked;
         }
       });
-      // _fetchStudyData();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final todayStudyAsync = ref.watch(todaysBibleStudyProvider).value;
+    final studiesAsync = ref.watch(
+      bibleStudiesProvider(const {
+        'per_page': 15,
+        'start_date': null,
+        'end_date': null,
+        'search': null,
+      }),
+    );
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: SingleChildScrollView(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _buildHeader(context),
-                      const SizedBox(height: 24),
-                      TodaysStudy(study: _todaysStudy),
-                      const SizedBox(height: 24),
-                      StudyList(
-                        studies: _studies,
-                        searchQuery: _searchQuery,
-                        startDate: _startDate,
-                        endDate: _endDate,
-                        onSearchChanged: _onSearchChanged,
-                        onDateSelected: _selectDate,
-                      ),
-                    ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: SingleChildScrollView(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeader(context),
+                const SizedBox(height: 24),
+                TodaysStudy(study: todayStudyAsync),
+                const SizedBox(height: 24),
+
+                studiesAsync.when(
+                  data: (paststudies) => StudyList(
+                    studies: paststudies.data,
+                    searchQuery: _searchQuery,
+                    startDate: _startDate,
+                    endDate: _endDate,
+                    onSearchChanged: _onSearchChanged,
+                    onDateSelected: _selectDate,
                   ),
+                  // Column(
+                  //   children: studies.data
+                  //       .map((study) => ListTile(title: Text(study.topic)))
+                  //       .toList(),
+                  // ),
+                  loading: () => CircularProgressIndicator(),
+                  error: (e, _) => Text('Error: $e'),
                 ),
-              ),
+              ],
             ),
+          ),
+        ),
+      ),
     );
   }
 
