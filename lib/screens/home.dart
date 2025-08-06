@@ -6,6 +6,7 @@ import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import 'bible_study/bible_study_corner.dart';
 import 'prayer/prayer_plan_screen.dart';
+import 'package:jkmg/screens/events/event_list_screen.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -70,7 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _buildPlaceholderPage(context, _menuPages[4]),
           _buildPlaceholderPage(context, _menuPages[5]),
           _buildPlaceholderPage(context, _menuPages[6]),
-          _buildPlaceholderPage(context, _menuPages[7]),
+          //_buildPlaceholderPage(context, _menuPages[7]), // events page
+          EventListScreen(),
           _buildPlaceholderPage(context, _menuPages[8]),
           _buildPlaceholderPage(context, _menuPages[9]),
           _buildPlaceholderPage(context, _menuPages[10]),
