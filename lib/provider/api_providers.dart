@@ -102,7 +102,7 @@ final participateInDeeperPrayerProvider =
     ) async {
       final apiService = ref.read(apiServiceProvider);
       return apiService.participateInDeeperPrayer(
-        duration: params['duration'] as int,
+        notes: params['notes'] as String,
         date: params['date'] as String,
       );
     });

@@ -85,11 +85,7 @@ class _BibleStudyCornerScreenState
                     onSearchChanged: _onSearchChanged,
                     onDateSelected: _selectDate,
                   ),
-                  // Column(
-                  //   children: studies.data
-                  //       .map((study) => ListTile(title: Text(study.topic)))
-                  //       .toList(),
-                  // ),
+
                   loading: () => CircularProgressIndicator(),
                   error: (e, _) => Text('Error: $e'),
                 ),

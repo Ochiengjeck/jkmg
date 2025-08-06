@@ -190,13 +190,13 @@ class ApiService {
   }
 
   Future<DeeperPrayerParticipation> participateInDeeperPrayer({
-    required int duration,
+    required String notes,
     required String date,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/prayers/deeper'),
       headers: _getHeaders(),
-      body: jsonEncode({'duration': duration, 'date': date}),
+      body: jsonEncode({'notes': notes, 'date': date}),
     );
 
     if (response.statusCode == 201) {

@@ -21,30 +21,14 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
   @override
   void initState() {
     super.initState();
-    // _fetchPrayerData();
   }
-
-  // Future<void> _fetchPrayerData() async {
-  //   setState(() => _isLoading = true);
-  //   try {
-  //     final schedule = await ApiService.getPrayerSchedule();
-  //     final deeperInfo = await ApiService.getDeeperPrayerInfo();
-  //     setState(() {
-  //       _prayerSchedule = schedule;
-  //       _deeperPrayerInfo = deeperInfo;
-  //       _isLoading = false;
-  //     });
-  //   } catch (e) {
-  //     setState(() => _isLoading = false);
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error fetching prayer data: $e')),
-  //     );
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
-    final name = ref.watch(prayerScheduleProvider);
+    final scheduleAsync = ref.watch(prayerScheduleProvider);
+    final deeperInfoAsync = ref.watch(deeperPrayerInfoProvider).value;
+
+    debugPrint(deeperInfoAsync?.recentParticipations.first.date);
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -57,7 +41,7 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
                 _buildHeader(context),
                 const SizedBox(height: 24),
                 PrayerSchedule(
-                  prayerSchedule: _prayerSchedule,
+                  prayerSchedule: deeperInfoAsync,
                   isLoading: _isLoading,
                 ),
                 const SizedBox(height: 24),

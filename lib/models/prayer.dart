@@ -120,4 +120,6 @@ class DeeperPrayerInfo {
       availableDurations: (json['available_durations'] as List).cast<int>(),
     );
   }
+
+  get length => null;
 }
