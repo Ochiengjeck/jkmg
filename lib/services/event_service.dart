@@ -1,22 +1,21 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:jkmg/models/event_model.dart';
 import 'package:jkmg/models/registration_model.dart';
+import 'package:jkmg/utils/token_helper.dart';
 
 class EventService {
-  static const baseUrl = 'https://jkmg.laravel.cloud/api';
-  static const String token = '41|4A7pReWmBgyQRak5I34wvYzfxM4xIFsuTigtBE6l868e6e8c'; // Replace with your actual token
+  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
 
-  static Map<String, String> _headers() => {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json',
-    'Authorization': 'Bearer $token',
-  };
+  static Future<Map<String, String>> _headers() async {
+    return await TokenHelper.getAuthHeaders();
+  }
 
   static Future<List<Event>> fetchAllEvents() async {
     final response = await http.get(
       Uri.parse('$baseUrl/events'),
-      headers: _headers(),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(response.body)['data'] as List;
@@ -26,7 +25,7 @@ class EventService {
   static Future<List<EventRegistration>> fetchMyRegistrations() async {
     final response = await http.get(
       Uri.parse('$baseUrl/events/my-registrations'),
-      headers: _headers(),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(response.body)['registrations'] as List;
@@ -36,7 +35,7 @@ class EventService {
   static Future<Event> fetchEventDetails(String eventId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/events/$eventId'),
-      headers: _headers(),
+      headers: await _headers(),
     );
 
     final data = jsonDecode(response.body)['event'];
@@ -52,7 +51,7 @@ class EventService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/events/register'),
-      headers: _headers(),
+      headers: await _headers(),
       body: jsonEncode({
         'event_id': eventId,
         'volunteer': volunteer,

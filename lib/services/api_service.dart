@@ -13,6 +13,7 @@ import '../models/counseling.dart';
 import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
+import '../utils/token_helper.dart';
 
 class ApiService {
   final String baseUrl =
@@ -60,6 +61,7 @@ class ApiService {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       _token = data['token'];
+      await TokenHelper.saveToken(_token!, userId: data['user']['id']?.toString(), userName: data['user']['name']);
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to register: ${response.body}');
@@ -76,6 +78,7 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       _token = data['token'];
+      await TokenHelper.saveToken(_token!, userId: data['user']['id']?.toString(), userName: data['user']['name']);
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to login: ${response.body}');
@@ -90,6 +93,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       _token = null;
+      await TokenHelper.clearToken();
     } else {
       throw Exception('Failed to logout: ${response.body}');
     }
