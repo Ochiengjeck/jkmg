@@ -84,7 +84,12 @@ final createPrayerRequestProvider =
     ) async {
       final apiService = ref.read(apiServiceProvider);
       return apiService.createPrayerRequest(
+        title: params['title'] as String,
+        description: params['description'] as String,
         category: params['category'] as String,
+        urgency: params['urgency'] as String,
+        isAnonymous: params['is_anonymous'] as bool,
+        isPublic: params['is_public'] as bool,
         startDate: params['start_date'] as String,
         endDate: params['end_date'] as String,
       );
@@ -102,8 +107,8 @@ final participateInDeeperPrayerProvider =
     ) async {
       final apiService = ref.read(apiServiceProvider);
       return apiService.participateInDeeperPrayer(
-        notes: params['notes'] as String,
-        date: params['date'] as String,
+        duration: params['duration'] as int,
+        notes: params['notes'] as String?,
       );
     });
 
@@ -261,6 +266,7 @@ final bookCounselingSessionProvider =
       final apiService = ref.read(apiServiceProvider);
       return apiService.bookCounselingSession(
         topic: params['topic'] as String,
+        scheduledAt: params['scheduled_at'] as String?,
         intakeForm: params['intake_form'] as Map<String, dynamic>,
       );
     });
@@ -273,6 +279,9 @@ final myCounselingSessionsProvider =
       final apiService = ref.read(apiServiceProvider);
       return apiService.getMyCounselingSessions(
         status: params['status'] as String?,
+        startDate: params['start_date'] as String?,
+        endDate: params['end_date'] as String?,
+        search: params['search'] as String?,
         perPage: params['per_page'] as int?,
       );
     });

@@ -40,7 +40,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   void _login() async {
-    if (_formKey.currentState!.validate() && _termsAccepted) {
+    if (_formKey.currentState!.validate()) {
       setState(() {
         _isLoading = true;
       });
@@ -73,13 +73,6 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           ),
         );
       }
-    } else if (!_termsAccepted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please accept the Terms and Conditions'),
-          backgroundColor: Theme.of(context).colorScheme.error,
-        ),
-      );
     }
   }
 
@@ -166,44 +159,44 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _termsAccepted,
-                        onChanged: (value) {
-                          setState(() {
-                            _termsAccepted = value ?? false;
-                          });
-                        },
-                        activeColor: Color(0xFFB8860B),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'I agree to the Terms and Conditions',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
-                  ),
-                  Row(
-                    children: [
-                      Checkbox(
-                        value: _receiveMarketing,
-                        onChanged: (value) {
-                          setState(() {
-                            _receiveMarketing = value ?? false;
-                          });
-                        },
-                        activeColor: Color(0xFFB8860B),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'I want to receive marketing information',
-                          style: Theme.of(context).textTheme.bodyMedium,
-                        ),
-                      ),
-                    ],
-                  ),
+                  // Row(
+                  //   children: [
+                  //     Checkbox(
+                  //       value: _termsAccepted,
+                  //       onChanged: (value) {
+                  //         setState(() {
+                  //           _termsAccepted = value ?? false;
+                  //         });
+                  //       },
+                  //       activeColor: Color(0xFFB8860B),
+                  //     ),
+                  //     Expanded(
+                  //       child: Text(
+                  //         'I agree to the Terms and Conditions',
+                  //         style: Theme.of(context).textTheme.bodyMedium,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
+                  // Row(
+                  //   children: [
+                  //     Checkbox(
+                  //       value: _receiveMarketing,
+                  //       onChanged: (value) {
+                  //         setState(() {
+                  //           _receiveMarketing = value ?? false;
+                  //         });
+                  //       },
+                  //       activeColor: Color(0xFFB8860B),
+                  //     ),
+                  //     Expanded(
+                  //       child: Text(
+                  //         'I want to receive marketing information',
+                  //         style: Theme.of(context).textTheme.bodyMedium,
+                  //       ),
+                  //     ),
+                  //   ],
+                  // ),
                   const SizedBox(height: 24),
                   ElevatedButton(
                     onPressed: _isLoading ? null : _login,

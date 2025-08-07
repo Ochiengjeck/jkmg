@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../../models/prayer.dart';
 
 class PrayerSchedule extends StatelessWidget {
@@ -39,7 +38,6 @@ class PrayerSchedule extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Header
           Text(
             'Your Prayer Schedule',
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
@@ -57,15 +55,6 @@ class PrayerSchedule extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 24),
-
-          // Prayer Times and Timezone (if available)
-          // if (prayerSchedule!.prayerTimes != null &&
-          //     prayerSchedule!.userTimezone != null) ...[
-          //   _buildPrayerTimesCard(context),
-          //   const SizedBox(height: 24),
-          // ],
-
-          // Active Prayer Section
           if (activePrayer != null) ...[
             Text(
               'Active Prayer',
@@ -78,8 +67,6 @@ class PrayerSchedule extends StatelessWidget {
             _buildPrayerCard(context, activePrayer, true),
             const SizedBox(height: 24),
           ],
-
-          // Completed Prayers Section
           if (completedPrayers.isNotEmpty) ...[
             Text(
               'Completed Prayers',
@@ -96,8 +83,6 @@ class PrayerSchedule extends StatelessWidget {
               ),
             ),
           ],
-
-          // Empty State for No Prayers
           if (activePrayer == null && completedPrayers.isEmpty)
             Center(
               child: Column(
@@ -136,49 +121,6 @@ class PrayerSchedule extends StatelessWidget {
     );
   }
 
-  Widget _buildPrayerTimesCard(BuildContext context) {
-    return Card(
-      elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(15),
-        side: BorderSide(color: const Color(0xFFB8860B).withOpacity(0.2)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Prayer Times',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: const Color(0xFFB8860B),
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            // Text(
-            //   'Timezone: ${prayerSchedule!.}',
-            //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            //         color: Theme.of(context).brightness == Brightness.dark
-            //             ? Colors.white70
-            //             : Colors.black87,
-            //       ),
-            // ),
-            const SizedBox(height: 8),
-            // Text(
-            //   prayerSchedule!.prayerTimes!.join(', '),
-            //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            //         color: Theme.of(context).brightness == Brightness.dark
-            //             ? Colors.white70
-            //             : Colors.black87,
-            //       ),
-            // ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildPrayerCard(
     BuildContext context,
     DeeperPrayerParticipation prayer,
@@ -193,7 +135,8 @@ class PrayerSchedule extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.all(16.0),
         title: Text(
-          'Prayer',
+          // prayer.category?.label ?? 'Prayer',
+          'prayer',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
             color: const Color(0xFFB8860B),
             fontWeight: FontWeight.w600,
@@ -203,14 +146,14 @@ class PrayerSchedule extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            // Text(
-            //   'From: ${prayer.startDate} to ${prayer.endDate}',
-            //   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            //         color: Theme.of(context).brightness == Brightness.dark
-            //             ? Colors.white70
-            //             : Colors.black87,
-            //       ),
-            // ),
+            Text(
+              'From: ${prayer.date} to ${prayer.completedAt}',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? Colors.white70
+                    : Colors.black87,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               isActive

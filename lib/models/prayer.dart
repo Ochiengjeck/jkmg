@@ -1,6 +1,5 @@
-// TODO Implement this library.
-// Prayer System Models
 import 'models.dart';
+import 'user.dart';
 
 class PrayerRequest {
   final int id;
@@ -8,8 +7,9 @@ class PrayerRequest {
   final String startDate;
   final String endDate;
   final bool completed;
-  final int daysRemaining;
+  final double daysRemaining; // Changed to double to match the API response
   final bool isActive;
+  final User user;
   final String createdAt;
   final String updatedAt;
 
@@ -21,6 +21,7 @@ class PrayerRequest {
     required this.completed,
     required this.daysRemaining,
     required this.isActive,
+    required this.user,
     required this.createdAt,
     required this.updatedAt,
   });
@@ -32,8 +33,9 @@ class PrayerRequest {
       startDate: json['start_date'] as String,
       endDate: json['end_date'] as String,
       completed: json['completed'] as bool,
-      daysRemaining: json['days_remaining'] as int,
+      daysRemaining: json['days_remaining'] as double,
       isActive: json['is_active'] as bool,
+      user: User.fromJson(json['user'] as Map<String, dynamic>),
       createdAt: json['created_at'] as String,
       updatedAt: json['updated_at'] as String,
     );
@@ -43,7 +45,7 @@ class PrayerRequest {
 class PrayerSchedule {
   final List<PrayerRequest> activePrayers;
   final List<PrayerRequest> completedPrayers;
-  final List<String> prayerTimes;
+  final List<dynamic> prayerTimes;
   final String userTimezone;
 
   PrayerSchedule({
@@ -61,7 +63,7 @@ class PrayerSchedule {
       completedPrayers: (json['completed_prayers'] as List)
           .map((item) => PrayerRequest.fromJson(item))
           .toList(),
-      prayerTimes: (json['prayer_times'] as List).cast<String>(),
+      prayerTimes: (json['prayer_times'] as List),
       userTimezone: json['user_timezone'] as String,
     );
   }
@@ -72,23 +74,26 @@ class DeeperPrayerParticipation {
   final String date;
   final int duration;
   final bool completed;
-  final String? completedAt;
+  final String completedAt;
+  final String? notes; // Add notes field
 
   DeeperPrayerParticipation({
     required this.id,
     required this.date,
     required this.duration,
     required this.completed,
-    this.completedAt,
+    required this.completedAt,
+    this.notes,
   });
 
   factory DeeperPrayerParticipation.fromJson(Map<String, dynamic> json) {
     return DeeperPrayerParticipation(
-      id: json['id'] as int,
-      date: json['date'] as String,
-      duration: json['duration'] as int,
-      completed: json['completed'] as bool,
-      completedAt: json['completed_at'] as String?,
+      id: json['id'],
+      date: json['date'],
+      duration: json['duration'],
+      completed: json['completed'],
+      completedAt: json['completed_at'],
+      notes: json['notes'],
     );
   }
 }

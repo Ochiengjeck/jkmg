@@ -153,7 +153,12 @@ class ApiService {
   }
 
   Future<PrayerRequest> createPrayerRequest({
+    required String title,
+    required String description,
     required String category,
+    required String urgency,
+    required bool isAnonymous,
+    required bool isPublic,
     required String startDate,
     required String endDate,
   }) async {
@@ -161,7 +166,12 @@ class ApiService {
       Uri.parse('$baseUrl/prayers/request'),
       headers: _getHeaders(),
       body: jsonEncode({
+        'title': title,
+        'description': description,
         'category': category,
+        'urgency': urgency,
+        'is_anonymous': isAnonymous,
+        'is_public': isPublic,
         'start_date': startDate,
         'end_date': endDate,
       }),
@@ -190,13 +200,16 @@ class ApiService {
   }
 
   Future<DeeperPrayerParticipation> participateInDeeperPrayer({
-    required String notes,
-    required String date,
+    required int duration,
+    String? notes,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/prayers/deeper'),
       headers: _getHeaders(),
-      body: jsonEncode({'notes': notes, 'date': date}),
+      body: jsonEncode({
+        'duration': duration,
+        if (notes != null) 'notes': notes,
+      }),
     );
 
     if (response.statusCode == 201) {
@@ -243,8 +256,7 @@ class ApiService {
       ).replace(queryParameters: queryParameters),
       headers: _getHeaders(),
     );
-    print('API Response Status: ${response.statusCode}');
-    print('API Response Body: ${response.body}');
+
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       print(
@@ -521,12 +533,17 @@ class ApiService {
   // Counseling
   Future<CounselingSession> bookCounselingSession({
     required String topic,
+    String? scheduledAt,
     required Map<String, dynamic> intakeForm,
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/counseling/book'),
       headers: _getHeaders(),
-      body: jsonEncode({'topic': topic, 'intake_form': intakeForm}),
+      body: jsonEncode({
+        'topic': topic,
+        if (scheduledAt != null) 'scheduled_at': scheduledAt,
+        'intake_form': intakeForm,
+      }),
     );
 
     if (response.statusCode == 201) {
@@ -539,10 +556,16 @@ class ApiService {
 
   Future<PaginatedResponse<CounselingSession>> getMyCounselingSessions({
     String? status,
+    String? startDate,
+    String? endDate,
+    String? search,
     int? perPage,
   }) async {
     final queryParameters = {
       if (status != null) 'status': status,
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (search != null) 'search': search,
       if (perPage != null) 'per_page': perPage.toString(),
     };
 
@@ -552,6 +575,8 @@ class ApiService {
       ).replace(queryParameters: queryParameters),
       headers: _getHeaders(),
     );
+    print('API Response Status: ${response.statusCode}');
+    print('API Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

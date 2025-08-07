@@ -5,8 +5,11 @@ import 'package:jkmg/provider/api_providers.dart';
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
 import 'bible_study/bible_study_corner.dart';
+import 'counceling/counseling_corner.dart';
 import 'prayer/prayer_plan_screen.dart';
 import 'package:jkmg/screens/events/event_list_screen.dart';
+
+import 'salvation/salvation_corner.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -43,19 +46,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final currentuser = ref.watch(currentUserProvider);
-    final todaybiblestudy = ref.watch(todaysBibleStudyProvider).value;
-    final todayStudyAsync = ref.watch(todaysBibleStudyProvider);
-    final eventsAsync = ref.watch(eventsProvider({'per_page': 15}));
-    final resourcesAsync = ref.watch(resourcesProvider({'per_page': 15}));
-    final testimoniesAsync = ref.watch(testimoniesProvider({'per_page': 15}));
-    final feedbackTypesAsync = ref.watch(feedbackTypesProvider);
-
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: _buildAppBar(context),
-      drawer: _buildDrawer(context),
+      drawer: _buildDrawer(context, ref),
       body: PageView(
         controller: pageController,
         onPageChanged: (index) {
@@ -68,10 +63,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           _buildPlaceholderPage(context, _menuPages[1]),
           PrayerPlanScreen(),
           BibleStudyCornerScreen(),
-          _buildPlaceholderPage(context, _menuPages[4]),
-          _buildPlaceholderPage(context, _menuPages[5]),
+          SalvationCornerScreen(),
+          CounselingCornerScreen(),
           _buildPlaceholderPage(context, _menuPages[6]),
-          //_buildPlaceholderPage(context, _menuPages[7]), // events page
           EventListScreen(),
           _buildPlaceholderPage(context, _menuPages[8]),
           _buildPlaceholderPage(context, _menuPages[9]),
@@ -157,191 +151,301 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  Widget _buildDrawer(BuildContext context) {
+  Widget _buildDrawer(BuildContext context, WidgetRef ref) {
+    final _user = ref.watch(currentUserProvider).value;
     return Drawer(
-      backgroundColor: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xFF1A1A1A)
-          : Colors.white,
-      child: Column(
-        children: [
-          _buildDrawerHeader(context),
-          Expanded(
-            child: ListView(
-              padding: EdgeInsets.zero,
-              children: [
-                _buildDrawerSection(
-                  context,
-                  title: 'Main Features',
-                  items: [
-                    _DrawerItem(
-                      icon: Icons.home,
-                      title: 'Home',
-                      onTap: () => navigateToPage(0),
-                    ),
-                    // _DrawerItem(
-                    //   icon: Icons.info,
-                    //   title: 'About',
-                    //   onTap: () => navigateToPage(1),
-                    // ),
-                    _DrawerItem(
-                      icon: Icons.access_time,
-                      title: 'Rhema Prayer Plan',
-                      onTap: () => navigateToPage(2),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.book,
-                      title: 'Bible Study Corner',
-                      onTap: () => navigateToPage(3),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.favorite,
-                      title: 'Salvation Corner',
-                      onTap: () => navigateToPage(4),
-                    ),
+      backgroundColor: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: Theme.of(context).brightness == Brightness.dark
+                ? [
+                    const Color(0xFF0A0A0A),
+                    const Color(0xFF1A1A1A),
+                    const Color(0xFF0F0F0F),
+                  ]
+                : [
+                    const Color(0xFFFAFAFA),
+                    const Color(0xFFFFFFFF),
+                    const Color(0xFFF5F5F5),
                   ],
-                ),
-                _buildDrawerSection(
-                  context,
-                  title: 'Services & Resources',
-                  items: [
-                    _DrawerItem(
-                      icon: Icons.support,
-                      title: 'Counseling & Care',
-                      onTap: () => navigateToPage(5),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.library_books,
-                      title: 'JKMG Resources',
-                      onTap: () => navigateToPage(6),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.event,
-                      title: 'Events & Announcements',
-                      onTap: () => navigateToPage(7),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.volunteer_activism,
-                      title: 'Partnership & Giving',
-                      onTap: () => navigateToPage(8),
-                    ),
-                  ],
-                ),
-                _buildDrawerSection(
-                  context,
-                  title: 'Community',
-                  items: [
-                    _DrawerItem(
-                      icon: Icons.public,
-                      title: 'Kingdom Commonwealth',
-                      onTap: () => navigateToPage(9),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.contact_mail,
-                      title: 'Contact Us',
-                      onTap: () => navigateToPage(10),
-                    ),
-                  ],
-                ),
-                const Divider(),
-                _buildDrawerSection(
-                  context,
-                  title: 'Account & Settings',
-                  items: [
-                    _DrawerItem(
-                      icon: Icons.person,
-                      title: 'Profile',
-                      onTap: () => navigateToPage(11),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.notifications,
-                      title: 'Notifications',
-                      onTap: () => _showNotifications(context),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.settings,
-                      title: 'Settings',
-                      onTap: () => navigateToPage(11),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.help_outline,
-                      title: 'Help & Support',
-                      onTap: () => navigateToPage(11),
-                    ),
-                    _DrawerItem(
-                      icon: Icons.star,
-                      title: 'Best Practices',
-                      onTap: () => navigateToPage(11),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 20),
-              ],
-            ),
           ),
-        ],
+        ),
+        child: Column(
+          children: [
+            _buildDrawerHeader(context, _user),
+            Expanded(
+              child: CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        _buildDrawerSection(
+                          context,
+                          title: 'Main Features',
+                          icon: Icons.dashboard_rounded,
+                          items: [
+                            _DrawerItem(
+                              icon: Icons.home_rounded,
+                              title: 'Home',
+                              onTap: () => navigateToPage(0),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.schedule_rounded,
+                              title: 'Rhema Prayer Plan',
+                              onTap: () => navigateToPage(2),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.menu_book_rounded,
+                              title: 'Bible Study Corner',
+                              onTap: () => navigateToPage(3),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.favorite_rounded,
+                              title: 'Salvation Corner',
+                              onTap: () => navigateToPage(4),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDrawerSection(
+                          context,
+                          title: 'Services & Resources',
+                          icon: Icons.support_rounded,
+                          items: [
+                            _DrawerItem(
+                              icon: Icons.psychology_rounded,
+                              title: 'Counseling & Care',
+                              onTap: () => navigateToPage(5),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.library_books_rounded,
+                              title: 'JKMG Resources',
+                              onTap: () => navigateToPage(6),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.event_rounded,
+                              title: 'Events & Announcements',
+                              onTap: () => navigateToPage(7),
+                              isNew: true,
+                            ),
+                            _DrawerItem(
+                              icon: Icons.volunteer_activism_rounded,
+                              title: 'Partnership & Giving',
+                              onTap: () => navigateToPage(8),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        _buildDrawerSection(
+                          context,
+                          title: 'Community',
+                          icon: Icons.groups_rounded,
+                          items: [
+                            _DrawerItem(
+                              icon: Icons.public_rounded,
+                              title: 'Kingdom Commonwealth',
+                              onTap: () => navigateToPage(9),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.contact_support_rounded,
+                              title: 'Contact Us',
+                              onTap: () => navigateToPage(10),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        _buildDivider(context),
+                        const SizedBox(height: 24),
+                        _buildDrawerSection(
+                          context,
+                          title: 'Account & Settings',
+                          icon: Icons.settings_rounded,
+                          items: [
+                            _DrawerItem(
+                              icon: Icons.person_rounded,
+                              title: 'Profile',
+                              onTap: () => navigateToPage(11),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.notifications_rounded,
+                              title: 'Notifications',
+                              onTap: () => _showNotifications(context),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.tune_rounded,
+                              title: 'Settings',
+                              onTap: () => navigateToPage(11),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.help_outline_rounded,
+                              title: 'Help & Support',
+                              onTap: () => navigateToPage(11),
+                            ),
+                            _DrawerItem(
+                              icon: Icons.star_rounded,
+                              title: 'Best Practices',
+                              onTap: () => navigateToPage(11),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 32),
+                      ]),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildDrawerHeader(BuildContext context) {
+  Widget _buildDrawerHeader(BuildContext context, dynamic user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      height: 200,
+      height: 250,
+      margin: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: Theme.of(context).brightness == Brightness.dark
+          colors: isDark
               ? [
-                  const Color(0xFF000000),
+                  const Color(0xFF2D1810),
                   const Color(0xFF1A1A1A),
-                  const Color(0xFF000000),
+                  const Color(0xFF0A0A0A),
                 ]
               : [
+                  const Color(0xFFFFE066),
                   const Color(0xFFFFD700),
-                  const Color(0xFFD4AF37),
-                  const Color(0xFFB8860B),
+                  const Color(0xFFDAA520),
                 ],
         ),
-      ),
-      child: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              CircleAvatar(
-                radius: 30,
-                backgroundColor: Colors.white.withOpacity(0.2),
-                child: Image.asset(
-                  'assets/icon/icon.png',
-                  width: 40,
-                  height: 40,
-                  fit: BoxFit.contain,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'JKMG Ministry',
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? const Color(0xFFFFD700)
-                      : Colors.white,
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              Text(
-                'Transforming lives through God\'s Word',
-                style: TextStyle(
-                  color: Theme.of(context).brightness == Brightness.dark
-                      ? Colors.white70
-                      : Colors.white.withOpacity(0.8),
-                  fontSize: 14,
-                ),
-              ),
-            ],
+        boxShadow: [
+          BoxShadow(
+            color: (isDark ? Colors.black : const Color(0xFFDAA520))
+                .withOpacity(0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
           ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            // Glassmorphism overlay
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Colors.white.withOpacity(isDark ? 0.05 : 0.2),
+                    Colors.white.withOpacity(isDark ? 0.02 : 0.1),
+                  ],
+                ),
+              ),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Profile Avatar with  design
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.3),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                      ),
+                      child: CircleAvatar(
+                        radius: 32,
+                        backgroundColor: Colors.white.withOpacity(0.15),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(30),
+                          child: Image.asset(
+                            'assets/icon/icon.png',
+                            width: 44,
+                            height: 44,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    // Ministry Name with  typography
+                    Text(
+                      'JKMG Ministry',
+                      style: TextStyle(
+                        color: isDark ? const Color(0xFFFFE066) : Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    // Subtitle with better contrast
+                    Text(
+                      'Transforming lives through God\'s Word',
+                      style: TextStyle(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.8)
+                            : Colors.white.withOpacity(0.9),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                        height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // User info if available
+                    if (user?.name != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          'Welcome, ${user?.name}',
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.95),
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -350,54 +454,176 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildDrawerSection(
     BuildContext context, {
     required String title,
+    required IconData icon,
     required List<_DrawerItem> items,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-          child: Text(
-            title,
-            style: TextStyle(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFFFFD700)
-                  : const Color(0xFFB8860B),
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withOpacity(0.03)
+            : Colors.black.withOpacity(0.02),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withOpacity(0.08)
+              : Colors.black.withOpacity(0.06),
+          width: 0.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Section Header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFFFFE066).withOpacity(0.1)
+                        : const Color(0xFFDAA520).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    icon,
+                    size: 16,
+                    color: isDark
+                        ? const Color(0xFFFFE066)
+                        : const Color(0xFFDAA520),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    color: isDark
+                        ? const Color(0xFFFFE066)
+                        : const Color(0xFFDAA520),
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.5,
+                  ),
+                ),
+              ],
             ),
           ),
-        ),
-        ...items.map((item) => _buildDrawerTile(context, item)),
-      ],
+          // Section Items
+          ...items.map((item) => _buildDrawerTile(context, item)),
+          const SizedBox(height: 8),
+        ],
+      ),
     );
   }
 
   Widget _buildDrawerTile(BuildContext context, _DrawerItem item) {
-    return ListTile(
-      leading: Icon(
-        item.icon,
-        color: Theme.of(context).brightness == Brightness.dark
-            ? const Color(0xFFD4AF37)
-            : const Color(0xFFB8860B),
-        size: 22,
-      ),
-      title: Text(
-        item.title,
-        style: TextStyle(
-          color: Theme.of(context).brightness == Brightness.dark
-              ? Colors.white
-              : Colors.black87,
-          fontSize: 16,
-          fontWeight: FontWeight.w500,
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(12),
+          onTap: () {
+            Navigator.pop(context);
+            item.onTap();
+          },
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                // Icon with  styling
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? const Color(0xFFFFE066).withOpacity(0.1)
+                        : const Color(0xFFDAA520).withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(
+                    item.icon,
+                    color: isDark
+                        ? const Color(0xFFDAA520)
+                        : const Color(0xFFB8860B),
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Title
+                Expanded(
+                  child: Text(
+                    item.title,
+                    style: TextStyle(
+                      color: isDark ? Colors.white : Colors.black87,
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      height: 1.2,
+                    ),
+                  ),
+                ),
+                // Badge for new items
+                if (item.isNew == true)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFF6B6B),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: const Text(
+                      'NEW',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ),
+                // Arrow icon
+                const SizedBox(width: 8),
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: isDark
+                      ? Colors.white.withOpacity(0.4)
+                      : Colors.black.withOpacity(0.4),
+                  size: 14,
+                ),
+              ],
+            ),
+          ),
         ),
       ),
-      onTap: () {
-        Navigator.pop(context); // Close drawer
-        item.onTap();
-      },
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+    );
+  }
+
+  Widget _buildDivider(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16),
+      height: 1,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.transparent,
+            isDark
+                ? Colors.white.withOpacity(0.1)
+                : Colors.black.withOpacity(0.1),
+            Colors.transparent,
+          ],
+        ),
+      ),
     );
   }
 
@@ -765,6 +991,14 @@ class _DrawerItem {
   final IconData icon;
   final String title;
   final VoidCallback onTap;
+  final bool? isNew;
+  final Color? badgeColor;
 
-  _DrawerItem({required this.icon, required this.title, required this.onTap});
+  _DrawerItem({
+    required this.icon,
+    required this.title,
+    required this.onTap,
+    this.isNew,
+    this.badgeColor,
+  });
 }
