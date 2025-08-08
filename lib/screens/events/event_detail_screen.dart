@@ -1,18 +1,63 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:jkmg/models/event_model.dart';
+import 'package:jkmg/services/event_service.dart';
 import 'event_registration_screen.dart';
 
-class EventDetailScreen extends StatelessWidget {
+class EventDetailScreen extends StatefulWidget {
   final Event event;
 
   const EventDetailScreen({super.key, required this.event});
 
   @override
+  State<EventDetailScreen> createState() => _EventDetailScreenState();
+}
+
+class _EventDetailScreenState extends State<EventDetailScreen> {
+  Event? _currentEvent;
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _currentEvent = widget.event;
+  }
+
+  Future<void> _refreshEventDetails() async {
+    setState(() => _isLoading = true);
+    try {
+      final refreshedEvent = await EventService.fetchEventDetails(_currentEvent!.id);
+      setState(() => _currentEvent = refreshedEvent);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error refreshing event: $e')),
+        );
+      }
+    } finally {
+      setState(() => _isLoading = false);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final event = _currentEvent!;
+    
     return Scaffold(
       appBar: AppBar(
         title: Text(event.title),
+        actions: [
+          IconButton(
+            onPressed: _isLoading ? null : _refreshEventDetails,
+            icon: _isLoading 
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.refresh),
+          ),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
@@ -62,13 +107,17 @@ class EventDetailScreen extends StatelessWidget {
 
   Widget _buildRegisterButton(BuildContext context) {
     return ElevatedButton(
-      onPressed: () {
-        Navigator.push(
+      onPressed: () async {
+        final result = await Navigator.push<bool>(
           context,
           MaterialPageRoute(
-            builder: (_) => EventRegistrationScreen(event: event),
+            builder: (_) => EventRegistrationScreen(event: _currentEvent!),
           ),
         );
+        
+        if (result == true) {
+          _refreshEventDetails();
+        }
       },
       child: const Text('Register Now'),
     );
