@@ -61,7 +61,11 @@ class ApiService {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       _token = data['token'];
-      await TokenHelper.saveToken(_token!, userId: data['user']['id']?.toString(), userName: data['user']['name']);
+      await TokenHelper.saveToken(
+        _token!,
+        userId: data['user']['id']?.toString(),
+        userName: data['user']['name'],
+      );
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to register: ${response.body}');
@@ -78,7 +82,11 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       _token = data['token'];
-      await TokenHelper.saveToken(_token!, userId: data['user']['id']?.toString(), userName: data['user']['name']);
+      await TokenHelper.saveToken(
+        _token!,
+        userId: data['user']['id']?.toString(),
+        userName: data['user']['name'],
+      );
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to login: ${response.body}');

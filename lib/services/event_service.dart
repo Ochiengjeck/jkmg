@@ -6,7 +6,8 @@ import 'package:jkmg/models/registration_model.dart';
 import 'package:jkmg/utils/token_helper.dart';
 
 class EventService {
-  static String get baseUrl => dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
+  static String get baseUrl =>
+      dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
 
   static Future<Map<String, String>> _headers() async {
     return await TokenHelper.getAuthHeaders();
@@ -68,5 +69,4 @@ class EventService {
       throw Exception(data['message'] ?? 'Registration failed');
     }
   }
-
 }
