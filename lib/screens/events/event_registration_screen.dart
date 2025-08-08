@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
-import 'package:jkmg/models/event_model.dart';
-import 'package:jkmg/services/event_service.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:jkmg/models/event.dart';
+import 'package:jkmg/provider/api_providers.dart';
 
-class EventRegistrationScreen extends StatefulWidget {
+class EventRegistrationScreen extends ConsumerStatefulWidget {
   final Event event;
 
   const EventRegistrationScreen({super.key, required this.event});
 
   @override
-  State<EventRegistrationScreen> createState() => _EventRegistrationScreenState();
+  ConsumerState<EventRegistrationScreen> createState() => _EventRegistrationScreenState();
 }
 
-class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
+class _EventRegistrationScreenState extends ConsumerState<EventRegistrationScreen> {
   final _formKey = GlobalKey<FormState>();
   final TextEditingController emergencyContactController = TextEditingController();
   final TextEditingController specialRequirementsController = TextEditingController();
@@ -26,17 +27,23 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
     setState(() => _isSubmitting = true);
 
     try {
-      final message = await EventService.registerForEvent(
-        eventId: widget.event.id,
-        volunteer: volunteer,
-        emergencyContact: emergencyContactController.text.trim(),
-        specialRequirements: specialRequirementsController.text.trim(),
-        attendance: attendance,
-      );
+      final registration = await ref.read(registerForEventProvider({
+        'event_id': widget.event.id,
+        'attendance': attendance,
+        'volunteer': volunteer,
+      }).future);
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
-      Navigator.pop(context);
+      
+      // Invalidate providers to refresh data
+      ref.invalidate(allEventsProvider);
+      ref.invalidate(myRegistrationsProvider);
+      ref.invalidate(eventDetailsProvider(widget.event.id));
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Registration successful!')),
+      );
+      Navigator.pop(context, true); // Return true to indicate success
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
@@ -57,7 +64,7 @@ class _EventRegistrationScreenState extends State<EventRegistrationScreen> {
           key: _formKey,
           child: Column(
             children: [
-              Text(widget.event.title, style: Theme.of(context).textTheme.titleLarge),
+              Text(widget.event.displayTitle, style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 16),
 
               TextFormField(

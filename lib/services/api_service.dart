@@ -6,6 +6,7 @@ import '../models/user.dart';
 import '../models/prayer.dart';
 import '../models/bible_study.dart';
 import '../models/event.dart';
+import '../models/registration_model.dart';
 import '../models/resource.dart';
 import '../models/testimony.dart';
 import '../models/donation.dart';
@@ -13,11 +14,21 @@ import '../models/counseling.dart';
 import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
+import 'preference_service.dart';
 
 class ApiService {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
   String? _token;
+
+  ApiService() {
+    _loadTokenFromStorage();
+  }
+
+  Future<void> _loadTokenFromStorage() async {
+    final prefs = await PreferenceService.getInstance();
+    _token = prefs.getAuthToken();
+  }
 
   // Helper method to get headers
   Map<String, String> _getHeaders([bool includeAuth = true]) {
@@ -60,6 +71,11 @@ class ApiService {
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
       _token = data['token'];
+
+      // Save token to storage
+      final prefs = await PreferenceService.getInstance();
+      await prefs.saveAuthToken(_token!);
+
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to register: ${response.body}');
@@ -76,6 +92,11 @@ class ApiService {
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       _token = data['token'];
+
+      // Save token to storage
+      final prefs = await PreferenceService.getInstance();
+      await prefs.saveAuthToken(_token!);
+
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to login: ${response.body}');
@@ -90,6 +111,10 @@ class ApiService {
 
     if (response.statusCode == 200) {
       _token = null;
+
+      // Clear token from storage
+      final prefs = await PreferenceService.getInstance();
+      await prefs.clearAuthData();
     } else {
       throw Exception('Failed to logout: ${response.body}');
     }
@@ -259,9 +284,7 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print(
-        "There are ${PaginatedResponse.fromJson(data, (json) => BibleStudy.fromJson(json)).data.length} sessions today",
-      );
+
       return PaginatedResponse.fromJson(
         data,
         (json) => BibleStudy.fromJson(json),
@@ -351,10 +374,15 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      return PaginatedResponse.fromJson(
-        data,
-        (json) => EventRegistration.fromJson(json),
-        key: 'registrations',
+      
+      // Handle the custom response format for registrations
+      final registrations = data['registrations'] as List;
+      final pagination = data['pagination'] as Map<String, dynamic>;
+      
+      return PaginatedResponse<EventRegistration>(
+        data: registrations.map((item) => EventRegistration.fromJson(item)).toList(),
+        links: {}, // API doesn't provide links in this format
+        meta: pagination, // Use pagination object as meta
       );
     } else {
       throw Exception('Failed to get event registrations: ${response.body}');
@@ -575,8 +603,6 @@ class ApiService {
       ).replace(queryParameters: queryParameters),
       headers: _getHeaders(),
     );
-    print('API Response Status: ${response.statusCode}');
-    print('API Response Body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);

@@ -4,6 +4,7 @@ import '../models/user.dart';
 import '../models/prayer.dart';
 import '../models/bible_study.dart';
 import '../models/event.dart';
+import '../models/registration_model.dart';
 import '../models/resource.dart';
 import '../models/testimony.dart';
 import '../models/donation.dart';
@@ -12,10 +13,21 @@ import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
 import '../services/api_service.dart';
+import '../services/preference_service.dart';
 
 // Initialize ApiService
 final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
+});
+
+// Authentication state provider
+final authStateProvider = FutureProvider<bool>((ref) async {
+  try {
+    final prefs = await PreferenceService.getInstance();
+    return prefs.isLoggedIn;
+  } catch (e) {
+    return false;
+  }
 });
 
 // Authentication Providers
@@ -146,6 +158,52 @@ final eventsProvider =
         perPage: params['per_page'] as int?,
       );
     });
+
+// Specific provider for all events (cached)
+final allEventsProvider = FutureProvider<PaginatedResponse<Event>>((ref) async {
+  final apiService = ref.read(apiServiceProvider);
+  try {
+    return await apiService.getEvents();
+  } catch (e) {
+    // If authentication fails, return empty response
+    if (e.toString().contains('unauthenticated') || e.toString().contains('401')) {
+      return PaginatedResponse<Event>(
+        data: [],
+        links: {},
+        meta: {},
+      );
+    }
+    rethrow;
+  }
+});
+
+// Specific provider for my registrations (cached) - requires auth
+final myRegistrationsProvider = FutureProvider<PaginatedResponse<EventRegistration>>((ref) async {
+  final apiService = ref.read(apiServiceProvider);
+  try {
+    return await apiService.getMyEventRegistrations();
+  } catch (e) {
+    // Return empty response if user not authenticated
+    return PaginatedResponse<EventRegistration>(
+      data: [],
+      links: {},
+      meta: {},
+    );
+  }
+});
+
+// Provider to check if user is registered for a specific event
+final isRegisteredForEventProvider = FutureProvider.family<EventRegistration?, String>((ref, eventId) async {
+  try {
+    final registrations = await ref.watch(myRegistrationsProvider.future);
+    final registration = registrations.data.where(
+      (registration) => registration.event?.id == eventId,
+    ).firstOrNull;
+    return registration;
+  } catch (e) {
+    return null;
+  }
+});
 
 final eventDetailsProvider = FutureProvider.family<Event, String>((
   ref,

@@ -1,4 +1,4 @@
-import 'event_model.dart';
+import 'event.dart';
 
 class AttendanceType {
   final String value;
