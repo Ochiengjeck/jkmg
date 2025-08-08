@@ -38,29 +38,12 @@ class PrayerSchedule extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Your Prayer Schedule',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-              color: const Color(0xFFB8860B),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Stay committed to your spiritual journey',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? Colors.white70
-                  : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 24),
           if (activePrayer != null) ...[
             Text(
               'Active Prayer',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: const Color(0xFFB8860B),
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
@@ -70,9 +53,9 @@ class PrayerSchedule extends StatelessWidget {
           if (completedPrayers.isNotEmpty) ...[
             Text(
               'Completed Prayers',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                 color: const Color(0xFFB8860B),
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),

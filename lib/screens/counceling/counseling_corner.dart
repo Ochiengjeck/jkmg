@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/counseling.dart';
 import '../../provider/api_providers.dart';
-import '../../services/api_service.dart';
 import 'book_counseling.dart';
 import 'counseling_list.dart';
 
@@ -95,10 +94,6 @@ class _CounselingCornerScreenState
 
   @override
   Widget build(BuildContext context) {
-    print(
-      '🏗️ Building CounselingCornerScreen - Loading: $_isLoading, Sessions: ${_sessions.length}, Error: $_error',
-    );
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
@@ -184,24 +179,6 @@ class _CounselingCornerScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Text(
-              'Counseling & Care',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                color: const Color(0xFFB8860B),
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const Spacer(),
-            // Add a refresh button
-            IconButton(
-              onPressed: _loadSessions,
-              icon: const Icon(Icons.refresh, color: Color(0xFFB8860B)),
-            ),
-          ],
-        ),
-        const SizedBox(height: 8),
         Text(
           'Seek guidance and support through our counseling services',
           style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -210,17 +187,6 @@ class _CounselingCornerScreenState
                 : Colors.black87,
           ),
         ),
-        if (_sessions.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Text(
-              'Found ${_sessions.length} session(s)',
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: const Color(0xFFB8860B),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
       ],
     );
   }

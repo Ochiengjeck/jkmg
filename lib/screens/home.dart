@@ -4,11 +4,19 @@ import 'package:jkmg/provider/api_providers.dart';
 
 import '../utils/constants.dart';
 import '../utils/helpers.dart';
+import 'about/about_screen.dart';
 import 'bible_study/bible_study_corner.dart';
+import 'commonwealth/kingdom_commonwealth_screen.dart';
+import 'contact/contact_screen.dart';
 import 'counceling/counseling_corner.dart';
+import 'giving/partnership_giving_screen.dart';
 import 'prayer/prayer_plan_screen.dart';
 import 'package:jkmg/screens/events/event_list_screen.dart';
+import 'profile/profile_screen.dart';
+import 'settings/settings_screen.dart';
+import 'help/help_support_screen.dart';
 
+import 'resources/jkmg_resources_screen.dart';
 import 'salvation/salvation_corner.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -36,6 +44,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     {'title': 'Kingdom Commonwealth', 'icon': Icons.public},
     {'title': 'Coming Soon', 'icon': Icons.hourglass_top},
     {'title': 'Contact Us', 'icon': Icons.contact_mail},
+    {'title': 'Profile', 'icon': Icons.person},
+    {'title': 'Settings', 'icon': Icons.settings},
+    {'title': 'Help & Support', 'icon': Icons.help_outline},
   ];
 
   @override
@@ -60,17 +71,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         },
         children: [
           _buildLandingPage(context),
-          _buildPlaceholderPage(context, _menuPages[1]),
+          AboutScreen(),
           PrayerPlanScreen(),
           BibleStudyCornerScreen(),
           SalvationCornerScreen(),
           CounselingCornerScreen(),
-          _buildPlaceholderPage(context, _menuPages[6]),
+          JKMGResourcesScreen(),
           EventListScreen(),
-          _buildPlaceholderPage(context, _menuPages[8]),
-          _buildPlaceholderPage(context, _menuPages[9]),
-          _buildPlaceholderPage(context, _menuPages[10]),
-          _buildPlaceholderPage(context, _menuPages[11]),
+          PartnershipGivingScreen(),
+          KingdomCommonwealthScreen(),
+          // _buildPlaceholderPage(context, _menuPages[10]),
+          ContactScreen(),
+          ProfileScreen(),
+          SettingsScreen(),
+          HelpSupportScreen(),
         ],
       ),
     );
@@ -90,7 +104,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
               style: Theme.of(context).appBarTheme.titleTextStyle?.copyWith(
                 color: const Color(0xFFB8860B),
-                fontSize: 24,
+                fontSize: 18,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -254,7 +268,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             _DrawerItem(
                               icon: Icons.contact_support_rounded,
                               title: 'Contact Us',
-                              onTap: () => navigateToPage(10),
+                              onTap: () => navigateToPage(11),
                             ),
                           ],
                         ),
@@ -269,27 +283,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             _DrawerItem(
                               icon: Icons.person_rounded,
                               title: 'Profile',
-                              onTap: () => navigateToPage(11),
+                              onTap: () => navigateToPage(12),
                             ),
-                            _DrawerItem(
-                              icon: Icons.notifications_rounded,
-                              title: 'Notifications',
-                              onTap: () => _showNotifications(context),
-                            ),
+                            // _DrawerItem(
+                            //   icon: Icons.notifications_rounded,
+                            //   title: 'Notifications',
+                            //   onTap: () => _showNotifications(context),
+                            // ),
                             _DrawerItem(
                               icon: Icons.tune_rounded,
                               title: 'Settings',
-                              onTap: () => navigateToPage(11),
+                              onTap: () => navigateToPage(13),
                             ),
                             _DrawerItem(
                               icon: Icons.help_outline_rounded,
                               title: 'Help & Support',
-                              onTap: () => navigateToPage(11),
-                            ),
-                            _DrawerItem(
-                              icon: Icons.star_rounded,
-                              title: 'Best Practices',
-                              onTap: () => navigateToPage(11),
+                              onTap: () => navigateToPage(14),
                             ),
                           ],
                         ),
@@ -398,7 +407,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'JKMG Ministry',
                       style: TextStyle(
                         color: isDark ? const Color(0xFFFFE066) : Colors.white,
-                        fontSize: 24,
+                        fontSize: 20,
                         fontWeight: FontWeight.w700,
                         letterSpacing: -0.5,
                       ),
@@ -670,18 +679,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         children: [
           Text(
             'Welcome to JKMG',
-            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+            style: TextStyle(
               color: const Color(0xFFB8860B),
+              fontSize: 22,
               fontWeight: FontWeight.bold,
             ),
           ),
           const SizedBox(height: 8),
           Text(
             'Transforming lives through God\'s Word and prayer',
-            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+            style: TextStyle(
               color: Theme.of(context).brightness == Brightness.dark
                   ? Colors.white70
                   : Colors.black87,
+              fontSize: 14,
             ),
           ),
           const SizedBox(height: 16),
@@ -704,8 +715,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         Text(
           'Quick Actions',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: TextStyle(
             color: const Color(0xFFB8860B),
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -763,8 +775,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 8),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: TextStyle(
                 color: const Color(0xFFB8860B),
+                fontSize: 13,
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
@@ -781,8 +794,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         Text(
           'Featured',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+          style: TextStyle(
             color: const Color(0xFFB8860B),
+            fontSize: 18,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -864,11 +878,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             const SizedBox(height: 12),
             Text(
               title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              style: TextStyle(
                 color: Theme.of(context).brightness == Brightness.dark
                     ? Colors.white
                     : Colors.black87,
-                fontSize: 14,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
               textAlign: TextAlign.center,
@@ -915,7 +929,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Text(
                 pageData['title'],
                 style: const TextStyle(
-                  fontSize: 28,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFD4AF37),
                 ),
@@ -925,7 +939,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Text(
                 'Swipe to explore more',
                 style: TextStyle(
-                  fontSize: 16,
+                  fontSize: 12,
                   color: const Color(0xFFD4AF37).withOpacity(0.7),
                 ),
               ),
