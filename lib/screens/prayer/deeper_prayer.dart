@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/prayer.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/common_widgets.dart';
 
 class DeeperPrayer extends StatefulWidget {
   final DeeperPrayerInfo? deeperPrayerInfo;
@@ -64,128 +66,258 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
         widget.deeperPrayerInfo?.recentParticipations?.length ?? 0;
     final isTodayCompleted = todayParticipation?.completed == true;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 16),
+          _buildIntroText(context),
+          const SizedBox(height: 16),
+          _buildStatsSection(context, totalCompleted, todayParticipation),
+          if (isTodayCompleted) ...
+            _buildCompletedState(context)
+          else ...
+            _buildActiveState(context),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
       children: [
-        Text(
-          'Deeper Prayer',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: const Color(0xFFB8860B),
-            fontWeight: FontWeight.bold,
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.nightlight_round,
+            color: AppTheme.primaryGold,
+            size: 20,
           ),
         ),
-        const SizedBox(height: 16),
-        Card(
-          color: Theme.of(context).cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: const Color(0xFFB8860B).withOpacity(0.3)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Total Sessions Completed: $totalCompleted',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black87,
-                  ),
-                ),
-                if (todayParticipation != null) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    'Today\'s Session: ${todayParticipation.duration} minutes (Completed)',
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: Colors.green),
-                  ),
-                ],
-                if (isTodayCompleted) ...[
-                  const SizedBox(height: 16),
-                  Text(
-                    'You have already completed today\'s deeper prayer session.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.grey,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
-                if (!isTodayCompleted) ...[
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<int>(
-                    decoration: InputDecoration(
-                      labelText: 'Session Duration (minutes)',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    value: _selectedDuration,
-                    items: _availableDurations
-                        .map(
-                          (duration) => DropdownMenuItem(
-                            value: duration,
-                            child: Text('$duration minutes'),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: (widget.isLoading || _isSubmitting)
-                        ? null
-                        : (value) => setState(() => _selectedDuration = value),
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Notes (Optional)',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    maxLines: 3,
-                    onChanged: (value) => setState(() => _notes = value),
-                    enabled: !(widget.isLoading || _isSubmitting),
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: (widget.isLoading || _isSubmitting)
-                        ? null
-                        : _recordDeeperPrayer,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB8860B),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.black,
-                            ),
-                          )
-                        : const Text(
-                            'Record Deeper Prayer',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                  ),
-                ],
-              ],
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Text(
+            'Deeper in Prayer',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepGold,
             ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildIntroText(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.richBlack.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text(
+        'As the name suggests, this feature is designed to facilitate a powerful midnight prayer session from 12:00 AM to 1:00 AM (local time), for users seeking spiritual growth and a deeper encounter with God.',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          height: 1.4,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsSection(BuildContext context, int totalCompleted, DeeperPrayerParticipation? todayParticipation) {
+    return Row(
+      children: [
+        Expanded(
+          child: _buildStatCard(
+            'Total Sessions',
+            totalCompleted.toString(),
+            Icons.check_circle_outline,
+            AppTheme.successGreen,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: _buildStatCard(
+            'Today\'s Status',
+            todayParticipation?.completed == true ? 'Completed' : 'Pending',
+            todayParticipation?.completed == true ? Icons.check_circle : Icons.schedule,
+            todayParticipation?.completed == true ? AppTheme.successGreen : AppTheme.primaryGold,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: color, size: 24),
+          const SizedBox(height: 8),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
+  }
+
+  List<Widget> _buildCompletedState(BuildContext context) {
+    return [
+      const SizedBox(height: 16),
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.successGreen.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.successGreen.withOpacity(0.3)),
+        ),
+        child: Row(
+          children: [
+            const Icon(
+              Icons.check_circle,
+              color: AppTheme.successGreen,
+              size: 24,
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'You have already completed today\'s deeper prayer session. Thank you for your faithful participation!',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppTheme.successGreen,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildActiveState(BuildContext context) {
+    return [
+      const SizedBox(height: 16),
+      Text(
+        'Record Your Session',
+        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          color: AppTheme.deepGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+      const SizedBox(height: 12),
+      DropdownButtonFormField<int>(
+        decoration: InputDecoration(
+          labelText: 'Session Duration (minutes)',
+          labelStyle: const TextStyle(color: AppTheme.primaryGold),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primaryGold),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+          ),
+          prefixIcon: const Icon(Icons.timer, color: AppTheme.primaryGold),
+        ),
+        value: _selectedDuration,
+        items: _availableDurations
+            .map(
+              (duration) => DropdownMenuItem(
+                value: duration,
+                child: Text('$duration minutes'),
+              ),
+            )
+            .toList(),
+        onChanged: (widget.isLoading || _isSubmitting)
+            ? null
+            : (value) => setState(() => _selectedDuration = value),
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        decoration: InputDecoration(
+          labelText: 'Prayer Notes (Optional)',
+          labelStyle: const TextStyle(color: AppTheme.primaryGold),
+          hintText: 'Share your prayer experience, reflections, or testimonies...',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primaryGold),
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+          ),
+          prefixIcon: const Icon(Icons.notes, color: AppTheme.primaryGold),
+        ),
+        maxLines: 3,
+        onChanged: (value) => setState(() => _notes = value),
+        enabled: !(widget.isLoading || _isSubmitting),
+      ),
+      const SizedBox(height: 20),
+      SizedBox(
+        width: double.infinity,
+        height: 48,
+        child: ElevatedButton.icon(
+          onPressed: (widget.isLoading || _isSubmitting)
+              ? null
+              : _recordDeeperPrayer,
+          icon: _isSubmitting
+              ? const SizedBox(
+                  width: 16,
+                  height: 16,
+                  child: CircularProgressIndicator(
+                    color: AppTheme.richBlack,
+                    strokeWidth: 2,
+                  ),
+                )
+              : const Icon(Icons.upload),
+          label: Text(_isSubmitting ? 'Recording...' : 'Record Prayer Session'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppTheme.primaryGold,
+            foregroundColor: AppTheme.richBlack,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
+      ),
+    ];
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/provider/api_providers.dart';
+import '../../utils/app_theme.dart';
+import '../../widgets/common_widgets.dart';
 
 class RequestPrayer extends StatefulWidget {
   final VoidCallback onPrayerRequestSubmitted;
@@ -103,225 +105,396 @@ class _RequestPrayerState extends State<RequestPrayer> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(context),
+          const SizedBox(height: 16),
+          _buildIntroText(context),
+          const SizedBox(height: 16),
+          _buildCategorySelection(context),
+          if (_selectedCategory != null) ...[
+            const SizedBox(height: 20),
+            _buildForm(context),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHeader(BuildContext context) {
+    return Row(
       children: [
-        Text(
-          'Submit a Prayer Request',
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            color: const Color(0xFFB8860B),
-            fontWeight: FontWeight.bold,
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold.withOpacity(0.2),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Icon(
+            Icons.church,
+            color: AppTheme.primaryGold,
+            size: 20,
           ),
         ),
-        const SizedBox(height: 16),
-        Card(
-          color: Theme.of(context).cardColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(15),
-            side: BorderSide(color: const Color(0xFFB8860B).withOpacity(0.3)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Prayer Title',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    onChanged: (value) => setState(() => _title = value),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Please enter a title'
-                        : null,
-                    enabled: !_isSubmitting,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      labelText: 'Description',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    maxLines: 3,
-                    onChanged: (value) => setState(() => _description = value),
-                    validator: (value) => value == null || value.isEmpty
-                        ? 'Please enter a description'
-                        : null,
-                    enabled: !_isSubmitting,
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Prayer Category',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    value: _selectedCategory,
-                    items: _prayerCategories
-                        .map(
-                          (category) => DropdownMenuItem(
-                            value: category,
-                            child: Text(
-                              category[0].toUpperCase() + category.substring(1),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _isSubmitting
-                        ? null
-                        : (value) => setState(() => _selectedCategory = value),
-                    validator: (value) =>
-                        value == null ? 'Please select a category' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    decoration: InputDecoration(
-                      labelText: 'Urgency',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    value: _selectedUrgency,
-                    items: _urgencyLevels
-                        .map(
-                          (urgency) => DropdownMenuItem(
-                            value: urgency,
-                            child: Text(
-                              urgency[0].toUpperCase() + urgency.substring(1),
-                            ),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: _isSubmitting
-                        ? null
-                        : (value) => setState(() => _selectedUrgency = value),
-                    validator: (value) =>
-                        value == null ? 'Please select an urgency level' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'Start Date',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    controller: TextEditingController(
-                      text: _startDate != null
-                          ? '${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}'
-                          : '',
-                    ),
-                    onTap: _isSubmitting
-                        ? null
-                        : () => _selectDate(context, true),
-                    validator: (value) => _startDate == null
-                        ? 'Please select a start date'
-                        : null,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    readOnly: true,
-                    decoration: InputDecoration(
-                      labelText: 'End Date',
-                      labelStyle: const TextStyle(color: Color(0xFFB8860B)),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(color: Color(0xFFB8860B)),
-                      ),
-                    ),
-                    controller: TextEditingController(
-                      text: _endDate != null
-                          ? '${_endDate!.year}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.day.toString().padLeft(2, '0')}'
-                          : '',
-                    ),
-                    onTap: _isSubmitting
-                        ? null
-                        : () => _selectDate(context, false),
-                    validator: (value) {
-                      if (_endDate == null) return 'Please select an end date';
-                      if (_startDate != null &&
-                          _endDate!.isBefore(_startDate!)) {
-                        return 'End date must be after start date';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  CheckboxListTile(
-                    title: const Text(
-                      'Submit Anonymously',
-                      style: TextStyle(color: Color(0xFFB8860B)),
-                    ),
-                    value: _isAnonymous,
-                    onChanged: _isSubmitting
-                        ? null
-                        : (value) =>
-                              setState(() => _isAnonymous = value ?? false),
-                    activeColor: const Color(0xFFB8860B),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  CheckboxListTile(
-                    title: const Text(
-                      'Make Public',
-                      style: TextStyle(color: Color(0xFFB8860B)),
-                    ),
-                    value: _isPublic,
-                    onChanged: _isSubmitting
-                        ? null
-                        : (value) => setState(() => _isPublic = value ?? true),
-                    activeColor: const Color(0xFFB8860B),
-                    controlAffinity: ListTileControlAffinity.leading,
-                  ),
-                  const SizedBox(height: 16),
-                  ElevatedButton(
-                    onPressed: _isSubmitting ? null : _submitPrayerRequest,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFB8860B),
-                      foregroundColor: Colors.black,
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: _isSubmitting
-                        ? const SizedBox(
-                            width: 24,
-                            height: 24,
-                            child: CircularProgressIndicator(
-                              color: Colors.black,
-                            ),
-                          )
-                        : const Text(
-                            'Submit Prayer Request',
-                            style: TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                  ),
-                ],
-              ),
+        const SizedBox(width: 12),
+        const Expanded(
+          child: Text(
+            'Request Prayer',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              color: AppTheme.deepGold,
             ),
           ),
         ),
       ],
     );
+  }
+
+  Widget _buildIntroText(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.richBlack.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: const Text(
+        'This feature offers personalized spiritual support by allowing you to select a specific prayer focus based on the life challenge you are facing. Once chosen, the prayer request remains fixed for a 7-day period to encourage consistency and focused intercession.',
+        style: TextStyle(
+          fontSize: 12,
+          color: Colors.grey,
+          height: 1.4,
+          fontStyle: FontStyle.italic,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCategorySelection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Select Prayer Category',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepGold,
+          ),
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: _prayerCategories.map((category) {
+            final isSelected = _selectedCategory == category;
+            return GestureDetector(
+              onTap: _isSubmitting ? null : () {
+                setState(() {
+                  _selectedCategory = category;
+                  if (_selectedCategory != null) {
+                    _startDate = DateTime.now();
+                    _endDate = DateTime.now().add(const Duration(days: 7));
+                  }
+                });
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  color: isSelected 
+                      ? AppTheme.primaryGold.withOpacity(0.2)
+                      : AppTheme.accentGold.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isSelected 
+                        ? AppTheme.primaryGold
+                        : AppTheme.primaryGold.withOpacity(0.2),
+                    width: isSelected ? 2 : 1,
+                  ),
+                ),
+                child: Text(
+                  category[0].toUpperCase() + category.substring(1),
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                    color: isSelected ? AppTheme.deepGold : Colors.grey.shade700,
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildForm(BuildContext context) {
+    return Form(
+      key: _formKey,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Prayer Details',
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.deepGold,
+            ),
+          ),
+          const SizedBox(height: 12),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Prayer Title',
+              labelStyle: const TextStyle(color: AppTheme.primaryGold),
+              hintText: 'Brief title for your prayer request',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+              ),
+              prefixIcon: const Icon(Icons.title, color: AppTheme.primaryGold),
+            ),
+            onChanged: (value) => setState(() => _title = value),
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter a title'
+                : null,
+            enabled: !_isSubmitting,
+          ),
+          const SizedBox(height: 16),
+          TextFormField(
+            decoration: InputDecoration(
+              labelText: 'Prayer Description',
+              labelStyle: const TextStyle(color: AppTheme.primaryGold),
+              hintText: 'Describe your prayer need in detail',
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+              ),
+              prefixIcon: const Icon(Icons.description, color: AppTheme.primaryGold),
+            ),
+            maxLines: 3,
+            onChanged: (value) => setState(() => _description = value),
+            validator: (value) => value == null || value.isEmpty
+                ? 'Please enter a description'
+                : null,
+            enabled: !_isSubmitting,
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            decoration: InputDecoration(
+              labelText: 'Priority Level',
+              labelStyle: const TextStyle(color: AppTheme.primaryGold),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
+              ),
+              prefixIcon: const Icon(Icons.priority_high, color: AppTheme.primaryGold),
+            ),
+            value: _selectedUrgency,
+            items: _urgencyLevels
+                .map(
+                  (urgency) => DropdownMenuItem(
+                    value: urgency,
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 8,
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: urgency == 'high' ? Colors.red : 
+                                   urgency == 'medium' ? Colors.orange : Colors.green,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Text(urgency[0].toUpperCase() + urgency.substring(1)),
+                      ],
+                    ),
+                  ),
+                )
+                .toList(),
+            onChanged: _isSubmitting
+                ? null
+                : (value) => setState(() => _selectedUrgency = value),
+            validator: (value) =>
+                value == null ? 'Please select a priority level' : null,
+          ),
+          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.successGreen.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppTheme.successGreen.withOpacity(0.3)),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.calendar_today,
+                  color: AppTheme.successGreen,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '7-Day Prayer Commitment',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.successGreen,
+                        ),
+                      ),
+                      Text(
+                        _startDate != null 
+                            ? 'From ${_formatDate(_startDate!)} to ${_formatDate(_endDate!)}'
+                            : 'Dates will be set automatically',
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          _buildPrivacyOptions(context),
+          const SizedBox(height: 20),
+          SizedBox(
+            width: double.infinity,
+            height: 48,
+            child: ElevatedButton.icon(
+              onPressed: _isSubmitting ? null : _submitPrayerRequest,
+              icon: _isSubmitting
+                  ? const SizedBox(
+                      width: 16,
+                      height: 16,
+                      child: CircularProgressIndicator(
+                        color: AppTheme.richBlack,
+                        strokeWidth: 2,
+                      ),
+                    )
+                  : const Icon(Icons.send),
+              label: Text(_isSubmitting ? 'Submitting...' : 'Submit Prayer Request'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPrivacyOptions(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Privacy Settings',
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: AppTheme.deepGold,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Container(
+          decoration: BoxDecoration(
+            color: AppTheme.accentGold.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(8),
+            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+          ),
+          child: Column(
+            children: [
+              CheckboxListTile(
+                title: const Text(
+                  'Submit Anonymously',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  'Your name will not be displayed with this request',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                value: _isAnonymous,
+                onChanged: _isSubmitting
+                    ? null
+                    : (value) => setState(() => _isAnonymous = value ?? false),
+                activeColor: AppTheme.primaryGold,
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+              const Divider(height: 1),
+              CheckboxListTile(
+                title: const Text(
+                  'Make Public',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                subtitle: Text(
+                  'Allow other users to see and pray for this request',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+                value: _isPublic,
+                onChanged: _isSubmitting
+                    ? null
+                    : (value) => setState(() => _isPublic = value ?? true),
+                activeColor: AppTheme.primaryGold,
+                controlAffinity: ListTileControlAffinity.leading,
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.day}/${date.month}/${date.year}';
   }
 }

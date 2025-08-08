@@ -80,7 +80,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           EventListScreen(),
           PartnershipGivingScreen(),
           KingdomCommonwealthScreen(),
-          // _buildPlaceholderPage(context, _menuPages[10]),
+          _buildPlaceholderPage(context, _menuPages[10]),
           ContactScreen(),
           ProfileScreen(),
           SettingsScreen(),
