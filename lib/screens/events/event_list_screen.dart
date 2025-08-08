@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jkmg/models/event_model.dart';
+import 'package:jkmg/models/event.dart';
 import 'package:jkmg/models/registration_model.dart';
-import 'package:jkmg/provider/event_provider.dart';
+import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/widgets/event_card.dart';
+import '../../services/api_service.dart';
 import 'event_detail_screen.dart';
 
 class EventListScreen extends ConsumerStatefulWidget {
@@ -13,7 +14,8 @@ class EventListScreen extends ConsumerStatefulWidget {
   ConsumerState<EventListScreen> createState() => _EventListScreenState();
 }
 
-class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTickerProviderStateMixin {
+class _EventListScreenState extends ConsumerState<EventListScreen>
+    with SingleTickerProviderStateMixin {
   late TabController _tabController;
 
   @override
@@ -45,7 +47,6 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Events'),
         bottom: TabBar(
           controller: _tabController,
           tabs: const [
@@ -74,10 +75,11 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
     await Future.delayed(Duration.zero);
   }
 
-  // Handles List<Event>
-  Widget _buildEventList(AsyncValue<List<Event>> eventList) {
-    return eventList.when(
-      data: (events) {
+  // Handles PaginatedResponse<Event>
+  Widget _buildEventList(AsyncValue<PaginatedResponse<Event>> eventResponse) {
+    return eventResponse.when(
+      data: (response) {
+        final events = response.data;
         if (events.isEmpty) {
           return RefreshIndicator(
             onRefresh: () => _refreshAllEvents(),
@@ -85,7 +87,28 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
               physics: AlwaysScrollableScrollPhysics(),
               child: SizedBox(
                 height: 400,
-                child: Center(child: Text("No events found.")),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.event_busy, size: 64, color: Colors.grey),
+                      SizedBox(height: 16),
+                      Text(
+                        "No events available",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        "Please log in to view events or check back later",
+                        style: TextStyle(color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           );
@@ -99,13 +122,18 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
               final event = events[index];
               return EventCard(
                 event: event,
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => EventDetailScreen(event: event),
                     ),
                   );
+                  // Refresh data when returning from event detail
+                  if (mounted) {
+                    ref.invalidate(allEventsProvider);
+                    ref.invalidate(myRegistrationsProvider);
+                  }
                 },
               );
             },
@@ -126,10 +154,13 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
     );
   }
 
-  // ✅ New handler for List<EventRegistration>
-  Widget _buildRegistrationList(AsyncValue<List<EventRegistration>> registrationList) {
-    return registrationList.when(
-      data: (registrations) {
+  // ✅ New handler for PaginatedResponse<EventRegistration>
+  Widget _buildRegistrationList(
+    AsyncValue<PaginatedResponse<EventRegistration>> registrationResponse,
+  ) {
+    return registrationResponse.when(
+      data: (response) {
+        final registrations = response.data;
 
         if (registrations.isEmpty) {
           return RefreshIndicator(
@@ -138,7 +169,9 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
               physics: AlwaysScrollableScrollPhysics(),
               child: SizedBox(
                 height: 400,
-                child: Center(child: Text("You haven't registered for any events yet.")),
+                child: Center(
+                  child: Text("You haven't registered for any events yet."),
+                ),
               ),
             ),
           );
@@ -157,7 +190,9 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
               physics: AlwaysScrollableScrollPhysics(),
               child: SizedBox(
                 height: 400,
-                child: Center(child: Text("No valid events found in your registrations.")),
+                child: Center(
+                  child: Text("No valid events found in your registrations."),
+                ),
               ),
             ),
           );
@@ -172,13 +207,18 @@ class _EventListScreenState extends ConsumerState<EventListScreen> with SingleTi
               final event = events[index];
               return EventCard(
                 event: event,
-                onTap: () {
-                  Navigator.push(
+                onTap: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (_) => EventDetailScreen(event: event),
                     ),
                   );
+                  // Refresh data when returning from event detail
+                  if (mounted) {
+                    ref.invalidate(allEventsProvider);
+                    ref.invalidate(myRegistrationsProvider);
+                  }
                 },
               );
             },

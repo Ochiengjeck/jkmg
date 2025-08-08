@@ -9,3 +9,8 @@ final apiServiceProvider = Provider<ApiService>((ref) => ApiService());
 final themeProvider = StateNotifierProvider<ThemeNotifier, ThemeMode>((ref) {
   return ThemeNotifier();
 });
+
+final isDarkModeProvider = Provider<bool>((ref) {
+  final themeMode = ref.watch(themeProvider);
+  return themeMode == ThemeMode.dark;
+});
