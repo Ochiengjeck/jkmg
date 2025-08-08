@@ -16,6 +16,7 @@ import '../models/notification.dart';
 import '../models/feedback.dart';
 import 'preference_service.dart';
 
+
 class ApiService {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
@@ -76,6 +77,7 @@ class ApiService {
       final prefs = await PreferenceService.getInstance();
       await prefs.saveAuthToken(_token!);
 
+
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to register: ${response.body}');
@@ -97,6 +99,7 @@ class ApiService {
       final prefs = await PreferenceService.getInstance();
       await prefs.saveAuthToken(_token!);
 
+
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to login: ${response.body}');
@@ -115,6 +118,7 @@ class ApiService {
       // Clear token from storage
       final prefs = await PreferenceService.getInstance();
       await prefs.clearAuthData();
+
     } else {
       throw Exception('Failed to logout: ${response.body}');
     }

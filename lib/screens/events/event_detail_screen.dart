@@ -8,6 +8,7 @@ import 'package:jkmg/utils/app_theme.dart';
 import 'event_registration_screen.dart';
 
 class EventDetailScreen extends ConsumerStatefulWidget {
+
   final Event event;
 
   const EventDetailScreen({super.key, required this.event});
@@ -26,6 +27,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.event.title),
+
       ),
       body: eventDetailsAsync.when(
         data: (event) => SingleChildScrollView(
@@ -383,6 +385,7 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen> {
           ),
         ],
       ),
+
     );
   }
 

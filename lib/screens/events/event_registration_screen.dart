@@ -44,6 +44,7 @@ class _EventRegistrationScreenState extends ConsumerState<EventRegistrationScree
         const SnackBar(content: Text('Registration successful!')),
       );
       Navigator.pop(context, true); // Return true to indicate success
+
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

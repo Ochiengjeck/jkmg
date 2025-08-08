@@ -22,6 +22,22 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 2, vsync: this);
+    _tabController.addListener(_onTabChanged);
+  }
+
+  @override
+  void dispose() {
+    _tabController.removeListener(_onTabChanged);
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  void _onTabChanged() {
+    if (_tabController.index == 0) {
+      _refreshAllEvents();
+    } else {
+      _refreshMyRegistrations();
+    }
   }
 
   @override
@@ -43,7 +59,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
         controller: _tabController,
         children: [
           _buildEventList(allEventsAsync),
-          _buildRegistrationList(myRegistrationsAsync), // ✅ FIXED here
+          _buildRegistrationList(myRegistrationsAsync),
         ],
       ),
     );
@@ -51,10 +67,12 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
 
   Future<void> _refreshAllEvents() async {
     ref.invalidate(allEventsProvider);
+    await Future.delayed(Duration.zero);
   }
 
   Future<void> _refreshMyRegistrations() async {
     ref.invalidate(myRegistrationsProvider);
+    await Future.delayed(Duration.zero);
   }
 
   // Handles PaginatedResponse<Event>
