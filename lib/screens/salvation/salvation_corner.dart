@@ -12,39 +12,6 @@ class SalvationCornerScreen extends ConsumerStatefulWidget {
 }
 
 class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen> {
-  String _searchQuery = '';
-  DateTime? _startDate;
-  DateTime? _endDate;
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  void _onSearchChanged(String query) {
-    setState(() {
-      _searchQuery = query;
-    });
-  }
-
-  Future<void> _selectDate(BuildContext context, bool isStartDate) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-    if (picked != null) {
-      setState(() {
-        if (isStartDate) {
-          _startDate = picked;
-        } else {
-          _endDate = picked;
-        }
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     // final salvationDecisionsAsync = ref.watch(
@@ -69,18 +36,6 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen> {
                 const SizedBox(height: 24),
                 _buildSalvationForm(context),
                 const SizedBox(height: 24),
-                // salvationDecisionsAsync.when(
-                //   data: (decisions) => SalvationDecisionList(
-                //     decisions: decisions.data,
-                //     searchQuery: _searchQuery,
-                //     startDate: _startDate,
-                //     endDate: _endDate,
-                //     onSearchChanged: _onSearchChanged,
-                //     onDateSelected: _selectDate,
-                //   ),
-                //   loading: () => const Center(child: CircularProgressIndicator()),
-                //   error: (e, _) => Text('Error: $e'),
-                // ),
               ],
             ),
           ),

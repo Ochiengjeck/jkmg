@@ -8,26 +8,17 @@ class KingdomCommonwealthScreen extends ConsumerStatefulWidget {
   const KingdomCommonwealthScreen({super.key});
 
   @override
-  ConsumerState<KingdomCommonwealthScreen> createState() => _KingdomCommonwealthScreenState();
+  ConsumerState<KingdomCommonwealthScreen> createState() =>
+      _KingdomCommonwealthScreenState();
 }
 
-class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthScreen> {
+class _KingdomCommonwealthScreenState
+    extends ConsumerState<KingdomCommonwealthScreen> {
   bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Kingdom Commonwealth'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            onPressed: () => _showInfoDialog(),
-            icon: const Icon(Icons.info_outline),
-            tooltip: 'About Kingdom Commonwealth',
-          ),
-        ],
-      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -53,13 +44,7 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
   Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -71,61 +56,125 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
       ),
       child: Column(
         children: [
+          // Image section with fade effect
           Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGold,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryGold.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 5,
+            width: double.infinity,
+            height: 180,
+            child: Stack(
+              children: [
+                // Main image
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/commonwealth.png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                // Info button overlay
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.6),
+                      shape: BoxShape.circle,
+                    ),
+                    child: IconButton(
+                      onPressed: () => _showInfoDialog(),
+                      icon: const Icon(
+                        Icons.info_outline,
+                        color: AppTheme.primaryGold,
+                      ),
+                      tooltip: 'About Kingdom Commonwealth',
+                    ),
+                  ),
+                ),
+                // Fade gradient at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 60,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.0, 0.8],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.account_balance,
-              size: 40,
-              color: AppTheme.richBlack,
-            ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Kingdom Commonwealth',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.primaryGold,
-              letterSpacing: 0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'A Kingdom Economic Movement',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
+          // Text content section
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryGold.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Empowering Communities • Building Wealth • Creating Legacy',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.primaryGold,
-                fontWeight: FontWeight.w600,
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Kingdom Commonwealth',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryGold,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'A Kingdom Economic Movement',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Text(
+                    'Housing • Food Systems • Education • Health & Finance',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.primaryGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -238,7 +287,12 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String title, String description, Color color) {
+  Widget _buildFeatureCard(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
     return CustomCard(
       child: Row(
         children: [
@@ -290,17 +344,33 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildMetricCard('1,200+', 'Community\nMembers', Icons.people)),
+            Expanded(
+              child: _buildMetricCard(
+                '1,200+',
+                'Community\nMembers',
+                Icons.people,
+              ),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _buildMetricCard('45', 'Active\nProjects', Icons.work)),
+            Expanded(
+              child: _buildMetricCard('45', 'Active\nProjects', Icons.work),
+            ),
           ],
         ),
         const SizedBox(height: 12),
         Row(
           children: [
-            Expanded(child: _buildMetricCard('12', 'Countries\nServed', Icons.public)),
+            Expanded(
+              child: _buildMetricCard('12', 'Countries\nServed', Icons.public),
+            ),
             const SizedBox(width: 12),
-            Expanded(child: _buildMetricCard('\$2.3M', 'Community\nWealth', Icons.trending_up)),
+            Expanded(
+              child: _buildMetricCard(
+                '\$2.3M',
+                'Community\nWealth',
+                Icons.trending_up,
+              ),
+            ),
           ],
         ),
       ],
@@ -312,7 +382,10 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryGold.withOpacity(0.1), AppTheme.accentGold.withOpacity(0.05)],
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.accentGold.withOpacity(0.05),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -392,11 +465,7 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
           const SizedBox(height: 12),
           const Text(
             'Join the movement through our dedicated mobile application and website platform. Experience the full range of Kingdom Commonwealth features and connect with a global community.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.4),
           ),
           const SizedBox(height: 16),
           Row(
@@ -445,10 +514,7 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
           ),
           Text(
             subtitle,
-            style: TextStyle(
-              fontSize: 9,
-              color: Colors.grey.shade400,
-            ),
+            style: TextStyle(fontSize: 9, color: Colors.grey.shade400),
             textAlign: TextAlign.center,
           ),
         ],
@@ -464,7 +530,7 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
           height: 48,
           child: ElevatedButton.icon(
             onPressed: _isLoading ? null : _launchWebsite,
-            icon: _isLoading 
+            icon: _isLoading
                 ? const SizedBox(
                     width: 16,
                     height: 16,
@@ -511,15 +577,12 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
 
   Future<void> _launchWebsite() async {
     setState(() => _isLoading = true);
-    
+
     const url = 'https://www.kingdomcommonwealth.com/';
     try {
       final uri = Uri.parse(url);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         _showErrorSnackBar('Could not open website');
       }
@@ -532,15 +595,13 @@ class _KingdomCommonwealthScreenState extends ConsumerState<KingdomCommonwealthS
 
   Future<void> _launchMobileApp() async {
     setState(() => _isLoading = true);
-    
-    const androidUrl = 'https://play.google.com/store/apps/details?id=com.kingdomcommonwealth.app';
+
+    const androidUrl =
+        'https://play.google.com/store/apps/details?id=com.kingdomcommonwealth.app';
     try {
       final uri = Uri.parse(androidUrl);
       if (await canLaunchUrl(uri)) {
-        await launchUrl(
-          uri,
-          mode: LaunchMode.externalApplication,
-        );
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
         _showErrorSnackBar('Could not open app store');
       }

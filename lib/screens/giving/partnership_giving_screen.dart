@@ -18,6 +18,7 @@ class _PartnershipGivingScreenState
     extends ConsumerState<PartnershipGivingScreen>
     with SingleTickerProviderStateMixin {
   late TabController _tabController;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -34,61 +35,200 @@ class _PartnershipGivingScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Partnership & Giving'),
-        centerTitle: true,
-        bottom: TabBar(
-          controller: _tabController,
-          labelColor: AppTheme.primaryGold,
-          unselectedLabelColor: Colors.grey,
-          indicatorColor: AppTheme.primaryGold,
-          labelStyle: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w600,
-          ),
-          tabs: const [
-            Tab(icon: Icon(Icons.handshake), text: 'Partnership'),
-            Tab(icon: Icon(Icons.favorite), text: 'Give'),
-            Tab(icon: Icon(Icons.dashboard), text: 'My Giving'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildHeroSection(),
+            const SizedBox(height: 24),
+            _buildIntroSection(),
+            const SizedBox(height: 24),
+            _buildPartnershipOptions(),
+            const SizedBox(height: 24),
+            _buildGivingSection(),
+            const SizedBox(height: 24),
+            _buildImpactSection(),
+            const SizedBox(height: 32),
+            _buildPartnerDashboardAccess(),
           ],
         ),
       ),
-      body: TabBarView(
-        controller: _tabController,
-        children: const [PartnershipTab(), GivingTab(), MyGivingTab()],
-      ),
     );
   }
-}
 
-class PartnershipTab extends ConsumerWidget {
-  const PartnershipTab({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          WelcomeSection(
-            title: 'Partner with JKMG',
-            subtitle:
-                'To partner with the transformative work God is doing through Rev. Julian Kyula and JKMG—whether through financial support or in-kind contributions—please find our giving and contact details below. Thank you, and may God bless you abundantly.',
-            icon: Icons.handshake,
+  Widget _buildHeroSection() {
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryGold.withOpacity(0.2),
+            blurRadius: 20,
+            spreadRadius: 2,
           ),
-          const SizedBox(height: 24),
-          _buildPartnershipLevels(context),
-          const SizedBox(height: 24),
-          _buildMinistryFocus(context),
-          const SizedBox(height: 24),
-          _buildTestimonySection(context),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Image section with fade effect
+          Container(
+            width: double.infinity,
+            height: 180,
+            child: Stack(
+              children: [
+                // Main image
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/partners.png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                // Fade gradient at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 60,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.0, 0.8],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Text content section
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Partnership & Giving',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryGold,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'Partner with God\'s Kingdom Work',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Text(
+                    'Monthly Partners • One-Time Gifts • Ministry Focus',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.primaryGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildPartnershipLevels(BuildContext context) {
+  Widget _buildIntroSection() {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.format_quote, color: AppTheme.primaryGold, size: 24),
+              SizedBox(width: 8),
+              Text(
+                'Partnership Scripture',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            '"Not because I desire a gift: but I desire fruit that may abound to your account." - Philippians 4:17',
+            style: TextStyle(
+              fontSize: 12,
+              fontStyle: FontStyle.italic,
+              color: AppTheme.deepGold,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            'To partner with the transformative work God is doing through Rev. Julian Kyula and JKMG—whether through financial support or in-kind contributions—please find our giving and contact details below. Thank you, and may God bless you abundantly.',
+            style: TextStyle(
+              fontSize: 12,
+              color: Colors.grey.shade700,
+              height: 1.4,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPartnershipOptions() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -98,43 +238,44 @@ class PartnershipTab extends ConsumerWidget {
         ),
         const SizedBox(height: 12),
         _buildPartnershipCard(
-          context,
-          'Kingdom Builder',
-          '\$500+ Monthly',
-          'Support major ministry initiatives and global expansion',
-          Icons.business_center,
+          'Monthly Partner',
+          'Become a Monthly Partner',
+          'Join our monthly partnership community for consistent Kingdom support',
+          Icons.calendar_today,
           AppTheme.primaryGold,
           [
+            'Monthly ministry updates',
+            'Prayer requests and testimonies', 
             'Priority prayer support',
-            'Exclusive partnership updates',
-            'Annual partner gathering invite',
-            'Ministry financial reports',
+            'Access to partner events',
           ],
         ),
+        const SizedBox(height: 12),
         _buildPartnershipCard(
-          context,
-          'Faith Partner',
-          '\$100+ Monthly',
-          'Help fund regular ministry operations and outreach',
+          'One-Time Donation',
+          'Give One-Time Donation',
+          'Support specific causes and ministries with a one-time gift',
           Icons.favorite,
           AppTheme.deepGold,
           [
-            'Monthly ministry updates',
-            'Prayer requests and testimonies',
-            'Special partner events access',
+            'Support Rhema Feast',
+            'Fund media ministry',
+            'Support youth ministry',
+            'Global missions outreach',
           ],
         ),
+        const SizedBox(height: 12),
         _buildPartnershipCard(
-          context,
-          'Prayer Supporter',
-          '\$25+ Monthly',
-          'Join our prayer and financial support network',
-          Icons.church,
+          'Support a Cause',
+          'Choose Ministry Focus',
+          'Direct your giving toward specific ministry areas',
+          Icons.business_center,
           AppTheme.darkGold,
           [
-            'Weekly prayer updates',
-            'Ministry newsletters',
-            'Access to online prayer meetings',
+            'RF (Rhema Feast) events',
+            'Media content creation',
+            'Youth programs',
+            'Global expansion',
           ],
         ),
       ],
@@ -142,755 +283,475 @@ class PartnershipTab extends ConsumerWidget {
   }
 
   Widget _buildPartnershipCard(
-    BuildContext context,
     String title,
-    String amount,
+    String buttonText,
     String description,
     IconData icon,
     Color color,
     List<String> benefits,
   ) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(icon, color: color, size: 24),
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Text(
-                        amount,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                          color: color,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Text(
-              description,
-              style: TextStyle(
-                fontSize: 13,
-                color: Colors.grey.shade700,
-                height: 1.4,
+                child: Icon(icon, color: color, size: 24),
               ),
-            ),
-            const SizedBox(height: 12),
-            const Text(
-              'Partnership Benefits:',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-            ),
-            const SizedBox(height: 8),
-            ...benefits.map(
-              (benefit) => Padding(
-                padding: const EdgeInsets.only(bottom: 4),
-                child: Row(
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(Icons.check_circle, size: 16, color: color),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        benefit,
-                        style: const TextStyle(fontSize: 11, height: 1.3),
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      description,
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                        height: 1.3,
                       ),
                     ),
                   ],
                 ),
               ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () => _becomePartner(context, title),
-                child: Text('Become a $title'),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildMinistryFocus(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(
-          title: 'Ministry Focus Areas',
-          subtitle: 'Your partnership supports these key ministry areas',
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFocusCard(
-                'Global Events',
-                Icons.public,
-                'Rhema Feast & RXP',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildFocusCard(
-                'Media Ministry',
-                Icons.video_library,
-                'Digital Outreach',
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildFocusCard(
-                'Youth Ministry',
-                Icons.groups,
-                'Next Generation',
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildFocusCard(
-                'Missions',
-                Icons.flight_takeoff,
-                'Global Expansion',
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildFocusCard(String title, IconData icon, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.deepGold, size: 32),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
-            textAlign: TextAlign.center,
+            ],
           ),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
+          const SizedBox(height: 16),
+          ...benefits.map(
+            (benefit) => Padding(
+              padding: const EdgeInsets.only(bottom: 4),
+              child: Row(
+                children: [
+                  Icon(Icons.check_circle, size: 16, color: color),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      benefit,
+                      style: const TextStyle(fontSize: 11, height: 1.3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: () => _showGivingForm(title),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+              ),
+              child: Text(buttonText),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildTestimonySection(BuildContext context) {
+  Widget _buildGivingSection() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppTheme.charcoalBlack,
         borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
+        ],
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.format_quote, color: AppTheme.primaryGold, size: 32),
-          const SizedBox(height: 12),
-          const Text(
-            '"Through JKMG partnership, we\'ve seen incredible transformation in our community. The impact goes beyond financial support—it\'s about Kingdom advancement."',
-            style: TextStyle(
-              fontSize: 13,
-              color: Colors.white,
-              fontStyle: FontStyle.italic,
-              height: 1.5,
-            ),
-            textAlign: TextAlign.center,
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.payment,
+                  color: AppTheme.primaryGold,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Secure Giving Options',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          Text(
-            '— Sarah M., Kingdom Builder Partner',
-            style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
+          const Text(
+            'Choose your preferred method for secure online giving. All payment methods are encrypted and secure.',
+            style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.4),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPaymentMethodButton(
+                  'M-Pesa',
+                  Icons.phone_android,
+                  'Mobile money',
+                  'mpesa',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPaymentMethodButton(
+                  'Bank',
+                  Icons.account_balance,
+                  'Bank transfer',
+                  'bank',
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: _buildPaymentMethodButton(
+                  'SendWave',
+                  Icons.send,
+                  'International',
+                  'sendwave',
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: _buildPaymentMethodButton(
+                  'PayPal',
+                  Icons.payment,
+                  'Secure online',
+                  'paypal',
+                ),
+              ),
+            ],
           ),
         ],
       ),
     );
   }
 
-  void _becomePartner(BuildContext context, String level) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => PartnershipSignupScreen(partnershipLevel: level),
-      ),
-    );
-  }
-}
-
-class GivingTab extends ConsumerStatefulWidget {
-  const GivingTab({super.key});
-
-  @override
-  ConsumerState<GivingTab> createState() => _GivingTabState();
-}
-
-class _GivingTabState extends ConsumerState<GivingTab> {
-  final _formKey = GlobalKey<FormState>();
-  final _amountController = TextEditingController();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-
-  String _selectedAmount = '';
-  String _selectedPaymentMethod = 'mpesa';
-  String _selectedCause = 'general';
-  bool _isOneTime = true;
-
-  final List<String> _quickAmounts = ['25', '50', '100', '250', '500', '1000'];
-
-  @override
-  void dispose() {
-    _amountController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(16),
-      child: Form(
-        key: _formKey,
+  Widget _buildPaymentMethodButton(String title, IconData icon, String subtitle, String method) {
+    return GestureDetector(
+      onTap: () => _showGivingForm(method),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppTheme.softBlack,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            WelcomeSection(
-              title: 'Give to JKMG',
-              subtitle:
-                  'Your generous giving helps advance God\'s Kingdom through JKMG ministries worldwide. Every gift makes a difference.',
-              icon: Icons.favorite,
+            Icon(icon, color: AppTheme.primaryGold, size: 24),
+            const SizedBox(height: 6),
+            Text(
+              title,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
-            const SizedBox(height: 24),
-            _buildGivingTypeToggle(),
-            const SizedBox(height: 20),
-            _buildAmountSection(),
-            const SizedBox(height: 20),
-            _buildCauseSelection(),
-            const SizedBox(height: 20),
-            _buildPaymentMethodSection(),
-            const SizedBox(height: 20),
-            _buildDonorInformation(),
-            const SizedBox(height: 24),
-            _buildGiveButton(),
+            Text(
+              subtitle,
+              style: TextStyle(fontSize: 9, color: Colors.grey.shade400),
+              textAlign: TextAlign.center,
+            ),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildGivingTypeToggle() {
+  Widget _buildImpactSection() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Giving Type',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+        const SectionHeader(
+          title: 'Partnership Impact',
+          subtitle: 'See how your partnership transforms lives globally',
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 12),
         Container(
+          padding: const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
-            borderRadius: BorderRadius.circular(12),
+            color: AppTheme.charcoalBlack,
+            borderRadius: BorderRadius.circular(16),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isOneTime = true),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: _isOneTime
-                          ? AppTheme.primaryGold
-                          : Colors.transparent,
-                      borderRadius: const BorderRadius.horizontal(
-                        left: Radius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'One-Time Gift',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: _isOneTime
-                            ? AppTheme.richBlack
-                            : Colors.grey.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
+              const Icon(Icons.format_quote, color: AppTheme.primaryGold, size: 32),
+              const SizedBox(height: 12),
+              const Text(
+                '"Through JKMG partnership, we\'ve seen incredible transformation in our community. The impact goes beyond financial support—it\'s about Kingdom advancement and generational change."',
+                style: TextStyle(
+                  fontSize: 13,
+                  color: Colors.white,
+                  fontStyle: FontStyle.italic,
+                  height: 1.5,
                 ),
+                textAlign: TextAlign.center,
               ),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => setState(() => _isOneTime = false),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    decoration: BoxDecoration(
-                      color: !_isOneTime
-                          ? AppTheme.primaryGold
-                          : Colors.transparent,
-                      borderRadius: const BorderRadius.horizontal(
-                        right: Radius.circular(12),
-                      ),
-                    ),
-                    child: Text(
-                      'Monthly Partnership',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: !_isOneTime
-                            ? AppTheme.richBlack
-                            : Colors.grey.shade600,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                ),
+              const SizedBox(height: 12),
+              Text(
+                '— Rev. Julian Kyula, JKMG Founder',
+                style: TextStyle(fontSize: 11, color: Colors.grey.shade400),
               ),
             ],
           ),
         ),
-      ],
-    );
-  }
-
-  Widget _buildAmountSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Amount (USD)',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        // Wrap(
-        //   spacing: 8,
-        //   runSpacing: 8,
-        //   children: _quickAmounts.map((amount) {
-        //     final isSelected = _selectedAmount == amount;
-        //     return GestureDetector(
-        //       onTap: () {
-        //         setState(() {
-        //           _selectedAmount = amount;
-        //           _amountController.text = amount;
-        //         });
-        //       },
-        //       child: Container(
-        //         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        //         decoration: BoxDecoration(
-        //           color: isSelected ? AppTheme.primaryGold : Colors.transparent,
-        //           border: Border.all(
-        //             color: isSelected ? AppTheme.primaryGold : Colors.grey.shade400,
-        //           ),
-        //           borderRadius: BorderRadius.circular(20),
-        //         ),
-        //         child: Text(
-        //           '\$$amount',
-        //           style: TextStyle(
-        //             fontSize: 12,
-        //             fontWeight: FontWeight.w600,
-        //             color: isSelected ? AppTheme.richBlack : Colors.grey.shade700,
-        //           ),
-        //         ),
-        //       ),
-        //     );
-        //   }),
-        // ),
         const SizedBox(height: 12),
-        TextFormField(
-          controller: _amountController,
-          decoration: const InputDecoration(
-            labelText: 'Custom Amount',
-            prefixText: '\$ ',
-            hintText: 'Enter amount',
-          ),
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          onChanged: (value) {
-            setState(() {
-              _selectedAmount = value;
-            });
-          },
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter an amount';
-            }
-            final amount = int.tryParse(value);
-            if (amount == null || amount <= 0) {
-              return 'Please enter a valid amount';
-            }
-            return null;
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildCauseSelection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Support Area',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        DropdownButtonFormField<String>(
-          value: _selectedCause,
-          decoration: const InputDecoration(
-            labelText: 'Where should your gift go?',
-          ),
-          items: const [
-            DropdownMenuItem(value: 'general', child: Text('General Ministry')),
-            DropdownMenuItem(value: 'rhema_feast', child: Text('Rhema Feast')),
-            DropdownMenuItem(value: 'youth', child: Text('Youth Ministry')),
-            DropdownMenuItem(value: 'missions', child: Text('Global Missions')),
-            DropdownMenuItem(value: 'media', child: Text('Media Ministry')),
-            DropdownMenuItem(
-              value: 'counseling',
-              child: Text('Counseling & Care'),
-            ),
-          ],
-          onChanged: (value) {
-            setState(() {
-              _selectedCause = value!;
-            });
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentMethodSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Payment Method',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 12),
-        _buildPaymentOption(
-          'mpesa',
-          'M-Pesa',
-          Icons.phone_android,
-          'Mobile money transfer',
-        ),
-        _buildPaymentOption(
-          'card',
-          'Credit/Debit Card',
-          Icons.credit_card,
-          'Visa, Mastercard accepted',
-        ),
-        _buildPaymentOption(
-          'bank',
-          'Bank Transfer',
-          Icons.account_balance,
-          'Direct bank transfer',
-        ),
-        _buildPaymentOption(
-          'sendwave',
-          'SendWave',
-          Icons.send,
-          'International transfer',
-        ),
-        _buildPaymentOption(
-          'paypal',
-          'PayPal',
-          Icons.payment,
-          'Secure online payment',
-        ),
-      ],
-    );
-  }
-
-  Widget _buildPaymentOption(
-    String value,
-    String title,
-    IconData icon,
-    String subtitle,
-  ) {
-    final isSelected = _selectedPaymentMethod == value;
-    return GestureDetector(
-      onTap: () => setState(() => _selectedPaymentMethod = value),
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          border: Border.all(
-            color: isSelected ? AppTheme.primaryGold : Colors.grey.shade300,
-            width: isSelected ? 2 : 1,
-          ),
-          borderRadius: BorderRadius.circular(8),
-          color: isSelected ? AppTheme.primaryGold.withOpacity(0.1) : null,
-        ),
-        child: Row(
+        Row(
           children: [
-            Icon(
-              icon,
-              color: isSelected ? AppTheme.deepGold : Colors.grey.shade600,
-              size: 24,
+            Expanded(
+              child: _buildImpactCard('50K+', 'Lives Touched', Icons.people),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: isSelected ? AppTheme.deepGold : null,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
+              child: _buildImpactCard('25+', 'Countries', Icons.public),
             ),
-            if (isSelected)
-              const Icon(
-                Icons.check_circle,
-                color: AppTheme.deepGold,
-                size: 20,
-              ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildDonorInformation() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text(
-          'Donor Information',
-          style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
-        ),
-        const SizedBox(height: 8),
-        TextFormField(
-          controller: _nameController,
-          decoration: const InputDecoration(
-            labelText: 'Full Name',
-            prefixIcon: Icon(Icons.person, color: AppTheme.deepGold),
-          ),
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your name';
-            }
-            return null;
-          },
-        ),
         const SizedBox(height: 12),
-        TextFormField(
-          controller: _emailController,
-          decoration: const InputDecoration(
-            labelText: 'Email Address',
-            prefixIcon: Icon(Icons.email, color: AppTheme.deepGold),
-          ),
-          keyboardType: TextInputType.emailAddress,
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return 'Please enter your email';
-            }
-            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-              return 'Please enter a valid email';
-            }
-            return null;
-          },
-        ),
-        const SizedBox(height: 12),
-        TextFormField(
-          controller: _phoneController,
-          decoration: const InputDecoration(
-            labelText: 'Phone Number (Optional)',
-            prefixIcon: Icon(Icons.phone, color: AppTheme.deepGold),
-          ),
-          keyboardType: TextInputType.phone,
+        Row(
+          children: [
+            Expanded(
+              child: _buildImpactCard('1000+', 'Partners', Icons.handshake),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _buildImpactCard('\$2M+', 'Raised', Icons.trending_up),
+            ),
+          ],
         ),
       ],
     );
   }
 
-  Widget _buildGiveButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 48,
-      child: ElevatedButton.icon(
-        onPressed: _processGift,
-        icon: const Icon(Icons.favorite),
-        label: Text(_isOneTime ? 'Give Now' : 'Start Monthly Partnership'),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: AppTheme.primaryGold,
-          foregroundColor: AppTheme.richBlack,
-        ),
-      ),
-    );
-  }
-
-  void _processGift() {
-    if (_formKey.currentState!.validate()) {
-      // Process the gift
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Thank You!'),
-          content: Text(
-            'Your ${_isOneTime ? 'gift' : 'monthly partnership'} of \$${_amountController.text} will be processed using ${_getPaymentMethodName()}.',
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Continue'),
-            ),
+  Widget _buildImpactCard(String number, String label, IconData icon) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.accentGold.withOpacity(0.05),
           ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-      );
-    }
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+      ),
+      child: Column(
+        children: [
+          Icon(icon, color: AppTheme.deepGold, size: 28),
+          const SizedBox(height: 8),
+          Text(
+            number,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w800,
+              color: AppTheme.deepGold,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
-  String _getPaymentMethodName() {
-    switch (_selectedPaymentMethod) {
-      case 'mpesa':
-        return 'M-Pesa';
-      case 'card':
-        return 'Credit/Debit Card';
-      case 'bank':
-        return 'Bank Transfer';
-      case 'sendwave':
-        return 'SendWave';
-      case 'paypal':
-        return 'PayPal';
-      default:
-        return 'Selected Payment Method';
-    }
-  }
-}
-
-class MyGivingTab extends ConsumerWidget {
-  const MyGivingTab({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.all(32),
-        child: EmptyStateWidget(
-          icon: Icons.dashboard,
-          title: 'My Giving Dashboard',
-          subtitle:
-              'Track your giving history and manage your partnerships. Sign in to access your personalized dashboard.',
-          action: null,
+  Widget _buildPartnerDashboardAccess() {
+    return Column(
+      children: [
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: ElevatedButton.icon(
+            onPressed: _isLoading ? null : () => _showGivingForm('instant'),
+            icon: _isLoading
+                ? const SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.richBlack,
+                    ),
+                  )
+                : const Icon(Icons.favorite),
+            label: Text(_isLoading ? 'Processing...' : 'Give Now'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryGold,
+              foregroundColor: AppTheme.richBlack,
+            ),
+          ),
         ),
+        const SizedBox(height: 12),
+        SizedBox(
+          width: double.infinity,
+          height: 48,
+          child: OutlinedButton.icon(
+            onPressed: _isLoading ? null : _accessPartnerDashboard,
+            icon: const Icon(Icons.dashboard),
+            label: const Text('Partner Dashboard'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.primaryGold,
+              side: const BorderSide(color: AppTheme.primaryGold),
+            ),
+          ),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          'View giving history, update payment details, and download giving statements in your partner dashboard.',
+          style: TextStyle(
+            fontSize: 11,
+            color: Colors.grey.shade600,
+            fontStyle: FontStyle.italic,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  void _showGivingForm(String type) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GivingFormScreen(givingType: type),
+      ),
+    );
+  }
+
+  void _accessPartnerDashboard() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const PartnerDashboardScreen(),
       ),
     );
   }
 }
 
-class PartnershipSignupScreen extends ConsumerStatefulWidget {
-  final String partnershipLevel;
+// Placeholder screens for navigation - these would be implemented separately
+class GivingFormScreen extends StatelessWidget {
+  final String givingType;
 
-  const PartnershipSignupScreen({super.key, required this.partnershipLevel});
-
-  @override
-  ConsumerState<PartnershipSignupScreen> createState() =>
-      _PartnershipSignupScreenState();
-}
-
-class _PartnershipSignupScreenState
-    extends ConsumerState<PartnershipSignupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _addressController = TextEditingController();
+  const GivingFormScreen({super.key, required this.givingType});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.partnershipLevel} Partnership')),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Form(
-          key: _formKey,
+      appBar: AppBar(title: const Text('Complete Your Giving')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              WelcomeSection(
-                title: 'Join as ${widget.partnershipLevel}',
-                subtitle:
-                    'Complete your information to begin your partnership journey with JKMG.',
+              const Icon(Icons.favorite, size: 64, color: AppTheme.primaryGold),
+              const SizedBox(height: 16),
+              Text(
+                'Giving Form for $givingType',
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
               ),
-              const SizedBox(height: 24),
-              // Form fields would go here
+              const SizedBox(height: 8),
               const Text(
-                'Partnership signup form will be implemented with backend integration.',
+                'This form will integrate with secure payment gateways including M-Pesa, Bank Transfer, SendWave, and PayPal.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
               ),
               const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                          'Partnership signup will be available soon!',
-                        ),
-                        backgroundColor: AppTheme.primaryGold,
-                      ),
-                    );
-                  },
-                  child: const Text('Complete Partnership Signup'),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGold,
+                  foregroundColor: AppTheme.richBlack,
                 ),
+                child: const Text('Coming Soon'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PartnerDashboardScreen extends StatelessWidget {
+  const PartnerDashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Partner Dashboard')),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.dashboard, size: 64, color: AppTheme.primaryGold),
+              const SizedBox(height: 16),
+              const Text(
+                'Partner Dashboard',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'View giving history, update payment details, and download giving statements. Access exclusive partner messages and devotionals.',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: Colors.grey),
+              ),
+              const SizedBox(height: 24),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppTheme.primaryGold,
+                  foregroundColor: AppTheme.richBlack,
+                ),
+                child: const Text('Coming Soon'),
               ),
             ],
           ),

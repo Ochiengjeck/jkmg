@@ -48,13 +48,7 @@ class PrayerPlanScreen extends ConsumerWidget {
   Widget _buildHeroSection(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
@@ -66,61 +60,106 @@ class PrayerPlanScreen extends ConsumerWidget {
       ),
       child: Column(
         children: [
+          // Image section with fade effect
           Container(
-            width: 80,
-            height: 80,
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGold,
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryGold.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 5,
+            width: double.infinity,
+            height: 180,
+            child: Stack(
+              children: [
+                // Main image
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    height: double.infinity,
+                    decoration: const BoxDecoration(
+                      image: DecorationImage(
+                        image: AssetImage('assets/images/prayer plan.png'),
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
+                ),
+                // Fade gradient at bottom
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: 60,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Theme.of(context).scaffoldBackgroundColor,
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        stops: const [0.0, 0.8],
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.favorite,
-              size: 40,
-              color: AppTheme.richBlack,
-            ),
           ),
-          const SizedBox(height: 16),
-          const Text(
-            'Rhema Prayer Plan',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.primaryGold,
-              letterSpacing: 0.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'A daily prayer schedule designed to keep you aligned in prayer every 6 hours, led by Rev. Julian',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 16),
+          // Text content section
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
             decoration: BoxDecoration(
-              color: AppTheme.primaryGold.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: const Text(
-              'Daily Prayer • Spiritual Growth • Divine Connection',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.primaryGold,
-                fontWeight: FontWeight.w600,
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
               ),
+            ),
+            child: Column(
+              children: [
+                const Text(
+                  'Rhema Prayer Plan',
+                  style: TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w800,
+                    color: AppTheme.primaryGold,
+                    letterSpacing: 0.5,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'A daily prayer schedule designed to keep you aligned in prayer every 6 hours, led by Rev. Julian',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(25),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.4),
+                      width: 1,
+                    ),
+                  ),
+                  child: const Text(
+                    'Daily Prayer • Spiritual Growth • Divine Connection',
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: AppTheme.primaryGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

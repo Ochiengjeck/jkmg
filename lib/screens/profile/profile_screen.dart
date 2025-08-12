@@ -57,20 +57,32 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     final user = ref.watch(currentUserProvider);
 
     return Scaffold(
-      body: Column(
-        children: [
-          _buildHeader(context, user.value),
-          Expanded(
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                _buildProfileTab(user.value),
-                _buildPreferencesTab(),
-                _buildActivityTab(),
-              ],
+      backgroundColor: AppTheme.richBlack,
+      body: SafeArea(
+        child: Column(
+          children: [
+            _buildHeader(context, user.value),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  Container(
+                    color: AppTheme.richBlack,
+                    child: _buildProfileTab(user.value),
+                  ),
+                  Container(
+                    color: AppTheme.richBlack,
+                    child: _buildPreferencesTab(),
+                  ),
+                  Container(
+                    color: AppTheme.richBlack,
+                    child: _buildActivityTab(),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -148,10 +160,13 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               labelColor: Colors.black87,
               unselectedLabelColor: Colors.white60,
               indicatorColor: Colors.transparent,
+              indicatorSize: TabBarIndicatorSize.label,
+              dividerHeight: 0,
               indicator: BoxDecoration(
                 color: AppTheme.primaryGold,
                 borderRadius: BorderRadius.circular(20),
               ),
+              indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
               labelStyle: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
@@ -161,45 +176,9 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 fontWeight: FontWeight.w500,
               ),
               tabs: [
-                Tab(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.person, size: 16),
-                        SizedBox(width: 4),
-                        Text('Profile'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.tune, size: 16),
-                        SizedBox(width: 4),
-                        Text('Settings'),
-                      ],
-                    ),
-                  ),
-                ),
-                Tab(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: const [
-                        Icon(Icons.history, size: 16),
-                        SizedBox(width: 4),
-                        Text('Activity'),
-                      ],
-                    ),
-                  ),
-                ),
+                SizedBox(width: 100, child: Tab(text: 'Profile')),
+                SizedBox(width: 100, child: Tab(text: 'Settings')),
+                SizedBox(width: 100, child: Tab(text: 'Activity')),
               ],
             ),
           ),
@@ -217,46 +196,12 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 8),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: AppTheme.primaryGold.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.person,
-                        color: AppTheme.deepGold,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    const Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Personal Information',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: AppTheme.deepGold,
-                            ),
-                          ),
-                          Text(
-                            'Manage your account details',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+              const Text(
+                'Personal Information',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.primaryGold,
                 ),
               ),
               IconButton(
@@ -510,10 +455,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     ),
                     Text(
                       'Your engagement overview',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   ],
                 ),
@@ -625,7 +567,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                const Flexible(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -639,10 +581,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       Text(
                         'Customize your experience',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
@@ -812,7 +751,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   ),
                 ),
                 const SizedBox(width: 12),
-                const Expanded(
+                const Flexible(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -826,10 +765,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                       ),
                       Text(
                         'Your latest interactions',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),

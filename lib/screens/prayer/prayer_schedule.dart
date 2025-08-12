@@ -268,9 +268,7 @@ class PrayerSchedule extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           ElevatedButton.icon(
-            onPressed: () {
-              // TODO: Navigate to prayer setup or info screen
-            },
+            onPressed: () => _showGetStartedDialog(context),
             icon: const Icon(Icons.play_arrow),
             label: const Text('Get Started'),
             style: ElevatedButton.styleFrom(
@@ -280,6 +278,213 @@ class PrayerSchedule extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  void _showGetStartedDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.lightbulb_outline,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Get Started Guide',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Welcome to the Rhema Prayer Plan! Here\'s how to get started:',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 16),
+              _buildGuideStep(
+                '1',
+                'Scroll to Deeper Prayer Section',
+                'Scroll down to the "Deeper in Prayer" section at the bottom of this page to explore comprehensive prayer resources.',
+                Icons.arrow_downward,
+              ),
+              const SizedBox(height: 12),
+              _buildGuideStep(
+                '2',
+                'Submit Prayer Participation',
+                'Submit today\'s prayer participation to join our global prayer community and track your spiritual journey.',
+                Icons.favorite,
+              ),
+              const SizedBox(height: 12),
+              _buildGuideStep(
+                '3',
+                'Follow Daily Schedule',
+                'Return here daily to follow your personalized 6-hour prayer schedule guided by Rev. Julian.',
+                Icons.schedule,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.auto_awesome,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Start your transformative prayer journey today!',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryGold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Later',
+                style: TextStyle(color: Colors.grey),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: const Row(
+                      children: [
+                        Icon(Icons.arrow_downward, color: Colors.white),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text('Scroll down to find the "Deeper in Prayer" section!'),
+                        ),
+                      ],
+                    ),
+                    backgroundColor: AppTheme.primaryGold,
+                    behavior: SnackBarBehavior.floating,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    duration: const Duration(seconds: 4),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.rocket_launch, size: 16),
+              label: const Text('Let\'s Go!'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildGuideStep(String number, String title, String description, IconData icon) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          width: 24,
+          height: 24,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Center(
+            child: Text(
+              number,
+              style: const TextStyle(
+                color: AppTheme.richBlack,
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    color: AppTheme.primaryGold,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryGold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 4),
+              Text(
+                description,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: Colors.grey.shade600,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 

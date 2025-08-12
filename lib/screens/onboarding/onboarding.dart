@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:jkmg/utils/app_theme.dart';
 import '../../auth/log_in.dart';
 import 'onboarding_data.dart';
 
@@ -31,22 +32,22 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     _pageController = PageController();
 
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 1200),
+      duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
 
     _floatingController = AnimationController(
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 3),
       vsync: this,
     )..repeat(reverse: true);
 
     _particleController = AnimationController(
-      duration: const Duration(seconds: 8),
+      duration: const Duration(seconds: 6),
       vsync: this,
     )..repeat();
 
     _cardController = AnimationController(
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 600),
       vsync: this,
     );
 
@@ -57,14 +58,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
       ),
     );
 
-    _slideAnimation = Tween<double>(begin: 80.0, end: 0.0).animate(
+    _slideAnimation = Tween<double>(begin: 50.0, end: 0.0).animate(
       CurvedAnimation(
         parent: _animationController,
         curve: const Interval(0.3, 1.0, curve: Curves.easeOutBack),
       ),
     );
 
-    _floatingAnimation = Tween<double>(begin: -15.0, end: 15.0).animate(
+    _floatingAnimation = Tween<double>(begin: -10.0, end: 10.0).animate(
       CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
     );
 
@@ -101,7 +102,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
         context,
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
-              LoginScreen(),
+              const LoginScreen(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             return SlideTransition(
               position:
@@ -136,7 +137,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     Navigator.pushReplacement(
       context,
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => LoginScreen(),
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const LoginScreen(),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return FadeTransition(opacity: animation, child: child);
         },
@@ -148,12 +150,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.richBlack,
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [Color(0xFF000000), Color(0xFF1A1A1A), Color(0xFF000000)],
+            colors: [AppTheme.richBlack, Color(0xFF1A1A1A), AppTheme.richBlack],
           ),
         ),
         child: Stack(
@@ -179,10 +182,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               },
             ),
 
-            // Skip button with glassmorphism
+            // Skip button
             Positioned(
-              top: 40,
-              right: 12,
+              top: 50,
+              right: 20,
               child: AnimatedBuilder(
                 animation: _fadeAnimation,
                 builder: (context, child) {
@@ -190,15 +193,15 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                     opacity: _fadeAnimation.value,
                     child: Container(
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(25),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
-                          color: const Color(0xFFD4AF37).withOpacity(0.3),
+                          color: AppTheme.primaryGold.withOpacity(0.3),
                           width: 1,
                         ),
-                        color: Colors.black.withOpacity(0.3),
+                        color: AppTheme.richBlack.withOpacity(0.7),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFFD700).withOpacity(0.1),
+                            color: AppTheme.primaryGold.withOpacity(0.1),
                             blurRadius: 10,
                             spreadRadius: 2,
                           ),
@@ -207,18 +210,18 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       child: Material(
                         color: Colors.transparent,
                         child: InkWell(
-                          borderRadius: BorderRadius.circular(25),
+                          borderRadius: BorderRadius.circular(20),
                           onTap: _skipToLogin,
                           child: const Padding(
                             padding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 10,
+                              horizontal: 16,
+                              vertical: 8,
                             ),
                             child: Text(
                               'Skip',
                               style: TextStyle(
-                                color: Color(0xFFD4AF37),
-                                fontSize: 16,
+                                color: AppTheme.primaryGold,
+                                fontSize: 14,
                                 fontWeight: FontWeight.w600,
                               ),
                             ),
@@ -231,9 +234,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
               ),
             ),
 
-            // Bottom navigation with modern design
+            // Bottom navigation
             Positioned(
-              bottom: 12,
+              bottom: 40,
               left: 24,
               right: 24,
               child: AnimatedBuilder(
@@ -242,14 +245,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                   return Opacity(
                     opacity: _fadeAnimation.value,
                     child: Container(
-                      padding: const EdgeInsets.all(6),
+                      padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
+                        borderRadius: BorderRadius.circular(25),
                         border: Border.all(
-                          color: const Color(0xFFD4AF37).withOpacity(0.2),
+                          color: AppTheme.primaryGold.withOpacity(0.2),
                           width: 1,
                         ),
-                        color: Colors.black.withOpacity(0.4),
+                        color: AppTheme.richBlack.withOpacity(0.8),
                         boxShadow: [
                           BoxShadow(
                             color: Colors.black.withOpacity(0.3),
@@ -263,15 +266,13 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         children: [
                           // Previous button
                           AnimatedOpacity(
-                            opacity: _currentPage > 0 ? 1.0 : 0.0,
+                            opacity: _currentPage > 0 ? 1.0 : 0.3,
                             duration: const Duration(milliseconds: 300),
                             child: Container(
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: const Color(
-                                    0xFFD4AF37,
-                                  ).withOpacity(0.3),
+                                  color: AppTheme.primaryGold.withOpacity(0.3),
                                   width: 1,
                                 ),
                               ),
@@ -280,9 +281,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                     ? _previousPage
                                     : null,
                                 icon: const Icon(
-                                  Icons.arrow_back_ios_new,
-                                  color: Color(0xFFD4AF37),
-                                  size: 20,
+                                  Icons.arrow_back_ios,
+                                  color: AppTheme.primaryGold,
+                                  size: 18,
                                 ),
                               ),
                             ),
@@ -295,16 +296,16 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               (index) => AnimatedContainer(
                                 duration: const Duration(milliseconds: 400),
                                 margin: const EdgeInsets.symmetric(
-                                  horizontal: 6,
+                                  horizontal: 4,
                                 ),
                                 height: 8,
-                                width: _currentPage == index ? 32 : 8,
+                                width: _currentPage == index ? 24 : 8,
                                 decoration: BoxDecoration(
                                   borderRadius: BorderRadius.circular(4),
                                   gradient: _currentPage == index
                                       ? const LinearGradient(
                                           colors: [
-                                            Color(0xFFFFD700),
+                                            AppTheme.primaryGold,
                                             Color(0xFFD4AF37),
                                           ],
                                         )
@@ -315,9 +316,8 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                                   boxShadow: _currentPage == index
                                       ? [
                                           BoxShadow(
-                                            color: const Color(
-                                              0xFFFFD700,
-                                            ).withOpacity(0.5),
+                                            color: AppTheme.primaryGold
+                                                .withOpacity(0.5),
                                             blurRadius: 8,
                                             spreadRadius: 1,
                                           ),
@@ -333,13 +333,14 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
                               gradient: const LinearGradient(
-                                colors: [Color(0xFFFFD700), Color(0xFFD4AF37)],
+                                colors: [
+                                  AppTheme.primaryGold,
+                                  Color(0xFFD4AF37),
+                                ],
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: const Color(
-                                    0xFFFFD700,
-                                  ).withOpacity(0.4),
+                                  color: AppTheme.primaryGold.withOpacity(0.4),
                                   blurRadius: 15,
                                   spreadRadius: 2,
                                 ),
@@ -349,10 +350,10 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                               onPressed: _nextPage,
                               icon: Icon(
                                 _currentPage == onboardingData.length - 1
-                                    ? Icons.check_rounded
-                                    : Icons.arrow_forward_ios_rounded,
-                                color: Colors.black,
-                                size: 22,
+                                    ? Icons.check
+                                    : Icons.arrow_forward_ios,
+                                color: AppTheme.richBlack,
+                                size: 18,
                               ),
                             ),
                           ),
@@ -372,12 +373,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
   Widget _buildOnboardingPage(OnboardingData data) {
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(32.0),
+        padding: const EdgeInsets.all(24.0),
         child: Column(
           children: [
             const Spacer(flex: 2),
 
-            // Image with modern card design
+            // Image/Icon with modern card design
             AnimatedBuilder(
               animation: _cardAnimation,
               builder: (context, child) {
@@ -389,44 +390,56 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                       return Transform.translate(
                         offset: Offset(0, _floatingAnimation.value),
                         child: Container(
-                          width: 180,
-                          height: 180,
+                          width: 160,
+                          height: 160,
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(40),
+                            borderRadius: BorderRadius.circular(30),
                             gradient: RadialGradient(
                               center: Alignment.topLeft,
-                              radius: 1.5,
+                              radius: 1.2,
                               colors: [
-                                const Color(0xFFFFD700).withOpacity(0.1),
-                                const Color(0xFFD4AF37).withOpacity(0.05),
+                                AppTheme.primaryGold.withOpacity(0.1),
+                                AppTheme.primaryGold.withOpacity(0.05),
                                 Colors.transparent,
                               ],
                             ),
                             border: Border.all(
-                              color: const Color(0xFFD4AF37).withOpacity(0.3),
+                              color: AppTheme.primaryGold.withOpacity(0.3),
                               width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: const Color(0xFFFFD700).withOpacity(0.2),
+                                color: AppTheme.primaryGold.withOpacity(0.2),
                                 blurRadius: 30,
                                 spreadRadius: 5,
                                 offset: const Offset(0, 15),
                               ),
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 20,
-                                offset: const Offset(0, 10),
-                              ),
                             ],
                           ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(38),
-                            child: Image.asset(
-                              data.imagePath,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
+                          child: data.imagePath != null
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(28),
+                                  child: Image.asset(
+                                    data.imagePath!,
+                                    fit: BoxFit.cover,
+                                  ),
+                                )
+                              : Container(
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(28),
+                                    gradient: RadialGradient(
+                                      colors: [
+                                        AppTheme.primaryGold.withOpacity(0.3),
+                                        AppTheme.primaryGold.withOpacity(0.1),
+                                      ],
+                                    ),
+                                  ),
+                                  child: Icon(
+                                    data.icon!,
+                                    size: 70,
+                                    color: AppTheme.primaryGold,
+                                  ),
+                                ),
                         ),
                       );
                     },
@@ -437,7 +450,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
 
             const Spacer(flex: 1),
 
-            // Text content with enhanced styling
+            // Text content with reduced font sizes
             AnimatedBuilder(
               animation: _fadeAnimation,
               builder: (context, child) {
@@ -451,7 +464,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                         ShaderMask(
                           shaderCallback: (bounds) => const LinearGradient(
                             colors: [
-                              Color(0xFFFFD700),
+                              AppTheme.primaryGold,
                               Color(0xFFD4AF37),
                               Color(0xFFB8860B),
                             ],
@@ -459,7 +472,7 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           child: Text(
                             data.title,
                             style: const TextStyle(
-                              fontSize: 36,
+                              fontSize: 24,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
                               letterSpacing: -0.5,
@@ -469,29 +482,29 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           ),
                         ),
 
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
 
                         // Subtitle
                         Text(
                           data.subtitle,
                           style: TextStyle(
-                            fontSize: 20,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: const Color(0xFFFFD700).withOpacity(0.9),
+                            color: AppTheme.primaryGold.withOpacity(0.9),
                             letterSpacing: 0.5,
                           ),
                           textAlign: TextAlign.center,
                         ),
 
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         // Description in a card
                         Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: const Color(0xFFD4AF37).withOpacity(0.2),
+                              color: AppTheme.primaryGold.withOpacity(0.2),
                               width: 1,
                             ),
                             color: Colors.black.withOpacity(0.3),
@@ -499,9 +512,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                           child: Text(
                             data.description,
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 13,
                               color: Colors.white.withOpacity(0.9),
-                              height: 1.6,
+                              height: 1.5,
                               letterSpacing: 0.3,
                             ),
                             textAlign: TextAlign.center,
@@ -540,39 +553,12 @@ class _OnboardingScreenState extends State<OnboardingScreen>
                 Icons.fiber_manual_record,
                 Icons.brightness_1_outlined,
               ][index % 4],
-              size: 8 + (random * 12),
-              color: Color(0xFFFFD700).withOpacity(0.4),
+              size: 6 + (random * 8),
+              color: AppTheme.primaryGold.withOpacity(0.4),
             ),
           ),
         );
       },
     );
   }
-}
-
-// Keep your existing OnboardingData and ParticleData classes
-class OnboardingData {
-  final String title;
-  final String subtitle;
-  final String description;
-  final String imagePath;
-  final LinearGradient gradient;
-  final List<ParticleData> particles;
-
-  OnboardingData({
-    required this.title,
-    required this.subtitle,
-    required this.description,
-    required this.imagePath,
-    required this.gradient,
-    required this.particles,
-  });
-}
-
-class ParticleData {
-  final IconData icon;
-  final Offset position;
-  final double speed;
-
-  ParticleData(this.icon, this.position, this.speed);
 }
