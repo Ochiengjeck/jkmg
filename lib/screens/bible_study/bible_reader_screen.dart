@@ -31,6 +31,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
   bool showVerseNumbers = true;
   double fontSize = 18.0;
   bool isNightReading = false;
+  bool _isControlPanelVisible = true;
 
   bool _isLoadingTranslations = false;
   bool _isLoadingBooks = false;
@@ -69,17 +70,33 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
       end: Offset.zero,
     ).animate(CurvedAnimation(parent: _slideController, curve: Curves.easeOut));
 
+    _scrollController.addListener(_scrollListener);
     _loadTranslations();
   }
 
   @override
   void dispose() {
+    _scrollController.removeListener(_scrollListener);
     _searchController.dispose();
     _scrollController.dispose();
     _pageController.dispose();
     _fadeController.dispose();
     _slideController.dispose();
     super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.hasClients) {
+      final currentScrollOffset = _scrollController.offset;
+      const threshold = 30.0;
+
+      final shouldShow = currentScrollOffset < threshold;
+      if (_isControlPanelVisible != shouldShow) {
+        setState(() {
+          _isControlPanelVisible = shouldShow;
+        });
+      }
+    }
   }
 
   Future<void> _loadTranslations() async {
@@ -203,11 +220,18 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
           ),
         ),
         child: SafeArea(
-          child: Column(
+          child: Stack(
             children: [
-              const SizedBox(height: 16),
-              _buildModernControlPanel(),
-              Expanded(child: _buildContent()),
+              Column(
+                children: [
+                  if (_isControlPanelVisible)
+                    const SizedBox(height: 200)
+                  else
+                    const SizedBox(height: 100),
+                  Expanded(child: _buildContent()),
+                ],
+              ),
+              _buildAnimatedControlPanel(),
             ],
           ),
         ),
@@ -271,8 +295,8 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
 
   Widget _buildModernControlPanel() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: Theme.of(context).brightness == Brightness.dark
@@ -305,8 +329,8 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
         children: [
           if (_error != null) ...[
             Container(
-              padding: const EdgeInsets.all(12),
-              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(10),
+              margin: const EdgeInsets.only(bottom: 12),
               decoration: BoxDecoration(
                 color: AppTheme.errorRed.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
@@ -361,7 +385,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
                   },
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: _buildModernDropdown(
                   'Book',
@@ -390,16 +414,13 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Row(
             children: [
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primaryGold.withOpacity(0.3),
-                    ),
                   ),
                   child: TextFormField(
                     initialValue: selectedChapter.toString(),
@@ -453,8 +474,8 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
                     borderRadius: BorderRadius.circular(16),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
+                        horizontal: 18,
+                        vertical: 10,
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
@@ -487,6 +508,17 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
     );
   }
 
+  Widget _buildAnimatedControlPanel() {
+    return AnimatedPositioned(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeInOutCubic,
+      top: _isControlPanelVisible ? 8 : -100,
+      left: 0,
+      right: 0,
+      child: _buildModernControlPanel(),
+    );
+  }
+
   Widget _buildModernDropdown<T>(
     String label,
     T? value,
@@ -508,10 +540,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
         ),
         const SizedBox(height: 8),
         Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
-          ),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
           child: isLoading
               ? Container(
                   height: 48,
@@ -726,8 +755,8 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
         // Chapter Header
         Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-          margin: const EdgeInsets.symmetric(horizontal: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+          margin: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(
             gradient: AppTheme.primaryGoldGradient,
             borderRadius: BorderRadius.circular(16),
@@ -744,14 +773,14 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
               Icon(
                 Icons.auto_stories_rounded,
                 color: AppTheme.richBlack,
-                size: 24,
+                size: 20,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Text(
                   '${selectedBook!.name} Chapter $selectedChapter',
                   style: const TextStyle(
-                    fontSize: 20,
+                    fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: AppTheme.richBlack,
                     letterSpacing: 0.5,
@@ -762,12 +791,12 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
             ],
           ),
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 12),
 
         // Scripture Content
         Expanded(
           child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 16),
+            margin: const EdgeInsets.symmetric(horizontal: 12),
             decoration: BoxDecoration(
               color: backgroundColor,
               borderRadius: BorderRadius.circular(20),
@@ -801,7 +830,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
 
                   // Main content
                   Padding(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.all(18),
                     child: FadeTransition(
                       opacity: _fadeAnimation,
                       child: SlideTransition(
@@ -815,7 +844,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
                                 (verse) =>
                                     _buildModernVerseWidget(verse, textColor),
                               ),
-                              const SizedBox(height: 40),
+                              const SizedBox(height: 30),
                               _buildModernChapterNavigation(),
                             ],
                           ),
@@ -846,10 +875,10 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
             icon: Icon(
               Icons.search_rounded,
               color: AppTheme.richBlack,
-              size: 20,
+              size: 18,
             ),
             onPressed: _showModernSearchDialog,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             constraints: const BoxConstraints(),
             tooltip: 'Search',
           ),
@@ -861,9 +890,9 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
             borderRadius: BorderRadius.circular(8),
           ),
           child: IconButton(
-            icon: Icon(Icons.tune_rounded, color: AppTheme.richBlack, size: 20),
+            icon: Icon(Icons.tune_rounded, color: AppTheme.richBlack, size: 18),
             onPressed: _showModernSettingsDialog,
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(6),
             constraints: const BoxConstraints(),
             tooltip: 'Settings',
           ),
@@ -874,16 +903,16 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
 
   Widget _buildModernVerseWidget(BibleVerse verse, Color textColor) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
+      margin: const EdgeInsets.only(bottom: 12),
       child: RichText(
         text: TextSpan(
           children: [
             if (showVerseNumbers)
               WidgetSpan(
                 child: Container(
-                  margin: const EdgeInsets.only(right: 12),
+                  margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.symmetric(
-                    horizontal: 6,
+                    horizontal: 5,
                     vertical: 2,
                   ),
                   decoration: BoxDecoration(
@@ -918,7 +947,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
 
   Widget _buildModernChapterNavigation() {
     return Container(
-      padding: const EdgeInsets.all(20),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [

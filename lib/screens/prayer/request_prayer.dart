@@ -23,8 +23,17 @@ class _RequestPrayerState extends State<RequestPrayer> {
   final List<String> _prayerCategories = [
     'praise',
     'mercy',
+    'healing',
+    'marriage',
+    'protection',
+    'financial',
+    'family',
+    'career',
+    'salvation',
+    'guidance',
+    'thanksgiving',
+    'other',
   ];
-
 
   Future<void> _submitPrayerRequest() async {
     if (_selectedCategory == null) {
@@ -56,9 +65,7 @@ class _RequestPrayerState extends State<RequestPrayer> {
         _endDate = null;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Prayer request submitted successfully'),
-        ),
+        const SnackBar(content: Text('Prayer request submitted successfully')),
       );
       widget.onPrayerRequestSubmitted();
     } catch (e) {
@@ -175,24 +182,31 @@ class _RequestPrayerState extends State<RequestPrayer> {
           children: _prayerCategories.map((category) {
             final isSelected = _selectedCategory == category;
             return GestureDetector(
-              onTap: _isSubmitting ? null : () {
-                setState(() {
-                  _selectedCategory = category;
-                  if (_selectedCategory != null) {
-                    _startDate = DateTime.now();
-                    _endDate = DateTime.now().add(const Duration(days: 7));
-                  }
-                });
-              },
+              onTap: _isSubmitting
+                  ? null
+                  : () {
+                      setState(() {
+                        _selectedCategory = category;
+                        if (_selectedCategory != null) {
+                          _startDate = DateTime.now();
+                          _endDate = DateTime.now().add(
+                            const Duration(days: 7),
+                          );
+                        }
+                      });
+                    },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
                 decoration: BoxDecoration(
-                  color: isSelected 
+                  color: isSelected
                       ? AppTheme.primaryGold.withOpacity(0.2)
                       : AppTheme.accentGold.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
-                    color: isSelected 
+                    color: isSelected
                         ? AppTheme.primaryGold
                         : AppTheme.primaryGold.withOpacity(0.2),
                     width: isSelected ? 2 : 1,
@@ -203,7 +217,9 @@ class _RequestPrayerState extends State<RequestPrayer> {
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected ? AppTheme.deepGold : Colors.grey.shade700,
+                    color: isSelected
+                        ? AppTheme.deepGold
+                        : Colors.grey.shade700,
                   ),
                 ),
               ),
@@ -246,7 +262,7 @@ class _RequestPrayerState extends State<RequestPrayer> {
                       ),
                     ),
                     Text(
-                      _startDate != null 
+                      _startDate != null
                           ? 'From ${_formatDate(_startDate!)} to ${_formatDate(_endDate!)}'
                           : 'Dates will be set automatically',
                       style: TextStyle(
@@ -276,7 +292,9 @@ class _RequestPrayerState extends State<RequestPrayer> {
                     ),
                   )
                 : const Icon(Icons.send),
-            label: Text(_isSubmitting ? 'Submitting...' : 'Submit Prayer Request'),
+            label: Text(
+              _isSubmitting ? 'Submitting...' : 'Submit Prayer Request',
+            ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryGold,
               foregroundColor: AppTheme.richBlack,
@@ -289,7 +307,6 @@ class _RequestPrayerState extends State<RequestPrayer> {
       ],
     );
   }
-
 
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year}';
