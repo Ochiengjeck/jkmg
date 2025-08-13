@@ -84,11 +84,28 @@ class ApiService {
     }
   }
 
-  Future<User> login({required String phone, required String password}) async {
+  Future<User> login({
+    String? phone, 
+    String? email, 
+    required String password
+  }) async {
+    final Map<String, dynamic> loginData = {'password': password};
+    
+    if (phone != null) {
+      loginData['phone'] = phone;
+    }
+    if (email != null) {
+      loginData['email'] = email;
+    }
+    
+    if (phone == null && email == null) {
+      throw Exception('Either phone or email must be provided');
+    }
+
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
       headers: _getHeaders(false),
-      body: jsonEncode({'phone': phone, 'password': password}),
+      body: jsonEncode(loginData),
     );
 
     if (response.statusCode == 200) {
@@ -103,6 +120,19 @@ class ApiService {
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to login: ${response.body}');
+    }
+  }
+
+  // Forgot Password
+  Future<void> forgotPassword({required String email}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/forgot-password'),
+      headers: _getHeaders(false),
+      body: jsonEncode({'email': email}),
+    );
+
+    if (response.statusCode != 200) {
+      throw Exception('Failed to send password reset email: ${response.body}');
     }
   }
 
@@ -622,19 +652,88 @@ class ApiService {
   // Salvation
   Future<SalvationDecision> recordSalvationDecision({
     required String type,
+    String? name,
+    String? email,
+    String? phone,
+    String? reason,
+    String? testimony,
     required bool audioSent,
   }) async {
+    final Map<String, dynamic> requestData = {
+      'type': type,
+      'audio_sent': audioSent,
+    };
+
+    if (name != null) requestData['name'] = name;
+    if (email != null) requestData['email'] = email;
+    if (phone != null) requestData['phone'] = phone;
+    if (reason != null) requestData['reason'] = reason;
+    if (testimony != null) requestData['testimony'] = testimony;
+
     final response = await http.post(
-      Uri.parse('$baseUrl/salvation'),
+      Uri.parse('$baseUrl/salvation/decisions'),
       headers: _getHeaders(),
-      body: jsonEncode({'type': type, 'audio_sent': audioSent}),
+      body: jsonEncode(requestData),
     );
 
     if (response.statusCode == 201) {
       final data = jsonDecode(response.body);
-      return SalvationDecision.fromJson(data['salvation_decision']);
+      return SalvationDecision.fromJson(data['data']);
     } else {
       throw Exception('Failed to record salvation decision: ${response.body}');
+    }
+  }
+
+  Future<PaginatedResponse<SalvationDecision>> getSalvationDecisions({
+    int? perPage,
+    String? startDate,
+    String? endDate,
+    String? search,
+  }) async {
+    final queryParameters = {
+      if (perPage != null) 'per_page': perPage.toString(),
+      if (startDate != null) 'start_date': startDate,
+      if (endDate != null) 'end_date': endDate,
+      if (search != null) 'search': search,
+    };
+
+    final uri = Uri.parse('$baseUrl/salvation/decisions')
+        .replace(queryParameters: queryParameters);
+
+    final response = await http.get(uri, headers: _getHeaders());
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return PaginatedResponse<SalvationDecision>.fromJson(
+        data,
+        (item) => SalvationDecision.fromJson(item),
+      );
+    } else {
+      throw Exception('Failed to get salvation decisions: ${response.body}');
+    }
+  }
+
+  Future<List<Map<String, String>>> getSalvationTestimonies({
+    int limit = 10,
+    int offset = 0,
+  }) async {
+    final queryParameters = {
+      'limit': limit.toString(),
+      'offset': offset.toString(),
+    };
+
+    final uri = Uri.parse('$baseUrl/salvation/testimonies')
+        .replace(queryParameters: queryParameters);
+
+    final response = await http.get(uri, headers: _getHeaders());
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return List<Map<String, String>>.from(
+        data['data'].map((item) => Map<String, String>.from(item))
+      );
+    } else {
+      throw Exception('Failed to get salvation testimonies: ${response.body}');
     }
   }
 

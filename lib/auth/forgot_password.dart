@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/utils/app_theme.dart';
 
+import '../provider/api_providers.dart';
 import 'log_in.dart';
 
-class ForgotPasswordScreen extends StatefulWidget {
+class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  State<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
+class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
@@ -70,20 +72,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       setState(() {
         _isLoading = true;
       });
-      
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
-      
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-        
-        _showSuccessSnackBar('Password reset link sent to your email');
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => const LoginScreen()),
+
+      try {
+        await ref.read(
+          forgotPasswordProvider({'email': _emailController.text}).future,
         );
+        
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          
+          _showSuccessSnackBar('Password reset link sent to your email. Please check your inbox and spam folder.');
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginScreen()),
+          );
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() {
+            _isLoading = false;
+          });
+          _showErrorSnackBar('Failed to send reset link: $e');
+        }
       }
     }
   }
@@ -93,6 +105,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen>
       SnackBar(
         content: Text(message),
         backgroundColor: Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showErrorSnackBar(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),

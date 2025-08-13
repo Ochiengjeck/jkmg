@@ -20,6 +20,46 @@ final apiServiceProvider = Provider<ApiService>((ref) {
   return ApiService();
 });
 
+// User Session Provider for persistent sessions
+class UserSessionNotifier extends StateNotifier<User?> {
+  UserSessionNotifier() : super(null);
+
+  Future<void> saveUserSession(User user) async {
+    try {
+      final prefs = await PreferenceService.getInstance();
+      await prefs.saveUserSession(user);
+      state = user;
+    } catch (e) {
+      // Handle error
+      rethrow;
+    }
+  }
+
+  Future<void> loadUserSession() async {
+    try {
+      final prefs = await PreferenceService.getInstance();
+      final user = await prefs.getUserSession();
+      state = user;
+    } catch (e) {
+      state = null;
+    }
+  }
+
+  Future<void> clearUserSession() async {
+    try {
+      final prefs = await PreferenceService.getInstance();
+      await prefs.clearUserSession();
+      state = null;
+    } catch (e) {
+      // Handle error
+    }
+  }
+}
+
+final userSessionProvider = StateNotifierProvider<UserSessionNotifier, User?>((ref) {
+  return UserSessionNotifier();
+});
+
 // Authentication state provider
 final authStateProvider = FutureProvider<bool>((ref) async {
   try {
@@ -54,8 +94,20 @@ final loginProvider = FutureProvider.family<User, Map<String, dynamic>>((
 ) async {
   final apiService = ref.read(apiServiceProvider);
   return apiService.login(
-    phone: params['phone'] as String,
+    phone: params['phone'] as String?,
+    email: params['email'] as String?,
     password: params['password'] as String,
+  );
+});
+
+// Forgot Password Provider
+final forgotPasswordProvider = FutureProvider.family<void, Map<String, dynamic>>((
+  ref,
+  params,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.forgotPassword(
+    email: params['email'] as String,
   );
 });
 
@@ -353,9 +405,41 @@ final recordSalvationDecisionProvider =
       final apiService = ref.read(apiServiceProvider);
       return apiService.recordSalvationDecision(
         type: params['type'] as String,
+        name: params['name'] as String?,
+        email: params['email'] as String?,
+        phone: params['phone'] as String?,
+        reason: params['reason'] as String?,
+        testimony: params['testimony'] as String?,
         audioSent: params['audio_sent'] as bool? ?? false,
       );
     });
+
+// Salvation decisions list provider
+final salvationDecisionsProvider =
+    FutureProvider.family<PaginatedResponse<SalvationDecision>, Map<String, dynamic>>((
+      ref,
+      params,
+    ) async {
+      final apiService = ref.read(apiServiceProvider);
+      return apiService.getSalvationDecisions(
+        perPage: params['per_page'] as int?,
+        startDate: params['start_date'] as String?,
+        endDate: params['end_date'] as String?,
+        search: params['search'] as String?,
+      );
+    });
+
+// Get testimonies for salvation corner
+final salvationTestimoniesProvider = FutureProvider.family<List<Map<String, String>>, Map<String, dynamic>>((
+  ref,
+  params,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.getSalvationTestimonies(
+    limit: params['limit'] as int? ?? 10,
+    offset: params['offset'] as int? ?? 0,
+  );
+});
 
 // Notification Providers
 final notificationsProvider =

@@ -38,37 +38,61 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   late Animation<double> _floatingAnimation;
 
   final List<String> _countries = [
-    'Kenya',
-    'United States',
-    'United Kingdom',
-    'France',
-    'Spain',
-    'Other',
+    'Afghanistan', 'Albania', 'Algeria', 'Andorra', 'Angola', 'Argentina', 'Armenia', 'Australia',
+    'Austria', 'Azerbaijan', 'Bahamas', 'Bahrain', 'Bangladesh', 'Barbados', 'Belarus', 'Belgium',
+    'Belize', 'Benin', 'Bhutan', 'Bolivia', 'Bosnia and Herzegovina', 'Botswana', 'Brazil',
+    'Brunei', 'Bulgaria', 'Burkina Faso', 'Burundi', 'Cambodia', 'Cameroon', 'Canada',
+    'Cape Verde', 'Central African Republic', 'Chad', 'Chile', 'China', 'Colombia', 'Comoros',
+    'Congo', 'Costa Rica', 'Croatia', 'Cuba', 'Cyprus', 'Czech Republic', 'Denmark', 'Djibouti',
+    'Dominica', 'Dominican Republic', 'East Timor', 'Ecuador', 'Egypt', 'El Salvador',
+    'Equatorial Guinea', 'Eritrea', 'Estonia', 'Ethiopia', 'Fiji', 'Finland', 'France',
+    'Gabon', 'Gambia', 'Georgia', 'Germany', 'Ghana', 'Greece', 'Grenada', 'Guatemala',
+    'Guinea', 'Guinea-Bissau', 'Guyana', 'Haiti', 'Honduras', 'Hungary', 'Iceland', 'India',
+    'Indonesia', 'Iran', 'Iraq', 'Ireland', 'Israel', 'Italy', 'Jamaica', 'Japan', 'Jordan',
+    'Kazakhstan', 'Kenya', 'Kiribati', 'North Korea', 'South Korea', 'Kuwait', 'Kyrgyzstan',
+    'Laos', 'Latvia', 'Lebanon', 'Lesotho', 'Liberia', 'Libya', 'Liechtenstein', 'Lithuania',
+    'Luxembourg', 'Macedonia', 'Madagascar', 'Malawi', 'Malaysia', 'Maldives', 'Mali', 'Malta',
+    'Marshall Islands', 'Mauritania', 'Mauritius', 'Mexico', 'Micronesia', 'Moldova', 'Monaco',
+    'Mongolia', 'Montenegro', 'Morocco', 'Mozambique', 'Myanmar', 'Namibia', 'Nauru', 'Nepal',
+    'Netherlands', 'New Zealand', 'Nicaragua', 'Niger', 'Nigeria', 'Norway', 'Oman', 'Pakistan',
+    'Palau', 'Panama', 'Papua New Guinea', 'Paraguay', 'Peru', 'Philippines', 'Poland',
+    'Portugal', 'Qatar', 'Romania', 'Russia', 'Rwanda', 'Saint Kitts and Nevis', 'Saint Lucia',
+    'Saint Vincent and the Grenadines', 'Samoa', 'San Marino', 'Sao Tome and Principe',
+    'Saudi Arabia', 'Senegal', 'Serbia', 'Seychelles', 'Sierra Leone', 'Singapore', 'Slovakia',
+    'Slovenia', 'Solomon Islands', 'Somalia', 'South Africa', 'South Sudan', 'Spain', 'Sri Lanka',
+    'Sudan', 'Suriname', 'Swaziland', 'Sweden', 'Switzerland', 'Syria', 'Taiwan', 'Tajikistan',
+    'Tanzania', 'Thailand', 'Togo', 'Tonga', 'Trinidad and Tobago', 'Tunisia', 'Turkey',
+    'Turkmenistan', 'Tuvalu', 'Uganda', 'Ukraine', 'United Arab Emirates', 'United Kingdom',
+    'United States', 'Uruguay', 'Uzbekistan', 'Vanuatu', 'Vatican City', 'Venezuela', 'Vietnam',
+    'Yemen', 'Zambia', 'Zimbabwe'
   ];
 
   final List<String> _timezones = [
-    'Africa/Nairobi',
-    'America/New_York',
-    'Europe/London',
-    'Europe/Paris',
-    'Europe/Madrid',
-    'UTC',
+    'UTC-12:00 (Baker Island)', 'UTC-11:00 (American Samoa)', 'UTC-10:00 (Hawaii)',
+    'UTC-09:30 (Marquesas)', 'UTC-09:00 (Alaska)', 'UTC-08:00 (Pacific)', 'UTC-07:00 (Mountain)',
+    'UTC-06:00 (Central)', 'UTC-05:00 (Eastern)', 'UTC-04:00 (Atlantic)', 'UTC-03:30 (Newfoundland)',
+    'UTC-03:00 (Argentina)', 'UTC-02:00 (South Georgia)', 'UTC-01:00 (Azores)', 'UTC+00:00 (London)',
+    'UTC+01:00 (Central Europe)', 'UTC+02:00 (Eastern Europe)', 'UTC+03:00 (Moscow)',
+    'UTC+03:30 (Iran)', 'UTC+04:00 (Gulf)', 'UTC+04:30 (Afghanistan)', 'UTC+05:00 (Pakistan)',
+    'UTC+05:30 (India)', 'UTC+05:45 (Nepal)', 'UTC+06:00 (Bangladesh)', 'UTC+06:30 (Myanmar)',
+    'UTC+07:00 (Thailand)', 'UTC+08:00 (China)', 'UTC+08:30 (North Korea)', 'UTC+09:00 (Japan)',
+    'UTC+09:30 (Australia Central)', 'UTC+10:00 (Australia Eastern)', 'UTC+10:30 (Lord Howe)',
+    'UTC+11:00 (Solomon Islands)', 'UTC+12:00 (New Zealand)', 'UTC+12:45 (Chatham)',
+    'UTC+13:00 (Tonga)', 'UTC+14:00 (Line Islands)'
   ];
 
   final List<String> _prayerTimesOptions = [
-    '05:00',
     '06:00',
     '12:00',
     '18:00',
-    '21:00',
+    '00:00',
   ];
 
   final Map<String, String> _prayerTimeLabels = {
-    '05:00': 'Dawn',
-    '06:00': 'Morning',
-    '12:00': 'Midday',
-    '18:00': 'Evening',
-    '21:00': 'Night',
+    '06:00': '6 AM',
+    '12:00': '12 PM',
+    '18:00': '6 PM',
+    '00:00': 'Deep in Prayer (12 AM)',
   };
 
   @override
@@ -141,6 +165,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           setState(() {
             _isLoading = false;
           });
+          
+          // Store user session persistently
+          await ref.read(userSessionProvider.notifier).saveUserSession(user);
+          
           _showSuccessSnackBar('Welcome, ${user.name}!');
           Navigator.pushReplacement(
             context,
@@ -693,7 +721,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
               ),
               const SizedBox(width: 12),
               const Text(
-                'Preferred Prayer Times',
+                'Prayer Time',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,
@@ -704,7 +732,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Select times you\'d like to receive prayer reminders (optional)',
+            'Prayer times are: 6 AM, 12 PM, 6 PM, and Deep in Prayer at 12 AM (optional)',
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withOpacity(0.7),

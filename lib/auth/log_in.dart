@@ -18,10 +18,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _phoneController = TextEditingController();
+  final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
   bool _isPasswordVisible = false;
   bool _isLoading = false;
+  bool _isEmailLogin = false; // Toggle between email and phone login
   
   late AnimationController _animationController;
   late AnimationController _floatingController;
@@ -66,6 +68,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   @override
   void dispose() {
     _phoneController.dispose();
+    _emailController.dispose();
     _passwordController.dispose();
     _animationController.dispose();
     _floatingController.dispose();
@@ -79,7 +82,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
       });
 
       final params = {
-        'phone': _phoneController.text,
+        if (_isEmailLogin) 'email': _emailController.text,
+        if (!_isEmailLogin) 'phone': _phoneController.text,
         'password': _passwordController.text,
       };
 
@@ -89,6 +93,10 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           setState(() {
             _isLoading = false;
           });
+          
+          // Store user session persistently
+          await ref.read(userSessionProvider.notifier).saveUserSession(user);
+          
           _showSuccessSnackBar('Welcome back, ${user.name}!');
           Navigator.pushReplacement(
             context,
@@ -243,23 +251,132 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
                           const SizedBox(height: 40),
 
-                          // Phone Number Field
-                          _buildTextField(
-                            controller: _phoneController,
-                            label: 'Phone Number',
-                            hint: '+254712345678',
-                            icon: Icons.phone,
-                            keyboardType: TextInputType.phone,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your phone number';
-                              }
-                              if (!RegExp(r'^\+\d{10,15}$').hasMatch(value)) {
-                                return 'Please enter a valid phone number';
-                              }
-                              return null;
-                            },
+                          // Login Type Toggle
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 20),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _isEmailLogin = false),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: !_isEmailLogin 
+                                            ? AppTheme.primaryGold
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(25),
+                                        border: Border.all(
+                                          color: AppTheme.primaryGold.withOpacity(0.5),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.phone,
+                                            size: 18,
+                                            color: !_isEmailLogin 
+                                                ? AppTheme.richBlack 
+                                                : AppTheme.primaryGold,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Phone',
+                                            style: TextStyle(
+                                              color: !_isEmailLogin 
+                                                  ? AppTheme.richBlack 
+                                                  : AppTheme.primaryGold,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: GestureDetector(
+                                    onTap: () => setState(() => _isEmailLogin = true),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(milliseconds: 200),
+                                      padding: const EdgeInsets.symmetric(vertical: 12),
+                                      decoration: BoxDecoration(
+                                        color: _isEmailLogin 
+                                            ? AppTheme.primaryGold
+                                            : Colors.transparent,
+                                        borderRadius: BorderRadius.circular(25),
+                                        border: Border.all(
+                                          color: AppTheme.primaryGold.withOpacity(0.5),
+                                        ),
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.email,
+                                            size: 18,
+                                            color: _isEmailLogin 
+                                                ? AppTheme.richBlack 
+                                                : AppTheme.primaryGold,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Email',
+                                            style: TextStyle(
+                                              color: _isEmailLogin 
+                                                  ? AppTheme.richBlack 
+                                                  : AppTheme.primaryGold,
+                                              fontWeight: FontWeight.w600,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+
+                          // Dynamic Input Field (Phone or Email)
+                          _isEmailLogin
+                              ? _buildTextField(
+                                  controller: _emailController,
+                                  label: 'Email Address',
+                                  hint: 'example@email.com',
+                                  icon: Icons.email,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your email address';
+                                    }
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return 'Please enter a valid email address';
+                                    }
+                                    return null;
+                                  },
+                                )
+                              : _buildTextField(
+                                  controller: _phoneController,
+                                  label: 'Phone Number',
+                                  hint: '+254712345678',
+                                  icon: Icons.phone,
+                                  keyboardType: TextInputType.phone,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your phone number';
+                                    }
+                                    if (!RegExp(r'^\+\d{10,15}$').hasMatch(value)) {
+                                      return 'Please enter a valid phone number';
+                                    }
+                                    return null;
+                                  },
+                                ),
                           
                           const SizedBox(height: 20),
                           

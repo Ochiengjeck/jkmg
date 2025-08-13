@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter/material.dart';
+import '../models/user.dart';
 
 class PreferenceService {
   static PreferenceService? _instance;
@@ -66,7 +67,7 @@ class PreferenceService {
   }
 
   List<String> getPrayerTimes() {
-    return _prefs?.getStringList(_prayerTimesKey) ?? 
+    return _prefs?.getStringList(_prayerTimesKey) ??
         ['06:00', '12:00', '18:00']; // Default prayer times
   }
 
@@ -238,10 +239,37 @@ class PreferenceService {
     return _prefs?.getString(_userIdKey);
   }
 
+  // User Session Management
+  static const String _userSessionKey = 'user_session';
+
+  Future<void> saveUserSession(User user) async {
+    final userJson = user.toJson();
+    await _prefs?.setString(_userSessionKey, json.encode(userJson));
+    await saveUserId(user.id.toString());
+  }
+
+  Future<User?> getUserSession() async {
+    final userSessionString = _prefs?.getString(_userSessionKey);
+    if (userSessionString != null) {
+      try {
+        final userJson = json.decode(userSessionString) as Map<String, dynamic>;
+        return User.fromJson(userJson);
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  Future<void> clearUserSession() async {
+    await _prefs?.remove(_userSessionKey);
+  }
+
   Future<void> clearAuthData() async {
     await _prefs?.remove(_authTokenKey);
     await _prefs?.remove(_userIdKey);
     await _prefs?.remove(_userDataKey);
+    await _prefs?.remove(_userSessionKey);
   }
 
   // Generic methods for custom data
@@ -300,11 +328,11 @@ extension PreferenceExtensions on PreferenceService {
   bool get isDarkMode => getThemeMode() == ThemeMode.dark;
   bool get isLoggedIn => getAuthToken() != null;
   bool get hasUserData => getUserData() != null;
-  
+
   Future<void> toggleTheme() async {
     final currentMode = getThemeMode();
-    final newMode = currentMode == ThemeMode.light 
-        ? ThemeMode.dark 
+    final newMode = currentMode == ThemeMode.light
+        ? ThemeMode.dark
         : ThemeMode.light;
     await setThemeMode(newMode);
   }
