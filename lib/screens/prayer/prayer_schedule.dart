@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../models/prayer.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class PrayerSchedule extends StatelessWidget {
   final DeeperPrayerInfo? prayerSchedule;
@@ -27,11 +28,7 @@ class PrayerSchedule extends StatelessWidget {
       return CustomCard(
         child: Column(
           children: [
-            Icon(
-              Icons.schedule,
-              size: 48,
-              color: Colors.grey.withOpacity(0.5),
-            ),
+            Icon(Icons.schedule, size: 48, color: Colors.grey.withOpacity(0.5)),
             const SizedBox(height: 16),
             const Text(
               'No prayer schedule available',
@@ -52,12 +49,6 @@ class PrayerSchedule extends StatelessWidget {
         const SizedBox(height: 16),
         _buildPrayerTimes(context),
         const SizedBox(height: 16),
-        if (activePrayer != null) ...
-          _buildActivePrayerSection(context, activePrayer),
-        if (completedPrayers?.isNotEmpty == true) ...
-          _buildCompletedPrayersSection(context, completedPrayers!),
-        if (activePrayer == null && (completedPrayers?.isEmpty != false))
-          _buildEmptyState(context),
       ],
     );
   }
@@ -109,126 +100,114 @@ class PrayerSchedule extends StatelessWidget {
 
   Widget _buildPrayerTimes(BuildContext context) {
     final prayerTimes = [
-      {'time': '6:00 AM', 'icon': Icons.wb_sunny, 'label': 'Morning Prayer'},
-      {'time': '12:00 PM', 'icon': Icons.wb_sunny_outlined, 'label': 'Noon Prayer'},
-      {'time': '6:00 PM', 'icon': Icons.wb_twilight, 'label': 'Evening Prayer'},
+      {
+        'time': '6:00 AM',
+        'hour': 6,
+        'icon': Icons.wb_sunny,
+        'label': 'Morning Prayer',
+      },
+      {
+        'time': '12:00 PM',
+        'hour': 12,
+        'icon': Icons.wb_sunny_outlined,
+        'label': 'Noon Prayer',
+      },
+      {
+        'time': '6:00 PM',
+        'hour': 18,
+        'icon': Icons.wb_twilight,
+        'label': 'Evening Prayer',
+      },
     ];
+
+    final currentHour = DateTime.now().hour;
 
     return Row(
       children: prayerTimes.map((prayer) {
         final index = prayerTimes.indexOf(prayer);
+        final prayerHour = prayer['hour'] as int;
+        final isActive = _isPrayerTimeActive(prayerHour, currentHour);
+
         return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(
-              right: index < prayerTimes.length - 1 ? 8 : 0,
-            ),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppTheme.accentGold.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-            ),
-            child: Column(
-              children: [
-                Icon(
-                  prayer['icon'] as IconData,
-                  color: AppTheme.primaryGold,
-                  size: 20,
+          child: GestureDetector(
+            onTap: () => _onPrayerTimeClicked(context, prayer, isActive),
+            child: Container(
+              margin: EdgeInsets.only(
+                right: index < prayerTimes.length - 1 ? 8 : 0,
+              ),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isActive
+                    ? AppTheme.primaryGold.withOpacity(0.2)
+                    : AppTheme.accentGold.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: isActive
+                      ? AppTheme.primaryGold
+                      : AppTheme.primaryGold.withOpacity(0.2),
+                  width: isActive ? 2 : 1,
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  prayer['time'] as String,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: AppTheme.deepGold,
+                boxShadow: isActive
+                    ? [
+                        BoxShadow(
+                          color: AppTheme.primaryGold.withOpacity(0.3),
+                          blurRadius: 8,
+                          spreadRadius: 1,
+                        ),
+                      ]
+                    : null,
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    prayer['icon'] as IconData,
+                    color: isActive
+                        ? AppTheme.primaryGold
+                        : AppTheme.primaryGold.withOpacity(0.6),
+                    size: isActive ? 24 : 20,
                   ),
-                ),
-                Text(
-                  prayer['label'] as String,
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: Colors.grey.shade600,
+                  const SizedBox(height: 6),
+                  Text(
+                    prayer['time'] as String,
+                    style: TextStyle(
+                      fontSize: isActive ? 13 : 12,
+                      fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
+                      color: isActive
+                          ? AppTheme.deepGold
+                          : AppTheme.deepGold.withOpacity(0.7),
+                    ),
                   ),
-                  textAlign: TextAlign.center,
-                ),
-              ],
+                  Text(
+                    prayer['label'] as String,
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: isActive
+                          ? AppTheme.primaryGold
+                          : Colors.grey.shade600,
+                      fontWeight: isActive
+                          ? FontWeight.w600
+                          : FontWeight.normal,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                  if (isActive) ...[
+                    const SizedBox(height: 4),
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AppTheme.primaryGold,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
             ),
           ),
         );
       }).toList(),
     );
-  }
-
-  List<Widget> _buildActivePrayerSection(BuildContext context, DeeperPrayerParticipation activePrayer) {
-    return [
-      const SizedBox(height: 20),
-      Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: AppTheme.successGreen.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: const Icon(
-              Icons.play_circle_filled,
-              color: AppTheme.successGreen,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
-          const Text(
-            'Active Prayer Session',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.successGreen,
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      _buildPrayerCard(context, activePrayer, true),
-    ];
-  }
-
-  List<Widget> _buildCompletedPrayersSection(BuildContext context, List<DeeperPrayerParticipation> completedPrayers) {
-    return [
-      const SizedBox(height: 20),
-      Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(6),
-            decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Icon(
-              Icons.check_circle,
-              color: Colors.grey.shade600,
-              size: 16,
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Recent Prayer History',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-          ),
-        ],
-      ),
-      const SizedBox(height: 8),
-      ...completedPrayers.take(3).map(
-        (prayer) => Padding(
-          padding: const EdgeInsets.only(bottom: 8.0),
-          child: _buildPrayerCard(context, prayer, false),
-        ),
-      ),
-    ];
   }
 
   Widget _buildEmptyState(BuildContext context) {
@@ -281,6 +260,214 @@ class PrayerSchedule extends StatelessWidget {
     );
   }
 
+  bool _isPrayerTimeActive(int prayerHour, int currentHour) {
+    // Prayer is active from the scheduled hour to the next scheduled hour
+    if (prayerHour == 6) {
+      return currentHour >= 6 && currentHour < 12;
+    } else if (prayerHour == 12) {
+      return currentHour >= 12 && currentHour < 18;
+    } else if (prayerHour == 18) {
+      return currentHour >= 18 || currentHour < 6;
+    }
+    return false;
+  }
+
+  void _onPrayerTimeClicked(
+    BuildContext context,
+    Map<String, dynamic> prayer,
+    bool isActive,
+  ) {
+    if (isActive) {
+      _playPrayerAudio(context, prayer);
+    } else {
+      _showInactivePrayerDialog(context, prayer);
+    }
+  }
+
+  void _playPrayerAudio(BuildContext context, Map<String, dynamic> prayer) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.play_circle_filled,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '${prayer['label']}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text(
+                'Playing prayer audio...',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.volume_up,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Audio is now playing...',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryGold,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Stop', style: TextStyle(color: Colors.red)),
+            ),
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+              ),
+              child: const Text('Continue'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showInactivePrayerDialog(
+    BuildContext context,
+    Map<String, dynamic> prayer,
+  ) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.access_time,
+                  color: Colors.orange,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Prayer Time Inactive',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.orange,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                'The ${prayer['label']} is currently inactive.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.notifications_active,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Find this prayer in your notifications when it\'s time!',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryGold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+              ),
+              child: const Text('Got it'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showGetStartedDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -322,10 +509,7 @@ class PrayerSchedule extends StatelessWidget {
             children: [
               const Text(
                 'Welcome to the Rhema Prayer Plan! Here\'s how to get started:',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 16),
               _buildGuideStep(
@@ -384,10 +568,7 @@ class PrayerSchedule extends StatelessWidget {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: const Text(
-                'Later',
-                style: TextStyle(color: Colors.grey),
-              ),
+              child: const Text('Later', style: TextStyle(color: Colors.grey)),
             ),
             ElevatedButton.icon(
               onPressed: () {
@@ -399,7 +580,9 @@ class PrayerSchedule extends StatelessWidget {
                         Icon(Icons.arrow_downward, color: Colors.white),
                         SizedBox(width: 8),
                         Expanded(
-                          child: Text('Scroll down to find the "Deeper in Prayer" section!'),
+                          child: Text(
+                            'Scroll down to find the "Deeper in Prayer" section!',
+                          ),
                         ),
                       ],
                     ),
@@ -425,7 +608,12 @@ class PrayerSchedule extends StatelessWidget {
     );
   }
 
-  Widget _buildGuideStep(String number, String title, String description, IconData icon) {
+  Widget _buildGuideStep(
+    String number,
+    String title,
+    String description,
+    IconData icon,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -454,11 +642,7 @@ class PrayerSchedule extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(
-                    icon,
-                    color: AppTheme.primaryGold,
-                    size: 16,
-                  ),
+                  Icon(icon, color: AppTheme.primaryGold, size: 16),
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
@@ -512,11 +696,7 @@ class PrayerSchedule extends StatelessWidget {
               color: statusColor.withOpacity(0.2),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              statusIcon,
-              color: statusColor,
-              size: 20,
-            ),
+            child: Icon(statusIcon, color: statusColor, size: 20),
           ),
           const SizedBox(width: 12),
           Expanded(

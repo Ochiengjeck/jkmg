@@ -186,7 +186,7 @@ These replace the previous "Preferred Prayer Times" concept with fixed, universa
   }
 }
 ```
-
+<!-- 
 ### 2. Get Testimonies
 **Endpoint:** `GET /api/salvation/testimonies`
 
@@ -215,7 +215,7 @@ These replace the previous "Preferred Prayer Times" concept with fixed, universa
 }
 ```
 
-## Notification System API Endpoints
+## Notification System API Endpoints -->
 
 ### 3. Send Audio Prayer Notification
 **Endpoint:** `POST /api/notifications/audio-prayer`
