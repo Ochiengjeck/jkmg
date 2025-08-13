@@ -41,6 +41,7 @@ dependencies:
   intl: ^0.20.2
   url_launcher: ^6.3.2
   flutter_launcher_icons: ^0.14.4
+  # youtube_player_flutter: ^9.0.3  # Temporarily disabled for Windows build
 
 dev_dependencies:
   flutter_test:

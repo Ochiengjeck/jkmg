@@ -11,7 +11,8 @@ class BusinessForumScreen extends ConsumerStatefulWidget {
   const BusinessForumScreen({super.key});
 
   @override
-  ConsumerState<BusinessForumScreen> createState() => _BusinessForumScreenState();
+  ConsumerState<BusinessForumScreen> createState() =>
+      _BusinessForumScreenState();
 }
 
 class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
@@ -44,8 +45,8 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+        );
 
     _heroController.forward();
     _fadeController.forward();
@@ -63,7 +64,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
     return Scaffold(
       backgroundColor: AppTheme.richBlack,
       appBar: AppBar(
-        title: const Text('7D JKMG Business Forum'),
+        title: const Text('JKMG Business Forum'),
         centerTitle: true,
         backgroundColor: AppTheme.richBlack,
         foregroundColor: AppTheme.primaryGold,
@@ -140,7 +141,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                 ),
                 const SizedBox(height: 16),
                 const Text(
-                  '7D JKMG Business Forum',
+                  'JKMG Business Forum',
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
@@ -151,7 +152,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Faith-Driven Entrepreneurship',
+                  'Kingdom-Based  Entrepreneurship',
                   style: TextStyle(
                     fontSize: 14,
                     color: Colors.white70,
@@ -162,7 +163,10 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryGold.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -205,10 +209,12 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                    ),
                   ),
                   child: const Text(
-                    'JKMG Business Forum is a structured gathering where business owners, SMEs, entrepreneurs, investors, and industry professionals come together to exchange ideas, discuss opportunities, share expertise, and build professional networks.\n\nThe main goal is to build faith-driven entrepreneurs, promote collaboration, inspire innovation, and create opportunities for growth amongst the Christian business community.',
+                    'JKMG Business Forum is a structured gathering where business owners, SMEs, entrepreneurs, investors, and industry professionals come together to exchange ideas, discuss opportunities, share expertise, and build professional networks.\n\nThe main goal is to build Kingdom-Based  entrepreneurs, promote collaboration, inspire innovation, and create opportunities for growth amongst the Christian business community.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white70,
@@ -272,15 +278,17 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String title, String description, Color color) {
+  Widget _buildFeatureCard(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            color.withOpacity(0.1),
-            color.withOpacity(0.05),
-          ],
+          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -343,17 +351,41 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Expanded(child: _buildNetworkingCard('500+', 'Business\nOwners', Icons.business_center)),
+                  Expanded(
+                    child: _buildNetworkingCard(
+                      '500+',
+                      'Business\nOwners',
+                      Icons.business_center,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildNetworkingCard('150+', 'Investors', Icons.attach_money)),
+                  Expanded(
+                    child: _buildNetworkingCard(
+                      '150+',
+                      'Investors',
+                      Icons.attach_money,
+                    ),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  Expanded(child: _buildNetworkingCard('200+', 'Entrepreneurs', Icons.lightbulb)),
+                  Expanded(
+                    child: _buildNetworkingCard(
+                      '200+',
+                      'Entrepreneurs',
+                      Icons.lightbulb,
+                    ),
+                  ),
                   const SizedBox(width: 12),
-                  Expanded(child: _buildNetworkingCard('75+', 'Industry\nExperts', Icons.star)),
+                  Expanded(
+                    child: _buildNetworkingCard(
+                      '75+',
+                      'Industry\nExperts',
+                      Icons.star,
+                    ),
+                  ),
                 ],
               ),
             ],
@@ -368,7 +400,10 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryGold.withOpacity(0.1), AppTheme.accentGold.withOpacity(0.05)],
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.accentGold.withOpacity(0.05),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -452,7 +487,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Connect with faith-driven entrepreneurs and business leaders. Build meaningful relationships while growing your business with Kingdom principles.',
+                  'Connect with Kingdom-Based  entrepreneurs and business leaders. Build meaningful relationships while growing your business with Kingdom principles.',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.white70,
@@ -491,7 +526,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
 
   Widget _buildUpcomingBusinessEvents() {
     final allEventsAsync = ref.watch(allEventsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -502,7 +537,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
             children: [
               const SectionHeader(
                 title: 'Upcoming Business Events',
-                subtitle: 'Join our faith-driven business gatherings',
+                subtitle: 'Join our Kingdom-Based  business gatherings',
               ),
               const SizedBox(height: 12),
               allEventsAsync.when(
@@ -510,11 +545,11 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                   final businessEvents = response.data
                       .where((event) => event.type.value == 'business_forum')
                       .toList();
-                  
+
                   if (businessEvents.isEmpty) {
                     return _buildEmptyEventsState();
                   }
-                  
+
                   return Column(
                     children: businessEvents.map((event) {
                       return Container(
@@ -550,7 +585,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
 
   Widget _buildMyBusinessRegistrations() {
     final myRegistrationsAsync = ref.watch(myRegistrationsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -569,11 +604,11 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                   final businessRegistrations = response.data
                       .where((reg) => reg.event?.type.value == 'business_forum')
                       .toList();
-                  
+
                   if (businessRegistrations.isEmpty) {
                     return _buildEmptyRegistrationsState();
                   }
-                  
+
                   return Column(
                     children: businessRegistrations.map((registration) {
                       final event = registration.event!;
@@ -646,7 +681,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'New business forum events will appear here when scheduled.\nConnect with faith-driven entrepreneurs!',
+            'New business forum events will appear here when scheduled.\nConnect with Kingdom-Based  entrepreneurs!',
             style: TextStyle(
               color: Colors.white.withOpacity(0.7),
               fontSize: 14,
@@ -738,10 +773,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [
-            Colors.red.withOpacity(0.1),
-            Colors.red.withOpacity(0.05),
-          ],
+          colors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.05)],
         ),
         border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),

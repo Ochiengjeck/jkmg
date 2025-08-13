@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/event.dart';
+// import 'package:jkmg/widgets/youtube_video_player.dart';  // Temporarily disabled for Windows build
 
 import '../auth/log_in.dart';
 import 'about/about_screen.dart';
@@ -2231,36 +2232,54 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showVideoDialog(BuildContext context) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Introductory Video'),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.video_library, size: 64, color: Color(0xFFFFD700)),
-            SizedBox(height: 16),
-            Text(
-              'Welcome video from Rev. Julian Kyula introducing JKMG ministry and vision.',
-              textAlign: TextAlign.center,
-            ),
-          ],
+      barrierDismissible: true,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        insetPadding: const EdgeInsets.all(20),
+        child: Container(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.of(context).size.width - 40,
+            maxHeight: MediaQuery.of(context).size.height - 100,
+          ),
+          child: Stack(
+            children: [
+              // Video Player
+              // YouTubeVideoPlayer(
+              //   videoUrl: 'https://youtu.be/N-NJyLkJYPw?t=1935',
+              //   title: 'Welcome to JKMG Ministry',
+              //   description: 'Join Rev. Julian Kyula as he shares the vision and mission of Julian Kyula Ministry Global (JKMG). Discover how we are transforming lives and nations through the power of God\'s Word, apostolic insight, and marketplace impact. This introductory video will give you a comprehensive overview of our ministry, our core values, and the divine mandate we carry to build God\'s Kingdom across the globe.',
+              // ),
+
+              // Close Button
+              Positioned(
+                top: 10,
+                right: 10,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.7),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.close,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement video player
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFFFD700),
-              foregroundColor: const Color(0xFF1A1A1A),
-            ),
-            child: const Text('Play Video'),
-          ),
-        ],
       ),
     );
   }

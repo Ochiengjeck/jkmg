@@ -141,10 +141,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                         child: Container(
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
-                              colors: [
-                                Colors.transparent,
-                                AppTheme.richBlack,
-                              ],
+                              colors: [Colors.transparent, AppTheme.richBlack],
                               begin: Alignment.topCenter,
                               end: Alignment.bottomCenter,
                               stops: const [0.0, 0.8],
@@ -158,7 +155,10 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                 // Text content section
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   decoration: const BoxDecoration(
                     color: AppTheme.richBlack,
                     borderRadius: BorderRadius.only(
@@ -191,7 +191,10 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 8,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryGold.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(25),
@@ -333,8 +336,8 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                       const SizedBox(height: 16),
                       _buildCategoryCard(
                         Icons.business,
-                        '7D JKMG Business Forum',
-                        'Faith-driven entrepreneurs building professional networks',
+                        'JKMG Business Forum',
+                        'Kingdom-Based  entrepreneurs building professional networks',
                         AppTheme.successGreen,
                         3,
                         businessCount,
@@ -395,8 +398,8 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                     const SizedBox(height: 16),
                     _buildCategoryCard(
                       Icons.business,
-                      '7D JKMG Business Forum',
-                      'Faith-driven entrepreneurs building professional networks',
+                      'JKMG Business Forum',
+                      'Kingdom-Based  entrepreneurs building professional networks',
                       AppTheme.successGreen,
                       3,
                       0,
@@ -456,8 +459,8 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                     const SizedBox(height: 16),
                     _buildCategoryCard(
                       Icons.business,
-                      '7D JKMG Business Forum',
-                      'Faith-driven entrepreneurs building professional networks',
+                      'JKMG Business Forum',
+                      'Kingdom-Based  entrepreneurs building professional networks',
                       AppTheme.successGreen,
                       3,
                       0,

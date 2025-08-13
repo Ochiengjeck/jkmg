@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../models/event.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -45,8 +44,8 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+        );
 
     _heroController.forward();
     _fadeController.forward();
@@ -170,14 +169,19 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                         final rxpEvents = response.data
                             .where((event) => event.type.value == 'rxp')
                             .toList();
-                        
+
                         if (rxpEvents.isNotEmpty) {
                           final nextEvent = rxpEvents.first;
                           final startDate = DateTime.parse(nextEvent.startDate);
-                          final formattedDate = DateFormat('MMM d, y').format(startDate);
-                          
+                          final formattedDate = DateFormat(
+                            'MMM d, y',
+                          ).format(startDate);
+
                           return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
                             decoration: BoxDecoration(
                               color: AppTheme.primaryGold.withOpacity(0.2),
                               borderRadius: BorderRadius.circular(20),
@@ -192,9 +196,12 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                             ),
                           );
                         }
-                        
+
                         return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: AppTheme.primaryGold.withOpacity(0.2),
                             borderRadius: BorderRadius.circular(20),
@@ -210,7 +217,10 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                         );
                       },
                       loading: () => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryGold.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -225,7 +235,10 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                         ),
                       ),
                       error: (_, __) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppTheme.primaryGold.withOpacity(0.2),
                           borderRadius: BorderRadius.circular(20),
@@ -271,7 +284,9 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                    ),
                   ),
                   child: const Text(
                     '"RXP" stands for Rhema Xperience—an interdenominational weekly service held at All Saints Cathedral in Nairobi, led by Rev. Julian Kyula.\n\nRooted in the Greek word Rhema, meaning \'the spoken word of God,\' the service is designed to usher believers into a deep encounter with the power of God\'s Word. "Ruach," a Hebrew term meaning wind, breath, or spirit, reflects the presence and move of the Holy Spirit.',
@@ -304,13 +319,29 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                 subtitle: 'What to expect at RXP',
               ),
               const SizedBox(height: 12),
-              _buildDetailCard(Icons.access_time, 'Schedule', 'Every Wednesday from 5:00 PM to 9:00 PM'),
+              _buildDetailCard(
+                Icons.access_time,
+                'Schedule',
+                'Every Wednesday from 5:00 PM to 9:00 PM',
+              ),
               const SizedBox(height: 12),
-              _buildDetailCard(Icons.location_on, 'Venue', 'All Saints Cathedral, Nairobi'),
+              _buildDetailCard(
+                Icons.location_on,
+                'Venue',
+                'All Saints Cathedral, Nairobi',
+              ),
               const SizedBox(height: 12),
-              _buildDetailCard(Icons.people, 'Community', 'Interdenominational worship experience'),
+              _buildDetailCard(
+                Icons.people,
+                'Community',
+                'Interdenominational worship experience',
+              ),
               const SizedBox(height: 12),
-              _buildDetailCard(Icons.mic, 'Leadership', 'Led by Rev. Julian Kyula'),
+              _buildDetailCard(
+                Icons.mic,
+                'Leadership',
+                'Led by Rev. Julian Kyula',
+              ),
             ],
           ),
         );
@@ -421,15 +452,17 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
     );
   }
 
-  Widget _buildFeatureCard(IconData icon, String title, String description, Color color) {
+  Widget _buildFeatureCard(
+    IconData icon,
+    String title,
+    String description,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            color.withOpacity(0.1),
-            color.withOpacity(0.05),
-          ],
+          colors: [color.withOpacity(0.1), color.withOpacity(0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -588,7 +621,7 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
 
   Widget _buildUpcomingRXPEvents() {
     final allEventsAsync = ref.watch(allEventsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -607,11 +640,11 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                   final rxpEvents = response.data
                       .where((event) => event.type.value == 'rxp')
                       .toList();
-                  
+
                   if (rxpEvents.isEmpty) {
                     return _buildEmptyEventsState();
                   }
-                  
+
                   return Column(
                     children: rxpEvents.map((event) {
                       return Container(
@@ -647,7 +680,7 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
 
   Widget _buildMyRXPRegistrations() {
     final myRegistrationsAsync = ref.watch(myRegistrationsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -666,11 +699,11 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
                   final rxpRegistrations = response.data
                       .where((reg) => reg.event?.type.value == 'rxp')
                       .toList();
-                  
+
                   if (rxpRegistrations.isEmpty) {
                     return _buildEmptyRegistrationsState();
                   }
-                  
+
                   return Column(
                     children: rxpRegistrations.map((registration) {
                       final event = registration.event!;
@@ -835,10 +868,7 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [
-            Colors.red.withOpacity(0.1),
-            Colors.red.withOpacity(0.05),
-          ],
+          colors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.05)],
         ),
         border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),
