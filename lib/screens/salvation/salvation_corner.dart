@@ -5,6 +5,9 @@ import '../../models/salvation.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../testimonies/testimonies_screen.dart';
+import '../testimonies/submit_testimony_screen.dart';
+import '../testimonies/my_testimonies_screen.dart';
 
 enum SalvationType { giveLifeToChrist, rededicateLifeToChrist, testimony }
 
@@ -632,186 +635,219 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   }
 
   Widget _buildTestimonyForm(BuildContext context) {
-    final formKey = GlobalKey<FormState>();
-    final TextEditingController nameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController testimonyController = TextEditingController();
-
     return Column(
       children: [
         _buildTestimonySlides(context),
         const SizedBox(height: 24),
         const SectionHeader(
-          title: 'Share Your Testimony',
-          subtitle: 'Tell others how God has worked in your life',
+          title: 'Testimonies Community',
+          subtitle: 'Share your story and read testimonies of God\'s goodness',
         ),
         const SizedBox(height: 12),
         CustomCard(
-          child: Form(
-            key: formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                TextFormField(
-                  controller: nameController,
-                  decoration: InputDecoration(
-                    labelText: 'Full Name',
-                    labelStyle: const TextStyle(color: AppTheme.primaryGold),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.primaryGold),
-                    ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    Icons.favorite,
+                    color: AppTheme.primaryGold,
+                    size: 24,
                   ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your full name';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: emailController,
-                  decoration: InputDecoration(
-                    labelText: 'Email Address',
-                    labelStyle: const TextStyle(color: AppTheme.primaryGold),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.primaryGold),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email address';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: testimonyController,
-                  maxLines: 5,
-                  decoration: InputDecoration(
-                    labelText: 'Your Testimony',
-                    hintText: 'Share how God has worked in your life...',
-                    labelStyle: const TextStyle(color: AppTheme.primaryGold),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.primaryGold),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please share your testimony';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      if (formKey.currentState!.validate()) {
-                        try {
-                          await ref.read(
-                            recordSalvationDecisionProvider({
-                              'type': 'testimony',
-                              'name': nameController.text,
-                              'email': emailController.text,
-                              'testimony': testimonyController.text,
-                            }).future,
-                          );
-
-                          if (mounted) {
-                            _showSuccessMessage(
-                              context,
-                              'Your testimony has been submitted! Thank you for sharing how God has worked in your life.',
-                            );
-                          }
-
-                          nameController.clear();
-                          emailController.clear();
-                          testimonyController.clear();
-                        } catch (e) {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
-                            );
-                          }
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGold,
-                      foregroundColor: AppTheme.richBlack,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: const Text(
-                      'Submit Testimony',
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Join Our Testimonies Community',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        color: AppTheme.primaryGold,
                       ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Share your testimony of how God has worked in your life and read inspiring stories from our community members.',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey.shade700,
+                  height: 1.4,
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 24),
+              // Quick actions grid
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTestimonyActionCard(
+                      context,
+                      'View All\nTestimonies',
+                      Icons.visibility,
+                      Colors.blue,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TestimoniesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _buildTestimonyActionCard(
+                      context,
+                      'Share Your\nTestimony',
+                      Icons.add,
+                      Colors.green,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const SubmitTestimonyScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildTestimonyActionCard(
+                      context,
+                      'My\nTestimonies',
+                      Icons.person,
+                      Colors.orange,
+                      () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const MyTestimoniesScreen(),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Container(
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade100,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.info_outline,
+                            color: Colors.grey.shade500,
+                            size: 24,
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Learn More',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'All testimonies are reviewed before being published to ensure they align with our community guidelines.',
+                        style: TextStyle(
+                          color: AppTheme.primaryGold,
+                          fontSize: 12,
+                          height: 1.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
       ],
     );
   }
 
+  Widget _buildTestimonyActionCard(
+    BuildContext context,
+    String title,
+    IconData icon,
+    Color color,
+    VoidCallback onTap,
+  ) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        height: 80,
+        decoration: BoxDecoration(
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withOpacity(0.3)),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              icon,
+              color: color,
+              size: 24,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title,
+              style: TextStyle(
+                color: color,
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget _buildTestimonySlides(BuildContext context) {
-    final List<Map<String, String>> testimonies = [
-      {
-        'title': 'From Darkness to Light',
-        'content':
-            'I was lost in addiction and despair, but God\'s love found me. Through Rev Julian\'s teachings and this community, I found hope and purpose. Today, I am free and serving God with joy.',
-        'author': 'Sarah M.',
-      },
-      {
-        'title': 'Healing in Christ',
-        'content':
-            'After years of struggling with depression, I gave my life to Christ. The peace that surpassed understanding filled my heart. God healed me completely and gave me a new beginning.',
-        'author': 'Michael K.',
-      },
-      {
-        'title': 'Restored Marriage',
-        'content':
-            'Our marriage was falling apart, but we decided to seek God together. Through prayer and commitment to Christ, our relationship was restored stronger than ever before.',
-        'author': 'John & Mary R.',
-      },
-      {
-        'title': 'Financial Breakthrough',
-        'content':
-            'I was struggling financially and losing hope. After dedicating my life to Christ and trusting in His provision, God opened doors I never imagined possible.',
-        'author': 'David T.',
-      },
-      {
-        'title': 'Family Restoration',
-        'content':
-            'My family was scattered and broken. Through persistent prayer and faith in Christ, God brought us back together and healed our relationships completely.',
-        'author': 'Grace W.',
-      },
-    ];
+    final testimoniesToShow = ref.watch(allTestimoniesProvider);
 
     return CustomCard(
       child: Column(
@@ -829,144 +865,248 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 ),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      Icons.auto_awesome,
-                      size: 16,
-                      color: AppTheme.primaryGold,
+              InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TestimoniesScreen(),
                     ),
-                    const SizedBox(width: 4),
-                    Text(
-                      'Auto',
-                      style: TextStyle(
-                        color: AppTheme.primaryGold,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
+                  );
+                },
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'View All',
+                        style: TextStyle(
+                          color: AppTheme.primaryGold,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                        ),
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios,
+                        size: 12,
+                        color: AppTheme.primaryGold,
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
-          SizedBox(
-            height: 220,
-            child: PageView.builder(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() {
-                  _currentPage = index;
-                });
-              },
-              itemCount: testimonies.length,
-              itemBuilder: (context, index) {
-                final testimony = testimonies[index];
-                return Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primaryGold.withOpacity(0.15),
-                        AppTheme.primaryGold.withOpacity(0.05),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primaryGold.withOpacity(0.3),
-                    ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.format_quote,
-                              color: AppTheme.primaryGold,
-                              size: 20,
-                            ),
-                            const SizedBox(width: 8),
-                            Expanded(
-                              child: Text(
-                                testimony['title']!,
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(
-                                      color: AppTheme.primaryGold,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        Expanded(
-                          child: Text(
-                            testimony['content']!,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Colors.white70
-                                      : Colors.black87,
-                                  height: 1.4,
-                                ),
+          testimoniesToShow.when(
+            data: (testimonies) {
+              if (testimonies.isEmpty) {
+                return _buildEmptyTestimoniesSlide(context);
+              }
+
+              // Show only first 5 testimonies for the carousel
+              final displayTestimonies = testimonies.take(5).toList();
+              
+              return SizedBox(
+                height: 220,
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: (index) {
+                    setState(() {
+                      _currentPage = index;
+                    });
+                  },
+                  itemCount: displayTestimonies.length,
+                  itemBuilder: (context, index) {
+                    final testimony = displayTestimonies[index];
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => const TestimoniesScreen(),
+                          ),
+                        );
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: [
+                              AppTheme.primaryGold.withOpacity(0.15),
+                              AppTheme.primaryGold.withOpacity(0.05),
+                            ],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: AppTheme.primaryGold.withOpacity(0.3),
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              '- ${testimony['author']}',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(
+                        child: Padding(
+                          padding: const EdgeInsets.all(16),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.format_quote,
                                     color: AppTheme.primaryGold,
-                                    fontStyle: FontStyle.italic,
-                                    fontWeight: FontWeight.w500,
+                                    size: 20,
                                   ),
-                            ),
-                            Row(
-                              children: List.generate(
-                                testimonies.length,
-                                (dotIndex) => Container(
-                                  width: 8,
-                                  height: 8,
-                                  margin: const EdgeInsets.symmetric(
-                                    horizontal: 2,
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      testimony.displayTitle,
+                                      style: Theme.of(context).textTheme.titleMedium
+                                          ?.copyWith(
+                                            color: AppTheme.primaryGold,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
-                                    color: dotIndex == index
-                                        ? AppTheme.primaryGold
-                                        : AppTheme.primaryGold.withOpacity(0.3),
-                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Expanded(
+                                child: Text(
+                                  testimony.displayExcerpt,
+                                  style: Theme.of(context).textTheme.bodyMedium
+                                      ?.copyWith(
+                                        color:
+                                            Theme.of(context).brightness ==
+                                                Brightness.dark
+                                            ? Colors.white70
+                                            : Colors.black87,
+                                        height: 1.4,
+                                      ),
+                                  maxLines: 4,
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '- ${testimony.displayUserName}',
+                                      style: Theme.of(context).textTheme.bodySmall
+                                          ?.copyWith(
+                                            color: AppTheme.primaryGold,
+                                            fontStyle: FontStyle.italic,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Row(
+                                    children: List.generate(
+                                      displayTestimonies.length,
+                                      (dotIndex) => Container(
+                                        width: 8,
+                                        height: 8,
+                                        margin: const EdgeInsets.symmetric(
+                                          horizontal: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          color: dotIndex == index
+                                              ? AppTheme.primaryGold
+                                              : AppTheme.primaryGold.withOpacity(0.3),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ],
-                    ),
-                  ),
-                );
-              },
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
+            loading: () => _buildLoadingTestimoniesSlide(context),
+            error: (_, __) => _buildEmptyTestimoniesSlide(context),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyTestimoniesSlide(BuildContext context) {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            Colors.grey.withOpacity(0.1),
+            Colors.grey.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.withOpacity(0.3)),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.favorite_border,
+            size: 48,
+            color: Colors.grey.shade400,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No Testimonies Yet',
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Colors.grey.shade600,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Be the first to share your testimony!',
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: Colors.grey.shade500,
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildLoadingTestimoniesSlide(BuildContext context) {
+    return Container(
+      height: 220,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.primaryGold.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+      ),
+      child: Center(
+        child: CircularProgressIndicator(
+          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGold),
+        ),
       ),
     );
   }
