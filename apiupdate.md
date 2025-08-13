@@ -31,7 +31,7 @@ This document outlines the required API updates for the JKMG app based on the re
       "phone": "string",
       "country": "string",
       "timezone": "string",
-      "prayer_times": ["array of times"],
+      "prayer_times": ["array of times"], 
       "created_at": "datetime"
     },
     "token": "jwt_token",
