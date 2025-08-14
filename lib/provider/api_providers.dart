@@ -111,6 +111,42 @@ final forgotPasswordProvider = FutureProvider.family<void, Map<String, dynamic>>
   );
 });
 
+// Send Password Reset OTP Provider
+final sendPasswordResetOtpProvider = FutureProvider.family<void, Map<String, dynamic>>((
+  ref,
+  params,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.sendPasswordResetOtp(
+    email: params['email'] as String,
+  );
+});
+
+// Verify Password Reset OTP Provider
+final verifyPasswordResetOtpProvider = FutureProvider.family<String, Map<String, dynamic>>((
+  ref,
+  params,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.verifyPasswordResetOtp(
+    email: params['email'] as String,
+    otp: params['otp'] as String,
+  );
+});
+
+// Reset Password with Token Provider
+final resetPasswordWithTokenProvider = FutureProvider.family<void, Map<String, dynamic>>((
+  ref,
+  params,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.resetPasswordWithToken(
+    token: params['token'] as String,
+    password: params['password'] as String,
+    passwordConfirmation: params['password_confirmation'] as String,
+  );
+});
+
 final logoutProvider = FutureProvider<void>((ref) async {
   final apiService = ref.read(apiServiceProvider);
   return apiService.logout();

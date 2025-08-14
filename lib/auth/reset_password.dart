@@ -4,22 +4,31 @@ import 'package:jkmg/utils/app_theme.dart';
 
 import '../provider/api_providers.dart';
 import 'log_in.dart';
-import 'otp_verification.dart';
 
-class ForgotPasswordScreen extends ConsumerStatefulWidget {
-  const ForgotPasswordScreen({super.key});
+class ResetPasswordScreen extends ConsumerStatefulWidget {
+  final String email;
+  final String resetToken;
+
+  const ResetPasswordScreen({
+    super.key,
+    required this.email,
+    required this.resetToken,
+  });
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ResetPasswordScreen> createState() => _ResetPasswordScreenState();
 }
 
-class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
+class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController();
-  
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+
   bool _isLoading = false;
-  
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
+
   late AnimationController _animationController;
   late AnimationController _floatingController;
   late Animation<double> _fadeAnimation;
@@ -33,7 +42,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _floatingController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
@@ -62,7 +71,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
   @override
   void dispose() {
-    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
     _animationController.dispose();
     _floatingController.dispose();
     super.dispose();
@@ -76,43 +86,133 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
       try {
         await ref.read(
-          sendPasswordResetOtpProvider({'email': _emailController.text}).future,
+          resetPasswordWithTokenProvider({
+            'token': widget.resetToken,
+            'password': _passwordController.text,
+            'password_confirmation': _confirmPasswordController.text,
+          }).future,
         );
-        
+
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          
-          _showSuccessSnackBar('OTP sent to your email. Please check your inbox.');
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => OtpVerificationScreen(
-                email: _emailController.text,
-              ),
-            ),
-          );
+
+          _showSuccessDialog();
         }
       } catch (e) {
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          _showErrorSnackBar('Failed to send OTP: $e');
+          _showErrorSnackBar('Failed to reset password: $e');
         }
       }
     }
   }
 
-  void _showSuccessSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-      ),
+  void _showSuccessDialog() {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.richBlack,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryGold.withOpacity(0.2),
+                  blurRadius: 20,
+                  spreadRadius: 5,
+                ),
+              ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(20),
+                    gradient: RadialGradient(
+                      colors: [
+                        AppTheme.primaryGold.withOpacity(0.3),
+                        AppTheme.primaryGold.withOpacity(0.1),
+                        Colors.transparent,
+                      ],
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.check_circle,
+                    size: 40,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+                const SizedBox(height: 24),
+                ShaderMask(
+                  shaderCallback: (bounds) => const LinearGradient(
+                    colors: [
+                      AppTheme.primaryGold,
+                      Color(0xFFD4AF37),
+                      Color(0xFFB8860B),
+                    ],
+                  ).createShader(bounds),
+                  child: const Text(
+                    'Success!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Your password has been reset successfully.\nYou can now log in with your new password.',
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.white.withOpacity(0.8),
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                _buildPrimaryButton(
+                  onPressed: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                        builder: (context) => const LoginScreen(),
+                      ),
+                      (route) => false,
+                    );
+                  },
+                  child: const Text(
+                    'Continue to Login',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.richBlack,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -159,7 +259,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(height: 40),
-                          
+
                           // Back Button
                           Align(
                             alignment: Alignment.topLeft,
@@ -182,9 +282,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               ),
                             ),
                           ),
-                          
+
                           const SizedBox(height: 40),
-                          
+
                           // Icon with floating animation
                           AnimatedBuilder(
                             animation: _floatingAnimation,
@@ -216,7 +316,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ],
                                   ),
                                   child: const Icon(
-                                    Icons.lock_reset,
+                                    Icons.lock_open,
                                     size: 60,
                                     color: AppTheme.primaryGold,
                                   ),
@@ -224,9 +324,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               );
                             },
                           ),
-                          
+
                           const SizedBox(height: 32),
-                          
+
                           // Title
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
@@ -237,7 +337,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               ],
                             ).createShader(bounds),
                             child: const Text(
-                              'Reset Password',
+                              'Set New Password',
                               style: TextStyle(
                                 fontSize: 28,
                                 fontWeight: FontWeight.w900,
@@ -247,11 +347,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          
+
                           const SizedBox(height: 8),
-                          
+
                           Text(
-                            'Enter your email address and we\'ll send you a link to reset your password',
+                            'Create a strong new password for your account',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white.withOpacity(0.7),
@@ -263,27 +363,59 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
 
                           const SizedBox(height: 40),
 
-                          // Email Field
+                          // Password Field
                           _buildTextField(
-                            controller: _emailController,
-                            label: 'Email Address',
-                            hint: 'example@email.com',
-                            icon: Icons.email_outlined,
-                            keyboardType: TextInputType.emailAddress,
+                            controller: _passwordController,
+                            label: 'New Password',
+                            hint: 'Enter new password',
+                            icon: Icons.lock_outline,
+                            isPassword: true,
+                            obscureText: _obscurePassword,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
                             validator: (value) {
                               if (value == null || value.isEmpty) {
-                                return 'Please enter your email';
+                                return 'Please enter a password';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                                return 'Please enter a valid email';
+                              if (value.length < 8) {
+                                return 'Password must be at least 8 characters';
                               }
                               return null;
                             },
                           ),
-                          
+
+                          const SizedBox(height: 20),
+
+                          // Confirm Password Field
+                          _buildTextField(
+                            controller: _confirmPasswordController,
+                            label: 'Confirm Password',
+                            hint: 'Re-enter new password',
+                            icon: Icons.lock_outline,
+                            isPassword: true,
+                            obscureText: _obscureConfirmPassword,
+                            onToggleVisibility: () {
+                              setState(() {
+                                _obscureConfirmPassword = !_obscureConfirmPassword;
+                              });
+                            },
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return 'Please confirm your password';
+                              }
+                              if (value != _passwordController.text) {
+                                return 'Passwords do not match';
+                              }
+                              return null;
+                            },
+                          ),
+
                           const SizedBox(height: 32),
-                          
-                          // Reset Button
+
+                          // Reset Password Button
                           _buildPrimaryButton(
                             onPressed: _isLoading ? null : _resetPassword,
                             child: _isLoading
@@ -298,7 +430,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ),
                                   )
                                 : const Text(
-                                    'Send Reset Link',
+                                    'Reset Password',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -306,41 +438,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ),
                                   ),
                           ),
-                          
-                          const SizedBox(height: 32),
-                          
-                          // Back to Login Link
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Remember your password? ',
-                                style: TextStyle(
-                                  color: Colors.white.withOpacity(0.7),
-                                  fontSize: 14,
-                                ),
-                              ),
-                              GestureDetector(
-                                onTap: () {
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) => const LoginScreen(),
-                                    ),
-                                  );
-                                },
-                                child: const Text(
-                                  'Sign In',
-                                  style: TextStyle(
-                                    color: AppTheme.primaryGold,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                          
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -360,12 +458,14 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     required String label,
     required IconData icon,
     String? hint,
-    TextInputType? keyboardType,
+    bool isPassword = false,
+    bool obscureText = false,
+    VoidCallback? onToggleVisibility,
     String? Function(String?)? validator,
   }) {
     return TextFormField(
       controller: controller,
-      keyboardType: keyboardType,
+      obscureText: isPassword ? obscureText : false,
       validator: validator,
       style: const TextStyle(
         color: Colors.white,
@@ -387,6 +487,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           color: AppTheme.primaryGold.withOpacity(0.7),
           size: 20,
         ),
+        suffixIcon: isPassword
+            ? IconButton(
+                icon: Icon(
+                  obscureText ? Icons.visibility : Icons.visibility_off,
+                  color: AppTheme.primaryGold.withOpacity(0.7),
+                  size: 20,
+                ),
+                onPressed: onToggleVisibility,
+              )
+            : null,
         filled: true,
         fillColor: Colors.black.withOpacity(0.3),
         border: OutlineInputBorder(
