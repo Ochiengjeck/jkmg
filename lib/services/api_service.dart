@@ -136,6 +136,71 @@ class ApiService {
     }
   }
 
+  // Send OTP for password reset
+  Future<void> sendPasswordResetOtp({required String email}) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/email/verification/send'),
+      headers: _getHeaders(false),
+      body: jsonEncode({
+        'email': email,
+        'for_reset': true,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Failed to send OTP');
+    }
+  }
+
+  // Verify OTP for password reset
+  Future<String> verifyPasswordResetOtp({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/email/verification/verify'),
+      headers: _getHeaders(false),
+      body: jsonEncode({
+        'email': email,
+        'otp': otp,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return data['reset_token'] ?? '';
+    } else {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Failed to verify OTP');
+    }
+  }
+
+  // Reset password using token
+  Future<void> resetPasswordWithToken({
+    required String token,
+    required String password,
+    required String passwordConfirmation,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/reset-password'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: jsonEncode({
+        'password': password,
+        'password_confirmation': passwordConfirmation,
+      }),
+    );
+
+    if (response.statusCode != 200) {
+      final data = jsonDecode(response.body);
+      throw Exception(data['message'] ?? 'Failed to reset password');
+    }
+  }
+
   Future<void> logout() async {
     final response = await http.post(
       Uri.parse('$baseUrl/logout'),
