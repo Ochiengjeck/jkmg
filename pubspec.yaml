@@ -43,6 +43,9 @@ dependencies:
   flutter_launcher_icons: ^0.14.4
   video_player: ^2.9.2
   audioplayers: ^6.1.0
+  android_alarm_manager_plus: ^4.0.3
+  flutter_local_notifications: ^18.0.1
+  timezone: ^0.9.4
   # youtube_player_flutter: ^9.0.3  # Temporarily disabled for Windows build
 
 dev_dependencies:
@@ -73,6 +76,7 @@ flutter:
     - assets/icon/
     - assets/images/
     - assets/svg/
+    - assets/ringtons/
 
   #   - images/a_dot_ham.jpeg
 

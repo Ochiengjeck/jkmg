@@ -3,8 +3,10 @@ import '../../models/prayer.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'dart:async';
+import '../../services/alarm_service.dart';
 
-class PrayerSchedule extends StatelessWidget {
+class PrayerSchedule extends StatefulWidget {
   final DeeperPrayerInfo? prayerSchedule;
   final bool isLoading;
 
@@ -15,8 +17,45 @@ class PrayerSchedule extends StatelessWidget {
   });
 
   @override
+  State<PrayerSchedule> createState() => _PrayerScheduleState();
+}
+
+class _PrayerScheduleState extends State<PrayerSchedule> {
+  final alarmtone = AudioPlayer();
+  String? _nextAlarmTime;
+  bool _alarmsScheduled = false;
+  bool _prayerAlarmsEnabled = true;
+  bool _deeperPrayerAlarmsEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAlarms();
+  }
+
+  @override
+  void dispose() {
+    alarmtone.dispose();
+    super.dispose();
+  }
+
+  Future<void> _initializeAlarms() async {
+    // Load alarm preferences
+    final prayerAlarmsEnabled = await AlarmService.arePrayerAlarmsEnabled();
+    final deeperPrayerAlarmsEnabled = await AlarmService.areDeeperPrayerAlarmsEnabled();
+    
+    await AlarmService.schedulePrayerAlarms();
+    setState(() {
+      _nextAlarmTime = AlarmService.getNextAlarmTime();
+      _alarmsScheduled = true;
+      _prayerAlarmsEnabled = prayerAlarmsEnabled;
+      _deeperPrayerAlarmsEnabled = deeperPrayerAlarmsEnabled;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    if (isLoading) {
+    if (widget.isLoading) {
       return const Center(
         child: CircularProgressIndicator(
           valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGold),
@@ -24,7 +63,7 @@ class PrayerSchedule extends StatelessWidget {
       );
     }
 
-    if (prayerSchedule == null) {
+    if (widget.prayerSchedule == null) {
       return CustomCard(
         child: Column(
           children: [
@@ -39,15 +78,16 @@ class PrayerSchedule extends StatelessWidget {
       );
     }
 
-    final activePrayer = prayerSchedule!.todayParticipation;
-    final completedPrayers = prayerSchedule!.recentParticipations;
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         _buildScheduleInfo(context),
         const SizedBox(height: 16),
         _buildPrayerTimes(context),
+        const SizedBox(height: 16),
+        _buildTestAlarmButton(context),
+        const SizedBox(height: 16),
+        _buildAlarmSettings(context),
         const SizedBox(height: 16),
       ],
     );
@@ -357,16 +397,38 @@ class PrayerSchedule extends StatelessWidget {
           ),
           actions: [
             TextButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                await alarmtone.stop();
+                Navigator.pop(context);
+              },
               child: const Text('Stop', style: TextStyle(color: Colors.red)),
             ),
             ElevatedButton(
-              onPressed: () => Navigator.pop(context),
+              onPressed: () async {
+                try {
+                  await alarmtone.play(
+                    AssetSource('ringtons/cellphone-ringing-6475.mp3'),
+                  );
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Prayer sound started playing...'),
+                      backgroundColor: AppTheme.primaryGold,
+                    ),
+                  );
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Error playing sound: $e'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGold,
                 foregroundColor: AppTheme.richBlack,
               ),
-              child: const Text('Continue'),
+              child: const Text('Play Sound'),
             ),
           ],
         );
@@ -380,6 +442,7 @@ class PrayerSchedule extends StatelessWidget {
   ) {
     showDialog(
       context: context,
+
       builder: (BuildContext context) {
         return AlertDialog(
           shape: RoundedRectangleBorder(
@@ -605,6 +668,300 @@ class PrayerSchedule extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  Future<void> _testAlarm() async {
+    await AlarmService.triggerPrayerAlarm('Test Prayer');
+  }
+
+  Widget _buildAlarmSettings(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.settings, color: AppTheme.primaryGold, size: 24),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'Alarm Settings',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          
+          // Regular Prayer Alarms Toggle
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _prayerAlarmsEnabled 
+                  ? AppTheme.successGreen.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _prayerAlarmsEnabled 
+                    ? AppTheme.successGreen.withOpacity(0.3)
+                    : Colors.grey.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.schedule,
+                  color: _prayerAlarmsEnabled ? AppTheme.successGreen : Colors.grey,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Regular Prayer Alarms',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        '6AM, 12PM, 6PM daily alarms',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _prayerAlarmsEnabled,
+                  onChanged: _alarmsScheduled ? (value) async {
+                    if (value) {
+                      await AlarmService.enablePrayerAlarms();
+                    } else {
+                      await AlarmService.disablePrayerAlarms();
+                    }
+                    await _initializeAlarms();
+                  } : null,
+                  activeColor: AppTheme.primaryGold,
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 12),
+          
+          // Deeper Prayer Alarms Toggle
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: _deeperPrayerAlarmsEnabled 
+                  ? AppTheme.accentGold.withOpacity(0.1)
+                  : Colors.grey.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: _deeperPrayerAlarmsEnabled 
+                    ? AppTheme.accentGold.withOpacity(0.3)
+                    : Colors.grey.withOpacity(0.3),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  Icons.nightlight_round,
+                  color: _deeperPrayerAlarmsEnabled ? AppTheme.accentGold : Colors.grey,
+                  size: 20,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Deeper Prayer Alarms',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      Text(
+                        'Midnight prayer session (12:00 AM)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Switch(
+                  value: _deeperPrayerAlarmsEnabled,
+                  onChanged: _alarmsScheduled ? (value) async {
+                    if (value) {
+                      await AlarmService.enableDeeperPrayerAlarms();
+                    } else {
+                      await AlarmService.disableDeeperPrayerAlarms();
+                    }
+                    await _initializeAlarms();
+                  } : null,
+                  activeColor: AppTheme.accentGold,
+                ),
+              ],
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Disable All Button
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: _alarmsScheduled ? () async {
+                await AlarmService.cancelAllAlarms();
+                await AlarmService.disablePrayerAlarms();
+                await AlarmService.disableDeeperPrayerAlarms();
+                await _initializeAlarms();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('All prayer alarms have been disabled'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              } : null,
+              icon: const Icon(Icons.notifications_off, size: 20),
+              label: const Text('Disable All Alarms'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                disabledBackgroundColor: Colors.grey.shade300,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTestAlarmButton(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.blue.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.withOpacity(0.3)),
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.alarm, color: Colors.blue, size: 24),
+              const SizedBox(width: 12),
+              const Expanded(
+                child: Text(
+                  'System Alarm Test',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.blue,
+                  ),
+                ),
+              ),
+              if (_nextAlarmTime != null && _alarmsScheduled)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'Next: $_nextAlarmTime',
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppTheme.primaryGold,
+                    ),
+                  ),
+                ),
+              if (!_alarmsScheduled)
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.orange.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Text(
+                    'Setting up...',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: ElevatedButton.icon(
+                  onPressed: _alarmsScheduled ? () => _testAlarm() : null,
+                  icon: const Icon(Icons.notification_important, size: 20),
+                  label: const Text('Test System Alarm'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    disabledBackgroundColor: Colors.grey.shade300,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: _alarmsScheduled ? () async {
+                  await AlarmService.cancelAllAlarms();
+                  await _initializeAlarms();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Alarms reset and rescheduled'),
+                      backgroundColor: AppTheme.primaryGold,
+                    ),
+                  );
+                } : null,
+                icon: const Icon(Icons.refresh, size: 20),
+                label: const Text('Reset'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.orange,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  disabledBackgroundColor: Colors.grey.shade300,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 

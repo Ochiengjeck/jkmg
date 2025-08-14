@@ -1,17 +1,33 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/screens/onboarding/onboarding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 
 import 'provider/providers.dart';
 import 'test.dart';
 import 'utils/app_theme.dart';
+import 'services/alarm_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await SharedPreferences.getInstance();
   await dotenv.load(fileName: '.env');
+  
+  // Initialize timezone data
+  tz.initializeTimeZones();
+  
+  // Initialize alarm manager and notifications
+  if (Platform.isAndroid) {
+    await AndroidAlarmManager.initialize();
+  }
+  await AlarmService.initialize();
+  
   runApp(const ProviderScope(child: MyApp()));
 }
 
