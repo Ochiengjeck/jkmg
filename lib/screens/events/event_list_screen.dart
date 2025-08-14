@@ -109,72 +109,57 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
             ),
             child: Column(
               children: [
-                // Image section with fade effect
+                // Clean image section without overlays
                 Container(
                   width: double.infinity,
-                  height: 180,
-                  child: Stack(
-                    children: [
-                      // Main image
-                      ClipRRect(
-                        borderRadius: const BorderRadius.only(
-                          topLeft: Radius.circular(20),
-                          topRight: Radius.circular(20),
-                        ),
-                        child: Container(
-                          width: double.infinity,
-                          height: double.infinity,
-                          decoration: const BoxDecoration(
-                            image: DecorationImage(
-                              image: AssetImage('assets/images/events.png'),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                      ),
-                      // Fade gradient at bottom
-                      Positioned(
-                        bottom: 0,
-                        left: 0,
-                        right: 0,
-                        height: 60,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [Colors.transparent, AppTheme.richBlack],
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              stops: const [0.0, 0.8],
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
+                  height: 200,
+                  decoration: BoxDecoration(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/events.png'),
+                      fit: BoxFit.fill,
+                    ),
                   ),
                 ),
-                // Text content section
+                // Separate text content section with modern design
                 Container(
                   width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 16,
-                  ),
-                  decoration: const BoxDecoration(
-                    color: AppTheme.richBlack,
-                    borderRadius: BorderRadius.only(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.charcoalBlack,
+                        AppTheme.richBlack,
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
                       bottomLeft: Radius.circular(20),
                       bottomRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
                     ),
                   ),
                   child: Column(
                     children: [
+                      // Description
                       const Text(
                         'Events & Announcements',
                         style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: AppTheme.primaryGold,
-                          letterSpacing: 0.5,
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
                         ),
                         textAlign: TextAlign.center,
                       ),
@@ -182,34 +167,28 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                       const Text(
                         'Join various expressions and gatherings offered by JKMG',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           color: Colors.white70,
                           fontWeight: FontWeight.w500,
                           height: 1.4,
                         ),
                         textAlign: TextAlign.center,
                       ),
-                      const SizedBox(height: 16),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGold.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(25),
-                          border: Border.all(
-                            color: AppTheme.primaryGold.withOpacity(0.4),
-                            width: 1,
-                          ),
-                        ),
-                        child: const Text(
-                          'Rhema Feast • RXP • Outreach • Business Forum',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      const SizedBox(height: 12),
+                      // Feature highlights in single row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildFeatureChip('Rhema Feast'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('RXP'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Outreach'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Business Forum'),
+                          ],
                         ),
                       ),
                     ],
@@ -220,6 +199,31 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

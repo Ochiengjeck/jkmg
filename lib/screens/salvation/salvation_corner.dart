@@ -92,36 +92,33 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
       ),
       child: Column(
         children: [
-          // Image section with fade effect
-          SizedBox(
+          // Clean image section with info button
+          Container(
             width: double.infinity,
-            height: 180,
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/salvation corner.png'),
+                fit: BoxFit.fill,
+              ),
+            ),
             child: Stack(
               children: [
-                // Main image
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/salvation corner.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-                // Info button overlay
+                // Info button overlay (preserved functionality)
                 Positioned(
-                  top: 8,
-                  right: 8,
+                  top: 12,
+                  right: 12,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.6),
+                      color: Colors.black.withOpacity(0.7),
                       shape: BoxShape.circle,
                     ),
                     child: IconButton(
@@ -134,89 +131,99 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                     ),
                   ),
                 ),
-                // Fade gradient at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Theme.of(context).scaffoldBackgroundColor,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.0, 0.8],
-                      ),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
-          // Text content section
+          // Separate text content section with modern design
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.charcoalBlack,
+                  AppTheme.richBlack,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
               ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
+                // Description
                 const Text(
-                  'Salvation Corner',
+                  'Begin or Renew Your Journey with Christ',
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Begin or Renew Your Journey with Christ',
+                  'Take the first step in your spiritual journey or renew your commitment',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
+                    height: 1.4,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: AppTheme.primaryGold.withOpacity(0.4),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text(
-                    'Salvation • Rededication • Testimony',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.primaryGold,
-                      fontWeight: FontWeight.w600,
-                    ),
+                const SizedBox(height: 12),
+                // Feature highlights in single row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFeatureChip('Salvation'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Rededication'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Testimony'),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }

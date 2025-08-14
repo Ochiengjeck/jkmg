@@ -476,7 +476,7 @@ class _HolyBibleSectionState extends ConsumerState<HolyBibleSection> {
             'Access the complete Bible with advanced reading features, chapter navigation, verse search, and multiple translations.',
             style: TextStyle(
               fontSize: 14,
-              color: AppTheme.charcoalBlack,
+              color: AppTheme.deepGold,
               height: 1.4,
             ),
           ),

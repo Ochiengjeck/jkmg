@@ -89,13 +89,13 @@ class _BibleStudyCornerScreenState
                 const SizedBox(height: 32),
                 _buildIntroductionSection(context),
                 const SizedBox(height: 24),
-                _buildHolyBibleSection(context),
-                const SizedBox(height: 24),
                 _buildTodaysStudySection(context, todayStudyAsync),
+                const SizedBox(height: 24),
+                _buildHolyBibleSection(context),
                 const SizedBox(height: 24),
                 _buildStudyTemplateSection(context),
                 const SizedBox(height: 24),
-                _buildPastStudiesSection(context, studiesAsync),
+                // _buildPastStudiesSection(context, studiesAsync),
               ],
             ),
           ),
@@ -119,112 +119,115 @@ class _BibleStudyCornerScreenState
       ),
       child: Column(
         children: [
-          // Image section with fade effect
+          // Clean image section without overlays
           Container(
             width: double.infinity,
-            height: 180,
-            child: Stack(
-              children: [
-                // Main image
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/bible study.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
-                ),
-                // Fade gradient at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Theme.of(context).scaffoldBackgroundColor,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.0, 0.8],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/bible study.png'),
+                fit: BoxFit.fill,
+              ),
             ),
           ),
-          // Text content section
+          // Separate text content section with modern design
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.charcoalBlack,
+                  AppTheme.richBlack,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
               ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
+                // Description
                 const Text(
-                  'Bible Study Corner',
+                  'Deepen Your Faith Journey',
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Grow in faith through God\'s Word with structured study templates and devotional resources',
+                  'Grow in faith through God\'s Word with structured study templates',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
+                    height: 1.4,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: AppTheme.primaryGold.withOpacity(0.4),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text(
-                    'Daily Study • Memory Verses • Group Discussion',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.primaryGold,
-                      fontWeight: FontWeight.w600,
-                    ),
+                const SizedBox(height: 12),
+                // Feature highlights in single row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFeatureChip('Daily Study'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Memory Verses'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Group Discussion'),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -305,7 +308,7 @@ class _BibleStudyCornerScreenState
         ),
         const SizedBox(height: 12),
         todayStudyAsync.when(
-          data: (study) => TodaysStudy(study: study),
+          data: (study) => _buildTodaysStudyContent(study),
           loading: () => const Center(
             child: CircularProgressIndicator(
               valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGold),
@@ -347,6 +350,10 @@ class _BibleStudyCornerScreenState
         ),
       ],
     );
+  }
+
+  Widget _buildTodaysStudyContent(dynamic study) {
+    return TodaysStudy(study: study);
   }
 
   Widget _buildStudyTemplateSection(BuildContext context) {
