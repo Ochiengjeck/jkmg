@@ -4,6 +4,7 @@ import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/prayer.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class DeeperPrayer extends StatefulWidget {
   final DeeperPrayerInfo? deeperPrayerInfo;
@@ -23,40 +24,68 @@ class DeeperPrayer extends StatefulWidget {
 
 class _DeeperPrayerState extends State<DeeperPrayer> {
   int? _selectedDuration;
-  String _notes = '';
   bool _isSubmitting = false;
+  bool _isPlaying = false;
   final List<int> _availableDurations = [30, 60];
+  final AudioPlayer _audioPlayer = AudioPlayer();
 
-  Future<void> _recordDeeperPrayer() async {
+  bool _isMidnightHour() {
+    final now = DateTime.now();
+    return now.hour >= 0 && now.hour < 1; // Midnight to 1 AM
+  }
+
+  Future<void> _playPrayer() async {
     if (_selectedDuration == null) {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(const SnackBar(content: Text('Please select a duration')));
       return;
     }
-    setState(() => _isSubmitting = true);
+
+    if (!_isMidnightHour()) {
+      return; // Button should be disabled during non-midnight hours
+    }
+
+    setState(() => {_isPlaying = true, _isSubmitting = true});
+
     try {
+      // Simulate playing audio based on selected duration
+      // In a real implementation, you would play the actual audio file
+      await Future.delayed(Duration(seconds: 3)); // Simulate audio loading
+
+      // Record the prayer participation
       await ProviderScope.containerOf(context).read(
         participateInDeeperPrayerProvider({
           'duration': _selectedDuration!,
-          'notes': _notes.isNotEmpty ? _notes : null,
+          'notes': null,
         }).future,
       );
+
       setState(() {
         _isSubmitting = false;
+        _isPlaying = false;
         _selectedDuration = null;
-        _notes = '';
       });
+
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Deeper prayer participation recorded')),
+        const SnackBar(
+          content: Text('Prayer completed and recorded successfully'),
+        ),
       );
+
       widget.onDeeperPrayerRecorded();
     } catch (e) {
-      setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error recording deeper prayer: $e')),
-      );
+      setState(() => {_isSubmitting = false, _isPlaying = false});
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error playing prayer: $e')));
     }
+  }
+
+  @override
+  void dispose() {
+    _audioPlayer.dispose();
+    super.dispose();
   }
 
   @override
@@ -75,10 +104,10 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
           _buildIntroText(context),
           const SizedBox(height: 16),
           _buildStatsSection(context, totalCompleted, todayParticipation),
-          if (isTodayCompleted) ...
-            _buildCompletedState(context)
-          else ...
-            _buildActiveState(context),
+          if (isTodayCompleted)
+            ..._buildCompletedState(context)
+          else
+            ..._buildActiveState(context),
         ],
       ),
     );
@@ -133,7 +162,11 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
     );
   }
 
-  Widget _buildStatsSection(BuildContext context, int totalCompleted, DeeperPrayerParticipation? todayParticipation) {
+  Widget _buildStatsSection(
+    BuildContext context,
+    int totalCompleted,
+    DeeperPrayerParticipation? todayParticipation,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -149,15 +182,24 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
           child: _buildStatCard(
             'Today\'s Status',
             todayParticipation?.completed == true ? 'Completed' : 'Pending',
-            todayParticipation?.completed == true ? Icons.check_circle : Icons.schedule,
-            todayParticipation?.completed == true ? AppTheme.successGreen : AppTheme.primaryGold,
+            todayParticipation?.completed == true
+                ? Icons.check_circle
+                : Icons.schedule,
+            todayParticipation?.completed == true
+                ? AppTheme.successGreen
+                : AppTheme.primaryGold,
           ),
         ),
       ],
     );
   }
 
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+  Widget _buildStatCard(
+    String label,
+    String value,
+    IconData icon,
+    Color color,
+  ) {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -225,10 +267,12 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
   }
 
   List<Widget> _buildActiveState(BuildContext context) {
+    final isMidnight = _isMidnightHour();
+
     return [
       const SizedBox(height: 16),
       Text(
-        'Record Your Session',
+        'Midnight Prayer Session',
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
           color: AppTheme.deepGold,
           fontWeight: FontWeight.w600,
@@ -237,7 +281,7 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
       const SizedBox(height: 12),
       DropdownButtonFormField<int>(
         decoration: InputDecoration(
-          labelText: 'Session Duration (minutes)',
+          labelText: 'Prayer Duration (minutes)',
           labelStyle: const TextStyle(color: AppTheme.primaryGold),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -245,7 +289,9 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+            borderSide: BorderSide(
+              color: AppTheme.primaryGold.withOpacity(0.3),
+            ),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
@@ -266,39 +312,41 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
             ? null
             : (value) => setState(() => _selectedDuration = value),
       ),
-      const SizedBox(height: 16),
-      TextFormField(
-        decoration: InputDecoration(
-          labelText: 'Prayer Notes (Optional)',
-          labelStyle: const TextStyle(color: AppTheme.primaryGold),
-          hintText: 'Share your prayer experience, reflections, or testimonies...',
-          border: OutlineInputBorder(
+      if (!isMidnight) ...[
+        const SizedBox(height: 16),
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.orange.withOpacity(0.1),
             borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryGold),
+            border: Border.all(color: Colors.orange.withOpacity(0.3)),
           ),
-          enabledBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.primaryGold.withOpacity(0.3)),
+          child: Row(
+            children: [
+              const Icon(Icons.access_time, color: Colors.orange, size: 24),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Last night\'s prayer is in your inbox. Prayer is only available from midnight to 1:00 AM.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Colors.orange,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
           ),
-          focusedBorder: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(12),
-            borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
-          ),
-          prefixIcon: const Icon(Icons.notes, color: AppTheme.primaryGold),
         ),
-        maxLines: 3,
-        onChanged: (value) => setState(() => _notes = value),
-        enabled: !(widget.isLoading || _isSubmitting),
-      ),
+      ],
       const SizedBox(height: 20),
       SizedBox(
         width: double.infinity,
         height: 48,
         child: ElevatedButton.icon(
-          onPressed: (widget.isLoading || _isSubmitting)
+          onPressed: (widget.isLoading || _isSubmitting || !isMidnight)
               ? null
-              : _recordDeeperPrayer,
-          icon: _isSubmitting
+              : _playPrayer,
+          icon: _isPlaying
               ? const SizedBox(
                   width: 16,
                   height: 16,
@@ -307,11 +355,17 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
                     strokeWidth: 2,
                   ),
                 )
-              : const Icon(Icons.upload),
-          label: Text(_isSubmitting ? 'Recording...' : 'Record Prayer Session'),
+              : const Icon(Icons.play_arrow),
+          label: Text(
+            _isPlaying
+                ? 'Playing Prayer...'
+                : isMidnight
+                ? 'Pray Now'
+                : 'Prayer Unavailable',
+          ),
           style: ElevatedButton.styleFrom(
-            backgroundColor: AppTheme.primaryGold,
-            foregroundColor: AppTheme.richBlack,
+            backgroundColor: isMidnight ? AppTheme.primaryGold : Colors.grey,
+            foregroundColor: isMidnight ? AppTheme.richBlack : Colors.white,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

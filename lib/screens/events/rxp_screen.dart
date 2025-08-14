@@ -100,13 +100,7 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
           scale: _heroAnimation.value,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -118,148 +112,168 @@ class _RXPScreenState extends ConsumerState<RXPScreen>
             ),
             child: Column(
               children: [
+                // Clean image section without overlays
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: double.infinity,
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGold,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryGold.withOpacity(0.4),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/rxp.png'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+                // Separate text content section with modern design
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.charcoalBlack,
+                        AppTheme.richBlack,
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Description
+                      const Text(
+                        'Weekly Interdenominational Service',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Experience powerful worship and spiritual transformation',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      // Dynamic event info
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final eventsAsync = ref.watch(allEventsProvider);
+                          return eventsAsync.when(
+                            data: (response) {
+                              final rxpEvents = response.data
+                                  .where((event) => event.type.value == 'rxp')
+                                  .toList();
+
+                              if (rxpEvents.isNotEmpty) {
+                                final nextEvent = rxpEvents.first;
+                                final startDate = DateTime.parse(nextEvent.startDate);
+                                final formattedDate = DateFormat(
+                                  'MMM d, y',
+                                ).format(startDate);
+
+                                return _buildEventInfoChip('Next: $formattedDate • ${nextEvent.location}');
+                              }
+
+                              return _buildEventInfoChip('Every Wednesday 5:00-9:00 PM • All Saints Cathedral');
+                            },
+                            loading: () => _buildEventInfoChip('Loading RXP details...'),
+                            error: (_, __) => _buildEventInfoChip('Every Wednesday 5:00-9:00 PM • All Saints Cathedral'),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      // Feature highlights in single row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildFeatureChip('Live Worship'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Prophetic Teaching'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Community'),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.schedule,
-                    size: 40,
-                    color: AppTheme.richBlack,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'RXP (Rhema Experience)',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Weekly Interdenominational Service',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final eventsAsync = ref.watch(allEventsProvider);
-                    return eventsAsync.when(
-                      data: (response) {
-                        final rxpEvents = response.data
-                            .where((event) => event.type.value == 'rxp')
-                            .toList();
-
-                        if (rxpEvents.isNotEmpty) {
-                          final nextEvent = rxpEvents.first;
-                          final startDate = DateTime.parse(nextEvent.startDate);
-                          final formattedDate = DateFormat(
-                            'MMM d, y',
-                          ).format(startDate);
-
-                          return Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
-                            ),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryGold.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              'Next: $formattedDate • ${nextEvent.location}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.primaryGold,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        }
-
-                        return Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryGold.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Every Wednesday 5:00-9:00 PM • All Saints Cathedral',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.primaryGold,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                      loading: () => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGold.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'Loading RXP details...',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      error: (_, __) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGold.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'Every Wednesday 5:00-9:00 PM • All Saints Cathedral',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventInfoChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

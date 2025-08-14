@@ -97,13 +97,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
           scale: _heroAnimation.value,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -115,134 +109,168 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
             ),
             child: Column(
               children: [
+                // Clean image section without overlays
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: double.infinity,
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGold,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryGold.withOpacity(0.4),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    image: const DecorationImage(
+                      image: AssetImage('assets/images/rhema_feast.png'),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+                // Separate text content section with modern design
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.charcoalBlack,
+                        AppTheme.richBlack,
+                      ],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Description
+                      const Text(
+                        'I WILL BUILD MY CHURCH',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'A landmark annual spiritual gathering for believers globally',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      // Dynamic event info
+                      Consumer(
+                        builder: (context, ref, child) {
+                          final eventsAsync = ref.watch(allEventsProvider);
+                          return eventsAsync.when(
+                            data: (response) {
+                              final rhemaFeastEvents = response.data
+                                  .where((event) => event.type.value == 'rhema_feast')
+                                  .toList();
+                              
+                              if (rhemaFeastEvents.isNotEmpty) {
+                                final nextEvent = rhemaFeastEvents.first;
+                                final startDate = DateTime.parse(nextEvent.startDate);
+                                final formattedDate = DateFormat('MMM d, y').format(startDate);
+                                
+                                return _buildEventInfoChip('$formattedDate • ${nextEvent.location}');
+                              }
+                              
+                              return _buildEventInfoChip('Next Event Date • To Be Announced');
+                            },
+                            loading: () => _buildEventInfoChip('Loading event details...'),
+                            error: (_, __) => _buildEventInfoChip('Event Details • Check Back Soon'),
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 12),
+                      // Feature highlights in single row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildFeatureChip('Word'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Worship'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Prayer'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Fellowship'),
+                          ],
+                        ),
                       ),
                     ],
                   ),
-                  child: const Icon(
-                    Icons.celebration,
-                    size: 40,
-                    color: AppTheme.richBlack,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Rhema Feast 2025',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'I WILL BUILD MY CHURCH',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Consumer(
-                  builder: (context, ref, child) {
-                    final eventsAsync = ref.watch(allEventsProvider);
-                    return eventsAsync.when(
-                      data: (response) {
-                        final rhemaFeastEvents = response.data
-                            .where((event) => event.type.value == 'rhema_feast')
-                            .toList();
-                        
-                        if (rhemaFeastEvents.isNotEmpty) {
-                          final nextEvent = rhemaFeastEvents.first;
-                          final startDate = DateTime.parse(nextEvent.startDate);
-                          final formattedDate = DateFormat('MMM d, y').format(startDate);
-                          
-                          return Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: AppTheme.primaryGold.withOpacity(0.2),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Text(
-                              '$formattedDate • ${nextEvent.location}',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppTheme.primaryGold,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          );
-                        }
-                        
-                        return Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: AppTheme.primaryGold.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: const Text(
-                            'Next Event Date • To Be Announced',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: AppTheme.primaryGold,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        );
-                      },
-                      loading: () => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGold.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'Loading event details...',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                      error: (_, __) => Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryGold.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: const Text(
-                          'Event Details • Check Back Soon',
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: AppTheme.primaryGold,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ],
             ),
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEventInfoChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 12,
+        vertical: 6,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 11,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 

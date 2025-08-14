@@ -31,7 +31,7 @@ This document outlines the required API updates for the JKMG app based on the re
       "phone": "string",
       "country": "string",
       "timezone": "string",
-      "prayer_times": ["array of times"],
+      "prayer_times": ["array of times"], 
       "created_at": "datetime"
     },
     "token": "jwt_token",
@@ -186,7 +186,7 @@ These replace the previous "Preferred Prayer Times" concept with fixed, universa
   }
 }
 ```
-
+<!-- 
 ### 2. Get Testimonies
 **Endpoint:** `GET /api/salvation/testimonies`
 
@@ -215,7 +215,7 @@ These replace the previous "Preferred Prayer Times" concept with fixed, universa
 }
 ```
 
-## Notification System API Endpoints
+## Notification System API Endpoints -->
 
 ### 3. Send Audio Prayer Notification
 **Endpoint:** `POST /api/notifications/audio-prayer`

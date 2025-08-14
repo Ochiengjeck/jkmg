@@ -22,13 +22,9 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
       duration: const Duration(milliseconds: 1000),
       vsync: this,
     );
-    _fadeAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _animationController,
-      curve: Curves.easeIn,
-    ));
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeIn),
+    );
     _animationController.forward();
   }
 
@@ -69,17 +65,11 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
   Widget _buildHeroSection() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryGold.withOpacity(0.3),
+            color: AppTheme.primaryGold.withOpacity(0.2),
             blurRadius: 20,
             spreadRadius: 2,
           ),
@@ -87,69 +77,112 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
       ),
       child: Column(
         children: [
+          // Clean image section without overlays
           Container(
-            width: 100,
-            height: 100,
+            width: double.infinity,
+            height: 200,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(color: AppTheme.primaryGold, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: AppTheme.primaryGold.withOpacity(0.4),
-                  blurRadius: 20,
-                  spreadRadius: 5,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+              image: const DecorationImage(
+                image: AssetImage('assets/images/about.png'),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+          // Separate text content section with modern design
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(20),
+                bottomRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+            ),
+            child: Column(
+              children: [
+                // Description
+                const Text(
+                  'Transforming Lives Through Faith',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                const Text(
+                  'A faith-driven movement dedicated to building nations and advancing the Kingdom',
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.white70,
+                    fontWeight: FontWeight.w500,
+                    height: 1.4,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 12),
+                // Feature highlights in single row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFeatureChip('Global Ministry'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Apostolic Insight'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Kingdom Impact'),
+                    ],
+                  ),
                 ),
               ],
             ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(50),
-              child: Image.asset(
-                'assets/icon/icon.png',
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'JULIAN KYULA MINISTRY GLOBAL',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.primaryGold,
-              letterSpacing: 1.5,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            'JKMG',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: 3,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryGold.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
-            ),
-            child: const Text(
-              'Transforming Lives • Building Nations • Advancing Kingdom',
-              style: TextStyle(
-                fontSize: 11,
-                color: AppTheme.primaryGold,
-                fontWeight: FontWeight.w600,
-              ),
-              textAlign: TextAlign.center,
-            ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -184,18 +217,12 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
               const SizedBox(height: 16),
               const Text(
                 'Founded by Reverend Julian Kyula, this global ministry exists to equip individuals, leaders, and communities to thrive in their divine purpose across the mission field, ministry work, and the marketplace.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 13, height: 1.5),
               ),
               const SizedBox(height: 16),
               const Text(
                 'Through inspired teaching, prayer, strategic gatherings, and practical outreach, we are raising a generation of kingdom-minded believers who are bold, innovative, and grounded in truth.',
-                style: TextStyle(
-                  fontSize: 13,
-                  height: 1.5,
-                ),
+                style: TextStyle(fontSize: 13, height: 1.5),
               ),
               const SizedBox(height: 16),
               Row(
@@ -287,10 +314,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
                 const SizedBox(height: 8),
                 Text(
                   description,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    height: 1.4,
-                  ),
+                  style: const TextStyle(fontSize: 12, height: 1.4),
                 ),
               ],
             ),
@@ -337,7 +361,12 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
     );
   }
 
-  Widget _buildGoalItem(int number, String title, String description, IconData icon) {
+  Widget _buildGoalItem(
+    int number,
+    String title,
+    String description,
+    IconData icon,
+  ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(16),
@@ -390,10 +419,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
                 const SizedBox(height: 2),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -455,10 +481,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
                         ),
                         Text(
                           'Founder & Overseer',
-                          style: TextStyle(
-                            color: Colors.white70,
-                            fontSize: 12,
-                          ),
+                          style: TextStyle(color: Colors.white70, fontSize: 12),
                         ),
                       ],
                     ),
@@ -615,10 +638,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
                 ),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),

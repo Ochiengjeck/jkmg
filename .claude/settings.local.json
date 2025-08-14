@@ -6,6 +6,7 @@
       "Bash(flutter build:*)",
       "Bash(dart compile:*)",
       "Bash(dart analyze:*)"
+      "Bash(git checkout:*)"
     ],
     "deny": []
   }

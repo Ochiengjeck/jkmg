@@ -18,6 +18,7 @@ import 'package:jkmg/screens/events/event_list_screen.dart';
 import 'profile/profile_screen.dart';
 import 'settings/settings_screen.dart';
 import 'help/help_support_screen.dart';
+import 'inbox/inbox_screen.dart';
 
 import 'resources/jkmg_resources_screen.dart';
 import 'salvation/salvation_corner.dart';
@@ -31,7 +32,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  int _notificationCount = 3; // Example notification count
+  // Notification count will be managed by provider
   int _currentPage = 0;
   late PageController pageController;
   late PageController heroPageController;
@@ -186,31 +187,49 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
               onPressed: () => _showNotifications(context),
             ),
-            if (_notificationCount > 0)
-              Positioned(
-                right: 6,
-                top: 6,
-                child: Container(
-                  padding: const EdgeInsets.all(4),
-                  decoration: const BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                  ),
-                  constraints: const BoxConstraints(
-                    minWidth: 20,
-                    minHeight: 20,
-                  ),
-                  child: Text(
-                    '$_notificationCount',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ),
-              ),
+            Consumer(
+              builder: (context, ref, _) {
+                final notificationsAsync = ref.watch(notificationsProvider({
+                  'status': 'unread',
+                  'per_page': 1,
+                }));
+                
+                return notificationsAsync.when(
+                  data: (notifications) {
+                    final unreadCount = notifications.data.length;
+                    if (unreadCount > 0) {
+                      return Positioned(
+                        right: 6,
+                        top: 6,
+                        child: Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Colors.red,
+                            shape: BoxShape.circle,
+                          ),
+                          constraints: const BoxConstraints(
+                            minWidth: 20,
+                            minHeight: 20,
+                          ),
+                          child: Text(
+                            unreadCount > 99 ? '99+' : '$unreadCount',
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                            ),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                      );
+                    }
+                    return const SizedBox.shrink();
+                  },
+                  loading: () => const SizedBox.shrink(),
+                  error: (_, __) => const SizedBox.shrink(),
+                );
+              },
+            ),
           ],
         ),
         IconButton(
@@ -348,11 +367,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               title: 'Profile',
                               onTap: () => navigateToPage(12),
                             ),
-                            // _DrawerItem(
-                            //   icon: Icons.notifications_rounded,
-                            //   title: 'Notifications',
-                            //   onTap: () => _showNotifications(context),
-                            // ),
+                            _DrawerItem(
+                              icon: Icons.inbox_rounded,
+                              title: 'Inbox',
+                              onTap: () => _showNotifications(context),
+                            ),
                             _DrawerItem(
                               icon: Icons.tune_rounded,
                               title: 'Settings',
@@ -2609,51 +2628,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _showNotifications(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Notifications'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              leading: const Icon(Icons.event, color: Color(0xFFB8860B)),
-              title: const Text('Prayer Meeting Tonight'),
-              subtitle: const Text('Join us at 7:00 PM'),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () => setState(() => _notificationCount--),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.book, color: Color(0xFFB8860B)),
-              title: const Text('New Bible Study Available'),
-              subtitle: const Text('Romans Chapter 8'),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () => setState(() => _notificationCount--),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(
-                Icons.volunteer_activism,
-                color: Color(0xFFB8860B),
-              ),
-              title: const Text('Partnership Opportunity'),
-              subtitle: const Text('Support our mission'),
-              trailing: IconButton(
-                icon: const Icon(Icons.close, size: 18),
-                onPressed: () => setState(() => _notificationCount--),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-        ],
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const InboxScreen(),
       ),
     );
   }

@@ -4,8 +4,8 @@ import '../../models/counseling.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
-import 'book_counseling.dart';
-import 'counseling_list.dart';
+// import 'book_counseling.dart';
+// import 'counseling_list.dart';
 
 class CounselingCornerScreen extends ConsumerStatefulWidget {
   const CounselingCornerScreen({super.key});
@@ -114,7 +114,7 @@ class _CounselingCornerScreenState
                     const SizedBox(height: 24),
                     _buildCounselingOptionsSection(),
                     const SizedBox(height: 24),
-                    _buildMySessionsSection(),
+                    // _buildMySessionsSection(),
                   ],
                 ),
               ),
@@ -199,109 +199,117 @@ class _CounselingCornerScreenState
       ),
       child: Column(
         children: [
-          // Image section with fade effect
+          // Clean image section without overlays
           Container(
             width: double.infinity,
-            height: 180,
-            child: Stack(
-              children: [
-                // Main image
-                ClipRRect(
-                  borderRadius: const BorderRadius.only(
-                    topLeft: Radius.circular(20),
-                    topRight: Radius.circular(20),
-                  ),
-                  child: Container(
-                    width: double.infinity,
-                    height: double.infinity,
-                    decoration: const BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage('assets/images/counseling & care.png'),
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  ),
+            height: 200,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(20),
+                topRight: Radius.circular(20),
+              ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
+              image: const DecorationImage(
+                image: AssetImage(
+                  'assets/images/counseling & care.png',
                 ),
-                // Fade gradient at bottom
-                Positioned(
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: 60,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.transparent,
-                          Theme.of(context).scaffoldBackgroundColor,
-                        ],
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        stops: const [0.0, 0.8],
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+                fit: BoxFit.fill,
+              ),
             ),
           ),
-          // Text content section
+          // Separate text content section with modern design
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.charcoalBlack,
+                  AppTheme.richBlack,
+                ],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(20),
                 bottomRight: Radius.circular(20),
               ),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
+              ),
             ),
             child: Column(
               children: [
+                // Description
                 const Text(
-                  'Counseling & Care',
+                  'Find Healing in Christ',
                   style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
+                    fontSize: 16,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 0.3,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Find Healing in Christ',
+                  'Professional spiritual care and emotional support',
                   style: TextStyle(
-                    fontSize: 14,
+                    fontSize: 13,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
+                    height: 1.4,
                   ),
                   textAlign: TextAlign.center,
                 ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(
-                      color: AppTheme.primaryGold.withOpacity(0.4),
-                      width: 1,
-                    ),
-                  ),
-                  child: const Text(
-                    'Professional Care • AI Healing • Emergency Support',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.primaryGold,
-                      fontWeight: FontWeight.w600,
-                    ),
+                const SizedBox(height: 12),
+                // Feature highlights in single row
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildFeatureChip('Professional Care'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('AI Healing'),
+                      const SizedBox(width: 8),
+                      _buildFeatureChip('Emergency Support'),
+                    ],
                   ),
                 ),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 4,
+      ),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
       ),
     );
   }
@@ -393,21 +401,21 @@ class _CounselingCornerScreenState
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () => _showBookingModal(context),
-                  icon: const Icon(Icons.calendar_today, size: 16),
-                  label: const Text('Book Session'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.primaryGold,
-                    foregroundColor: AppTheme.richBlack,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
+              // Expanded(
+              //   child: ElevatedButton.icon(
+              //     onPressed: () => _showBookingModal(context),
+              //     icon: const Icon(Icons.calendar_today, size: 16),
+              //     label: const Text('Book Session'),
+              //     style: ElevatedButton.styleFrom(
+              //       backgroundColor: AppTheme.primaryGold,
+              //       foregroundColor: AppTheme.richBlack,
+              //       shape: RoundedRectangleBorder(
+              //         borderRadius: BorderRadius.circular(10),
+              //       ),
+              //     ),
+              //   ),
+              // ),
+              // const SizedBox(width: 12),
               Expanded(
                 child: OutlinedButton.icon(
                   onPressed: () => _joinTelegramGroup(),
@@ -622,80 +630,80 @@ class _CounselingCornerScreenState
     );
   }
 
-  Widget _buildMySessionsSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeader(
-          title: 'My Counseling Sessions',
-          // icon: Icons.history,
-        ),
-        const SizedBox(height: 16),
-        _buildContent(),
-      ],
-    );
-  }
+  // Widget _buildMySessionsSection() {
+  //   return Column(
+  //     crossAxisAlignment: CrossAxisAlignment.start,
+  //     children: [
+  //       SectionHeader(
+  //         title: 'My Counseling Sessions',
+  //         // icon: Icons.history,
+  //       ),
+  //       const SizedBox(height: 16),
+  //       _buildContent(),
+  //     ],
+  //   );
+  // }
 
-  Widget _buildContent() {
-    if (_isLoading) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(color: Color(0xFFB8860B)),
-            SizedBox(height: 16),
-            Text(
-              'Loading your counseling sessions...',
-              style: TextStyle(color: Color(0xFFB8860B), fontSize: 16),
-            ),
-          ],
-        ),
-      );
-    }
+  // Widget _buildContent() {
+  //   if (_isLoading) {
+  //     return const Center(
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           CircularProgressIndicator(color: Color(0xFFB8860B)),
+  //           SizedBox(height: 16),
+  //           Text(
+  //             'Loading your counseling sessions...',
+  //             style: TextStyle(color: Color(0xFFB8860B), fontSize: 16),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 64, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              'Error loading sessions',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: 8),
-            Text(
-              _error!,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: _loadSessions,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFB8860B),
-              ),
-              child: const Text('Retry', style: TextStyle(color: Colors.black)),
-            ),
-          ],
-        ),
-      );
-    }
+  //   if (_error != null) {
+  //     return Center(
+  //       child: Column(
+  //         mainAxisAlignment: MainAxisAlignment.center,
+  //         children: [
+  //           const Icon(Icons.error_outline, size: 64, color: Colors.red),
+  //           const SizedBox(height: 16),
+  //           Text(
+  //             'Error loading sessions',
+  //             style: Theme.of(context).textTheme.titleLarge,
+  //           ),
+  //           const SizedBox(height: 8),
+  //           Text(
+  //             _error!,
+  //             textAlign: TextAlign.center,
+  //             style: Theme.of(context).textTheme.bodyMedium,
+  //           ),
+  //           const SizedBox(height: 16),
+  //           ElevatedButton(
+  //             onPressed: _loadSessions,
+  //             style: ElevatedButton.styleFrom(
+  //               backgroundColor: const Color(0xFFB8860B),
+  //             ),
+  //             child: const Text('Retry', style: TextStyle(color: Colors.black)),
+  //           ),
+  //         ],
+  //       ),
+  //     );
+  //   }
 
-    // Show the sessions list
-    return RefreshIndicator(
-      onRefresh: _loadSessions,
-      child: CounselingList(
-        sessions: _sessions,
-        searchQuery: _searchQuery,
-        startDate: _startDate,
-        endDate: _endDate,
-        onSearchChanged: _onSearchChanged,
-        onDateSelected: _selectDate,
-      ),
-    );
-  }
+  //   // Show the sessions list
+  //   return RefreshIndicator(
+  //     onRefresh: _loadSessions,
+  //     child: CounselingList(
+  //       sessions: _sessions,
+  //       searchQuery: _searchQuery,
+  //       startDate: _startDate,
+  //       endDate: _endDate,
+  //       onSearchChanged: _onSearchChanged,
+  //       onDateSelected: _selectDate,
+  //     ),
+  //   );
+  // }
 
   void _showBookingModal(BuildContext context) {
     showModalBottomSheet(
@@ -734,13 +742,13 @@ class _CounselingCornerScreenState
                   ],
                 ),
               ),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  padding: const EdgeInsets.all(16),
-                  child: const BookCounselingForm(),
-                ),
-              ),
+              // Expanded(
+              //   child: SingleChildScrollView(
+              //     controller: scrollController,
+              //     padding: const EdgeInsets.all(16),
+              //     child: const BookCounselingForm(),
+              //   ),
+              // ),
             ],
           ),
         ),
