@@ -5,6 +5,8 @@ import '../../widgets/common_widgets.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import '../../services/alarm_service.dart';
+import '../../services/prayer_service.dart';
+import '../inbox/inbox_screen.dart';
 
 class PrayerSchedule extends StatefulWidget {
   final DeeperPrayerInfo? prayerSchedule;
@@ -42,8 +44,9 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
   Future<void> _initializeAlarms() async {
     // Load alarm preferences
     final prayerAlarmsEnabled = await AlarmService.arePrayerAlarmsEnabled();
-    final deeperPrayerAlarmsEnabled = await AlarmService.areDeeperPrayerAlarmsEnabled();
-    
+    final deeperPrayerAlarmsEnabled =
+        await AlarmService.areDeeperPrayerAlarmsEnabled();
+
     await AlarmService.schedulePrayerAlarms();
     setState(() {
       _nextAlarmTime = AlarmService.getNextAlarmTime();
@@ -84,8 +87,6 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
         _buildScheduleInfo(context),
         const SizedBox(height: 16),
         _buildPrayerTimes(context),
-        const SizedBox(height: 16),
-        _buildTestAlarmButton(context),
         const SizedBox(height: 16),
         _buildAlarmSettings(context),
         const SizedBox(height: 16),
@@ -316,15 +317,99 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
     BuildContext context,
     Map<String, dynamic> prayer,
     bool isActive,
-  ) {
+  ) async {
     if (isActive) {
-      _playPrayerAudio(context, prayer);
+      await _playCurrentPrayer(context, prayer);
     } else {
       _showInactivePrayerDialog(context, prayer);
     }
   }
 
-  void _playPrayerAudio(BuildContext context, Map<String, dynamic> prayer) {
+  Future<void> _playCurrentPrayer(
+    BuildContext context,
+    Map<String, dynamic> prayer,
+  ) async {
+    try {
+      final prayerData = await PrayerService.getCurrentScheduledPrayer();
+      if (prayerData != null && prayerData['prayer'] != null) {
+        final prayerInfo = prayerData['prayer'];
+        final audioUrl = prayerInfo['audio_url'];
+        final title = prayerInfo['title'] ?? prayer['label'];
+        final message = prayerInfo['message'] ?? '';
+
+        if (audioUrl != null) {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return _buildPrayerAudioDialog(context, title, message, audioUrl);
+            },
+          );
+        } else {
+          _showNoAudioDialog(context, prayer);
+        }
+      } else {
+        _showNoAudioDialog(context, prayer);
+      }
+    } catch (e) {
+      if (e.toString().contains('Unauthenticated')) {
+        showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: const Row(
+                children: [
+                  Icon(Icons.login, color: Colors.orange, size: 24),
+                  SizedBox(width: 12),
+                  Text(
+                    'Login Required',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.orange,
+                    ),
+                  ),
+                ],
+              ),
+              content: const Text(
+                'Please log in to access prayer audio and content.',
+                style: TextStyle(fontSize: 16),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Later', style: TextStyle(color: Colors.grey)),
+                ),
+                ElevatedButton.icon(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.pushNamed(context, '/login');
+                  },
+                  icon: const Icon(Icons.login, size: 16),
+                  label: const Text('Log In'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGold,
+                    foregroundColor: AppTheme.richBlack,
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading prayer: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showNoAudioDialog(BuildContext context, Map<String, dynamic> prayer) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -337,12 +422,12 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  color: Colors.orange.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Icon(
-                  Icons.play_circle_filled,
-                  color: AppTheme.primaryGold,
+                  Icons.volume_off,
+                  color: Colors.orange,
                   size: 24,
                 ),
               ),
@@ -353,7 +438,7 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryGold,
+                    color: Colors.orange,
                   ),
                 ),
               ),
@@ -363,31 +448,29 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
             mainAxisSize: MainAxisSize.min,
             children: [
               const Text(
-                'Playing prayer audio...',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                'No audio is currently available for this prayer time.',
+                style: TextStyle(fontSize: 16),
+                textAlign: TextAlign.center,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
               Container(
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryGold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(
-                      Icons.volume_up,
-                      color: AppTheme.primaryGold,
-                      size: 20,
-                    ),
+                    Icon(Icons.inbox, color: AppTheme.primaryGold, size: 20),
                     SizedBox(width: 8),
-                    Text(
-                      'Audio is now playing...',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: AppTheme.primaryGold,
+                    Expanded(
+                      child: Text(
+                        'Check your inbox for prayer audio when available.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryGold,
+                        ),
                       ),
                     ),
                   ],
@@ -396,39 +479,13 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
             ],
           ),
           actions: [
-            TextButton(
-              onPressed: () async {
-                await alarmtone.stop();
-                Navigator.pop(context);
-              },
-              child: const Text('Stop', style: TextStyle(color: Colors.red)),
-            ),
             ElevatedButton(
-              onPressed: () async {
-                try {
-                  await alarmtone.play(
-                    AssetSource('ringtons/cellphone-ringing-6475.mp3'),
-                  );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Prayer sound started playing...'),
-                      backgroundColor: AppTheme.primaryGold,
-                    ),
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Error playing sound: $e'),
-                      backgroundColor: Colors.red,
-                    ),
-                  );
-                }
-              },
+              onPressed: () => Navigator.pop(context),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGold,
                 foregroundColor: AppTheme.richBlack,
               ),
-              child: const Text('Play Sound'),
+              child: const Text('Got it'),
             ),
           ],
         );
@@ -503,7 +560,7 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                     SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        'Find this prayer in your notifications when it\'s time!',
+                        'Past or upcoming prayers are available in your inbox!',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
@@ -517,13 +574,24 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
             ],
           ),
           actions: [
-            ElevatedButton(
+            TextButton(
               onPressed: () => Navigator.pop(context),
+              child: const Text('Later', style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InboxScreen()),
+                );
+              },
+              icon: const Icon(Icons.inbox, size: 16),
+              label: const Text('Check Inbox'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGold,
                 foregroundColor: AppTheme.richBlack,
               ),
-              child: const Text('Got it'),
             ),
           ],
         );
@@ -671,8 +739,145 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
     );
   }
 
-  Future<void> _testAlarm() async {
-    await AlarmService.triggerPrayerAlarm('Test Prayer');
+  Widget _buildPrayerAudioDialog(
+    BuildContext context,
+    String title,
+    String message,
+    String audioUrl,
+  ) {
+    return StatefulBuilder(
+      builder: (context, setState) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.play_circle_filled,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (message.isNotEmpty) ...[
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    message,
+                    style: const TextStyle(fontSize: 14, height: 1.4),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+              StreamBuilder<PlayerState>(
+                stream: PrayerService.playerStateStream,
+                builder: (context, snapshot) {
+                  final isPlaying = snapshot.data == PlayerState.playing;
+                  return Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          isPlaying ? Icons.volume_up : Icons.volume_off,
+                          color: AppTheme.primaryGold,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          isPlaying
+                              ? 'Prayer audio is playing...'
+                              : 'Ready to play prayer',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () async {
+                await PrayerService.stopPrayerAudio();
+                Navigator.pop(context);
+              },
+              child: const Text('Close', style: TextStyle(color: Colors.grey)),
+            ),
+            StreamBuilder<PlayerState>(
+              stream: PrayerService.playerStateStream,
+              builder: (context, snapshot) {
+                final isPlaying = snapshot.data == PlayerState.playing;
+                return ElevatedButton.icon(
+                  onPressed: () async {
+                    if (isPlaying) {
+                      await PrayerService.stopPrayerAudio();
+                    } else {
+                      final success = await PrayerService.playPrayerAudio(
+                        audioUrl,
+                      );
+                      if (!success && context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Failed to play prayer audio'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  },
+                  icon: Icon(
+                    isPlaying ? Icons.stop : Icons.play_arrow,
+                    size: 16,
+                  ),
+                  label: Text(isPlaying ? 'Stop' : 'Play Prayer'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGold,
+                    foregroundColor: AppTheme.richBlack,
+                  ),
+                );
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _buildAlarmSettings(BuildContext context) {
@@ -703,17 +908,17 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
             ],
           ),
           const SizedBox(height: 16),
-          
+
           // Regular Prayer Alarms Toggle
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _prayerAlarmsEnabled 
+              color: _prayerAlarmsEnabled
                   ? AppTheme.successGreen.withOpacity(0.1)
                   : Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: _prayerAlarmsEnabled 
+                color: _prayerAlarmsEnabled
                     ? AppTheme.successGreen.withOpacity(0.3)
                     : Colors.grey.withOpacity(0.3),
               ),
@@ -722,7 +927,9 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
               children: [
                 Icon(
                   Icons.schedule,
-                  color: _prayerAlarmsEnabled ? AppTheme.successGreen : Colors.grey,
+                  color: _prayerAlarmsEnabled
+                      ? AppTheme.successGreen
+                      : Colors.grey,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -739,42 +946,41 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                       ),
                       Text(
                         '6AM, 12PM, 6PM daily alarms',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
                 ),
                 Switch(
                   value: _prayerAlarmsEnabled,
-                  onChanged: _alarmsScheduled ? (value) async {
-                    if (value) {
-                      await AlarmService.enablePrayerAlarms();
-                    } else {
-                      await AlarmService.disablePrayerAlarms();
-                    }
-                    await _initializeAlarms();
-                  } : null,
+                  onChanged: _alarmsScheduled
+                      ? (value) async {
+                          if (value) {
+                            await AlarmService.enablePrayerAlarms();
+                          } else {
+                            await AlarmService.disablePrayerAlarms();
+                          }
+                          await _initializeAlarms();
+                        }
+                      : null,
                   activeColor: AppTheme.primaryGold,
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Deeper Prayer Alarms Toggle
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: _deeperPrayerAlarmsEnabled 
+              color: _deeperPrayerAlarmsEnabled
                   ? AppTheme.accentGold.withOpacity(0.1)
                   : Colors.grey.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: _deeperPrayerAlarmsEnabled 
+                color: _deeperPrayerAlarmsEnabled
                     ? AppTheme.accentGold.withOpacity(0.3)
                     : Colors.grey.withOpacity(0.3),
               ),
@@ -783,7 +989,9 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
               children: [
                 Icon(
                   Icons.nightlight_round,
-                  color: _deeperPrayerAlarmsEnabled ? AppTheme.accentGold : Colors.grey,
+                  color: _deeperPrayerAlarmsEnabled
+                      ? AppTheme.accentGold
+                      : Colors.grey,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
@@ -800,48 +1008,49 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                       ),
                       Text(
                         'Midnight prayer session (12:00 AM)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(fontSize: 12, color: Colors.grey),
                       ),
                     ],
                   ),
                 ),
                 Switch(
                   value: _deeperPrayerAlarmsEnabled,
-                  onChanged: _alarmsScheduled ? (value) async {
-                    if (value) {
-                      await AlarmService.enableDeeperPrayerAlarms();
-                    } else {
-                      await AlarmService.disableDeeperPrayerAlarms();
-                    }
-                    await _initializeAlarms();
-                  } : null,
+                  onChanged: _alarmsScheduled
+                      ? (value) async {
+                          if (value) {
+                            await AlarmService.enableDeeperPrayerAlarms();
+                          } else {
+                            await AlarmService.disableDeeperPrayerAlarms();
+                          }
+                          await _initializeAlarms();
+                        }
+                      : null,
                   activeColor: AppTheme.accentGold,
                 ),
               ],
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Disable All Button
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: _alarmsScheduled ? () async {
-                await AlarmService.cancelAllAlarms();
-                await AlarmService.disablePrayerAlarms();
-                await AlarmService.disableDeeperPrayerAlarms();
-                await _initializeAlarms();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('All prayer alarms have been disabled'),
-                    backgroundColor: Colors.red,
-                  ),
-                );
-              } : null,
+              onPressed: _alarmsScheduled
+                  ? () async {
+                      await AlarmService.cancelAllAlarms();
+                      await AlarmService.disablePrayerAlarms();
+                      await AlarmService.disableDeeperPrayerAlarms();
+                      await _initializeAlarms();
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('All prayer alarms have been disabled'),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  : null,
               icon: const Icon(Icons.notifications_off, size: 20),
               label: const Text('Disable All Alarms'),
               style: ElevatedButton.styleFrom(
@@ -851,114 +1060,6 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                 disabledBackgroundColor: Colors.grey.shade300,
               ),
             ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTestAlarmButton(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.blue.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              const Icon(Icons.alarm, color: Colors.blue, size: 24),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'System Alarm Test',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              if (_nextAlarmTime != null && _alarmsScheduled)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGold.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    'Next: $_nextAlarmTime',
-                    style: const TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.primaryGold,
-                    ),
-                  ),
-                ),
-              if (!_alarmsScheduled)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.orange.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Setting up...',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.orange,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _alarmsScheduled ? () => _testAlarm() : null,
-                  icon: const Icon(Icons.notification_important, size: 20),
-                  label: const Text('Test System Alarm'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.blue,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 12),
-                    disabledBackgroundColor: Colors.grey.shade300,
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              ElevatedButton.icon(
-                onPressed: _alarmsScheduled ? () async {
-                  await AlarmService.cancelAllAlarms();
-                  await _initializeAlarms();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Alarms reset and rescheduled'),
-                      backgroundColor: AppTheme.primaryGold,
-                    ),
-                  );
-                } : null,
-                icon: const Icon(Icons.refresh, size: 20),
-                label: const Text('Reset'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.orange,
-                  foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  disabledBackgroundColor: Colors.grey.shade300,
-                ),
-              ),
-            ],
           ),
         ],
       ),

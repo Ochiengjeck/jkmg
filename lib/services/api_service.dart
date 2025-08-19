@@ -32,7 +32,12 @@ class ApiService {
   }
 
   // Helper method to get headers
-  Map<String, String> _getHeaders([bool includeAuth = true]) {
+  Future<Map<String, String>> _getHeaders([bool includeAuth = true]) async {
+    // Ensure token is loaded before making requests
+    if (_token == null) {
+      await _loadTokenFromStorage();
+    }
+    
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -56,7 +61,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/register'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
       body: jsonEncode({
         'name': name,
         'phone': phone,
@@ -95,7 +100,7 @@ class ApiService {
 
     final response = await http.post(
       Uri.parse('$baseUrl/login'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
       body: jsonEncode(loginData),
     );
 
@@ -118,7 +123,7 @@ class ApiService {
   Future<void> forgotPassword({required String email}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/forgot-password'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
       body: jsonEncode({'email': email}),
     );
 
@@ -131,7 +136,7 @@ class ApiService {
   Future<void> sendPasswordResetOtp({required String email}) async {
     final response = await http.post(
       Uri.parse('$baseUrl/email/verification/send'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
       body: jsonEncode({
         'email': email,
         'for_reset': true,
@@ -151,7 +156,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/email/verification/verify'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
       body: jsonEncode({
         'email': email,
         'otp': otp,
@@ -195,7 +200,7 @@ class ApiService {
   Future<void> logout() async {
     final response = await http.post(
       Uri.parse('$baseUrl/logout'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -214,7 +219,7 @@ class ApiService {
   Future<User> getCurrentUser() async {
     final response = await http.get(
       Uri.parse('$baseUrl/user'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -234,7 +239,7 @@ class ApiService {
   }) async {
     final response = await http.put(
       Uri.parse('$baseUrl/user/profile'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         if (name != null) 'name': name,
         if (email != null) 'email': email,
@@ -256,7 +261,7 @@ class ApiService {
   Future<PrayerSchedule> getPrayerSchedule() async {
     final response = await http.get(
       Uri.parse('$baseUrl/prayers/schedule'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -264,6 +269,24 @@ class ApiService {
       return PrayerSchedule.fromJson(data);
     } else {
       throw Exception('Failed to get prayer schedule: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> getScheduledPrayer({int? prayerId}) async {
+    String endpoint = '$baseUrl/prayers/scheduled';
+    if (prayerId != null) {
+      endpoint += '?prayer_id=$prayerId';
+    }
+
+    final response = await http.get(
+      Uri.parse(endpoint),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get scheduled prayer: ${response.body}');
     }
   }
 
@@ -279,7 +302,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/prayers/request'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'title': title,
         'description': description,
@@ -303,7 +326,7 @@ class ApiService {
   Future<DeeperPrayerInfo> getDeeperPrayerInfo() async {
     final response = await http.get(
       Uri.parse('$baseUrl/prayers/deeper'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -320,7 +343,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/prayers/deeper'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'duration': duration,
         if (notes != null) 'notes': notes,
@@ -341,7 +364,7 @@ class ApiService {
   Future<BibleStudy> getTodaysBibleStudy() async {
     final response = await http.get(
       Uri.parse('$baseUrl/bible/today'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -369,7 +392,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/bible/studies',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -400,7 +423,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/events').replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -414,7 +437,7 @@ class ApiService {
   Future<Event> getEventDetails(String eventId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/events/$eventId'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -432,7 +455,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/events/register'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'event_id': eventId,
         'attendance': attendance,
@@ -459,7 +482,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/events/my-registrations',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -495,7 +518,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/resources').replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -512,7 +535,7 @@ class ApiService {
   Future<Resource> getResourceDetails(String resourceId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/resources/$resourceId'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -537,7 +560,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/testimonies',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -558,7 +581,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/testimonies'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'title': title,
         'body': body,
@@ -583,7 +606,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/testimonies/my',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -605,7 +628,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/donate'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'amount': amount,
         'method': method,
@@ -634,7 +657,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/donations/my',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -656,7 +679,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/counseling/book'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'topic': topic,
         if (scheduledAt != null) 'scheduled_at': scheduledAt,
@@ -691,7 +714,7 @@ class ApiService {
       Uri.parse(
         '$baseUrl/counseling/sessions',
       ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -728,7 +751,7 @@ class ApiService {
 
     final response = await http.post(
       Uri.parse('$baseUrl/salvation/decisions'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode(requestData),
     );
 
@@ -756,7 +779,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/salvation/decisions')
         .replace(queryParameters: queryParameters);
 
-    final response = await http.get(uri, headers: _getHeaders());
+    final response = await http.get(uri, headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -781,7 +804,7 @@ class ApiService {
     final uri = Uri.parse('$baseUrl/salvation/testimonies')
         .replace(queryParameters: queryParameters);
 
-    final response = await http.get(uri, headers: _getHeaders());
+    final response = await http.get(uri, headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
@@ -798,25 +821,35 @@ class ApiService {
     String? status,
     int? perPage,
   }) async {
+    print('🔵 API: getNotifications called - status: $status, perPage: $perPage');
+    
     final queryParameters = {
       if (status != null) 'status': status,
       if (perPage != null) 'per_page': perPage.toString(),
     };
-
+    print('🔵 API: Query parameters: $queryParameters');
+    
+    final uri = Uri.parse('$baseUrl/notifications').replace(queryParameters: queryParameters);
+    print('🔵 API: Final URI: $uri');
+    
+    print('🔵 API: Making HTTP GET request...');
     final response = await http.get(
-      Uri.parse(
-        '$baseUrl/notifications',
-      ).replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      uri,
+      headers: await _getHeaders(),
     );
+    
+    print('🔵 API: Response status code: ${response.statusCode}');
+    print('🔵 API: Response body: ${response.body}');
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
+      print('🟢 API: Successfully parsed JSON data');
       return PaginatedResponse.fromJson(
         data,
         (json) => Notification.fromJson(json),
       );
     } else {
+      print('🔴 API: HTTP Error ${response.statusCode}: ${response.body}');
       throw Exception('Failed to get notifications: ${response.body}');
     }
   }
@@ -824,7 +857,7 @@ class ApiService {
   Future<Notification> markNotificationAsRead(String notificationId) async {
     final response = await http.post(
       Uri.parse('$baseUrl/notifications/$notificationId/read'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -839,7 +872,7 @@ class ApiService {
   Future<List<FeedbackType>> getFeedbackTypes() async {
     final response = await http.get(
       Uri.parse('$baseUrl/feedback-types'),
-      headers: _getHeaders(false),
+      headers: await _getHeaders(false),
     );
 
     if (response.statusCode == 200) {
@@ -862,7 +895,7 @@ class ApiService {
   }) async {
     final response = await http.post(
       Uri.parse('$baseUrl/feedback'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
       body: jsonEncode({
         'type': type,
         'subject': subject,
@@ -894,7 +927,7 @@ class ApiService {
 
     final response = await http.get(
       Uri.parse('$baseUrl/feedback').replace(queryParameters: queryParameters),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -911,7 +944,7 @@ class ApiService {
   Future<Feedback> getSpecificFeedback(String feedbackId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/feedback/$feedbackId'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {
@@ -925,7 +958,7 @@ class ApiService {
   Future<FeedbackStats> getMyFeedbackStats() async {
     final response = await http.get(
       Uri.parse('$baseUrl/feedback-stats/my'),
-      headers: _getHeaders(),
+      headers: await _getHeaders(),
     );
 
     if (response.statusCode == 200) {

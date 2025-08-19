@@ -189,13 +189,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final notificationsAsync = ref.watch(
-                  notificationsProvider({'status': 'unread', 'per_page': 1}),
-                );
+                final unreadCountAsync = ref.watch(unreadNotificationsCountProvider);
 
-                return notificationsAsync.when(
-                  data: (notifications) {
-                    final unreadCount = notifications.data.length;
+                return unreadCountAsync.when(
+                  data: (unreadCount) {
                     if (unreadCount > 0) {
                       return Positioned(
                         right: 6,

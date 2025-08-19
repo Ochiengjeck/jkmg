@@ -10,16 +10,17 @@ class ForgotPasswordScreen extends ConsumerStatefulWidget {
   const ForgotPasswordScreen({super.key});
 
   @override
-  ConsumerState<ForgotPasswordScreen> createState() => _ForgotPasswordScreenState();
+  ConsumerState<ForgotPasswordScreen> createState() =>
+      _ForgotPasswordScreenState();
 }
 
 class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     with TickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
-  
+
   bool _isLoading = false;
-  
+
   late AnimationController _animationController;
   late AnimationController _floatingController;
   late Animation<double> _fadeAnimation;
@@ -33,7 +34,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       duration: const Duration(milliseconds: 1200),
       vsync: this,
     );
-    
+
     _floatingController = AnimationController(
       duration: const Duration(seconds: 4),
       vsync: this,
@@ -78,19 +79,20 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         await ref.read(
           sendPasswordResetOtpProvider({'email': _emailController.text}).future,
         );
-        
+
         if (mounted) {
           setState(() {
             _isLoading = false;
           });
-          
-          _showSuccessSnackBar('OTP sent to your email. Please check your inbox.');
+
+          _showSuccessSnackBar(
+            'OTP sent to your email. Please check your inbox.',
+          );
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (context) => OtpVerificationScreen(
-                email: _emailController.text,
-              ),
+              builder: (context) =>
+                  OtpVerificationScreen(email: _emailController.text),
             ),
           );
         }
@@ -132,35 +134,41 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
     Color backgroundColor = Colors.red;
     IconData icon = Icons.error_outline;
 
-    if (error.contains('SocketException') || 
-        error.contains('Failed host lookup') || 
+    if (error.contains('SocketException') ||
+        error.contains('Failed host lookup') ||
         error.contains('Network is unreachable') ||
         error.contains('No address associated with hostname')) {
-      userFriendlyMessage = 'No internet connection. Please check your network and try again.';
+      userFriendlyMessage =
+          'No internet connection. Please check your network and try again.';
       icon = Icons.wifi_off;
-    } else if (error.contains('TimeoutException') || 
-               error.contains('Connection timed out')) {
-      userFriendlyMessage = 'Connection timeout. Please check your internet and try again.';
+    } else if (error.contains('TimeoutException') ||
+        error.contains('Connection timed out')) {
+      userFriendlyMessage =
+          'Connection timeout. Please check your internet and try again.';
       icon = Icons.access_time;
-    } else if (error.contains('email not found') || 
-               error.contains('User not found') ||
-               error.contains('404')) {
-      userFriendlyMessage = 'Email address not found. Please check and try again.';
+    } else if (error.contains('email not found') ||
+        error.contains('User not found') ||
+        error.contains('404')) {
+      userFriendlyMessage =
+          'Email address not found. Please check and try again.';
       backgroundColor = Colors.orange;
       icon = Icons.mail_outline;
-    } else if (error.contains('rate limit') || 
-               error.contains('too many requests')) {
-      userFriendlyMessage = 'Too many attempts. Please wait a moment and try again.';
+    } else if (error.contains('rate limit') ||
+        error.contains('too many requests')) {
+      userFriendlyMessage =
+          'Too many attempts. Please wait a moment and try again.';
       backgroundColor = Colors.orange;
       icon = Icons.access_time;
-    } else if (error.contains('Server error') || 
-               error.contains('500') || 
-               error.contains('502') || 
-               error.contains('503')) {
-      userFriendlyMessage = 'Server temporarily unavailable. Please try again later.';
+    } else if (error.contains('Server error') ||
+        error.contains('500') ||
+        error.contains('502') ||
+        error.contains('503')) {
+      userFriendlyMessage =
+          'Server temporarily unavailable. Please try again later.';
       icon = Icons.cloud_off;
     } else {
-      userFriendlyMessage = 'Failed to send verification code. Please try again.';
+      userFriendlyMessage =
+          'Failed to send one time password (OTP). Please try again.';
     }
 
     ScaffoldMessenger.of(context).showSnackBar(
@@ -172,7 +180,10 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
             Expanded(
               child: Text(
                 userFriendlyMessage,
-                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
               ),
             ),
           ],
@@ -195,11 +206,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [
-              AppTheme.richBlack,
-              Color(0xFF1A1A1A),
-              AppTheme.richBlack,
-            ],
+            colors: [AppTheme.richBlack, Color(0xFF1A1A1A), AppTheme.richBlack],
           ),
         ),
         child: SafeArea(
@@ -218,7 +225,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           const SizedBox(height: 40),
-                          
+
                           // Back Button
                           Align(
                             alignment: Alignment.topLeft,
@@ -241,9 +248,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               ),
                             ),
                           ),
-                          
+
                           const SizedBox(height: 40),
-                          
+
                           // Icon with floating animation
                           AnimatedBuilder(
                             animation: _floatingAnimation,
@@ -263,12 +270,16 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                       ],
                                     ),
                                     border: Border.all(
-                                      color: AppTheme.primaryGold.withOpacity(0.3),
+                                      color: AppTheme.primaryGold.withOpacity(
+                                        0.3,
+                                      ),
                                       width: 2,
                                     ),
                                     boxShadow: [
                                       BoxShadow(
-                                        color: AppTheme.primaryGold.withOpacity(0.2),
+                                        color: AppTheme.primaryGold.withOpacity(
+                                          0.2,
+                                        ),
                                         blurRadius: 20,
                                         spreadRadius: 5,
                                       ),
@@ -283,9 +294,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               );
                             },
                           ),
-                          
+
                           const SizedBox(height: 32),
-                          
+
                           // Title
                           ShaderMask(
                             shaderCallback: (bounds) => const LinearGradient(
@@ -306,11 +317,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               textAlign: TextAlign.center,
                             ),
                           ),
-                          
+
                           const SizedBox(height: 8),
-                          
+
                           Text(
-                            'Enter your email address and we\'ll send you a verification code to reset your password',
+                            'Enter your email address and we\'ll send you a one time password (OTP) to reset your password',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white.withOpacity(0.7),
@@ -333,15 +344,17 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               if (value == null || value.isEmpty) {
                                 return 'Please enter your email';
                               }
-                              if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value)) {
                                 return 'Please enter a valid email';
                               }
                               return null;
                             },
                           ),
-                          
+
                           const SizedBox(height: 32),
-                          
+
                           // Reset Button
                           _buildPrimaryButton(
                             onPressed: _isLoading ? null : _resetPassword,
@@ -357,7 +370,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ),
                                   )
                                 : const Text(
-                                    'Send Verification Code',
+                                    'Send one time password (OTP)',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
@@ -365,9 +378,9 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ),
                                   ),
                           ),
-                          
+
                           const SizedBox(height: 32),
-                          
+
                           // Back to Login Link
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
@@ -399,7 +412,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                               ),
                             ],
                           ),
-                          
+
                           const SizedBox(height: 40),
                         ],
                       ),
@@ -426,10 +439,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
       controller: controller,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(
-        color: Colors.white,
-        fontSize: 16,
-      ),
+      style: const TextStyle(color: Colors.white, fontSize: 16),
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(
@@ -464,17 +474,11 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: AppTheme.primaryGold,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(
-            color: Colors.red,
-            width: 1,
-          ),
+          borderSide: const BorderSide(color: Colors.red, width: 1),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,

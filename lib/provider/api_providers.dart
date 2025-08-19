@@ -482,11 +482,33 @@ final notificationsProvider =
       PaginatedResponse<Notification>,
       Map<String, dynamic>
     >((ref, params) async {
+      print('🔴 PROVIDER: notificationsProvider called with params: $params');
       final apiService = ref.read(apiServiceProvider);
-      return apiService.getNotifications(
-        status: params['status'] as String?,
-        perPage: params['per_page'] as int?,
-      );
+      final status = params['status'] as String?;
+      print('🔴 PROVIDER: Parsed status: $status');
+      
+      try {
+        // Don't pass status parameter if it's 'all' or null
+        if (status == null || status == 'all') {
+          print('🔴 PROVIDER: Calling getNotifications without status (perPage: ${params['per_page']})');
+          final result = await apiService.getNotifications(
+            perPage: params['per_page'] as int?,
+          );
+          print('🟢 PROVIDER: Successfully got ${result.data.length} notifications');
+          return result;
+        } else {
+          print('🔴 PROVIDER: Calling getNotifications with status: $status (perPage: ${params['per_page']})');
+          final result = await apiService.getNotifications(
+            status: status,
+            perPage: params['per_page'] as int?,
+          );
+          print('🟢 PROVIDER: Successfully got ${result.data.length} notifications with status filter');
+          return result;
+        }
+      } catch (e) {
+        print('🔴 PROVIDER: Error in notificationsProvider: $e');
+        rethrow;
+      }
     });
 
 final markNotificationAsReadProvider =
@@ -494,6 +516,37 @@ final markNotificationAsReadProvider =
       final apiService = ref.read(apiServiceProvider);
       return apiService.markNotificationAsRead(notificationId);
     });
+
+// Separate provider for home screen unread count (avoids conflicts)
+final unreadNotificationsCountProvider = FutureProvider<int>((ref) async {
+  print('🟠 PROVIDER: unreadNotificationsCountProvider called');
+  final apiService = ref.read(apiServiceProvider);
+  try {
+    final result = await apiService.getNotifications(
+      status: 'unread',
+      perPage: 1, // We only need the count, not the actual data
+    );
+    print('🟠 PROVIDER: Got unread count: ${result.meta?['unread_count'] ?? 0}');
+    return result.meta?['unread_count'] ?? 0;
+  } catch (e) {
+    print('🔴 PROVIDER: Error in unreadNotificationsCountProvider: $e');
+    return 0;
+  }
+});
+
+// Prayer Providers
+final scheduledPrayerProvider = FutureProvider.family<Map<String, dynamic>, int?>((
+  ref, 
+  prayerId,
+) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.getScheduledPrayer(prayerId: prayerId);
+});
+
+final currentScheduledPrayerProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.getScheduledPrayer();
+});
 
 // Feedback Providers
 final feedbackTypesProvider = FutureProvider<List<FeedbackType>>((ref) async {

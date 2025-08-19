@@ -1,31 +1,96 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../provider/api_providers.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../models/notification.dart' as NotificationModel;
 import '../../services/api_service.dart';
+import '../../services/prayer_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 
-class InboxScreen extends ConsumerStatefulWidget {
+class InboxScreen extends StatefulWidget {
   const InboxScreen({super.key});
 
   @override
-  ConsumerState<InboxScreen> createState() => _InboxScreenState();
+  State<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends ConsumerState<InboxScreen> {
+class _InboxScreenState extends State<InboxScreen> {
   String _selectedFilter = 'all';
   final List<String> _filterOptions = ['all', 'unread', 'read'];
+  final ApiService _apiService = ApiService();
+
+  List<NotificationModel.Notification> _notifications = [];
+  List<Map<String, dynamic>> _prayers = [];
+  bool _isLoading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      // Load notifications and prayers simultaneously
+      await Future.wait([_loadNotifications(), _loadPrayers()]);
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _loadNotifications() async {
+    try {
+      // Don't pass status parameter when 'all' is selected, or pass empty string
+      final response = _selectedFilter == 'all'
+          ? await _apiService.getNotifications(perPage: 50)
+          : await _apiService.getNotifications(
+              status: _selectedFilter,
+              perPage: 50,
+            );
+      setState(() {
+        _notifications = response.data;
+      });
+    } catch (e) {
+      print('Error loading notifications: $e');
+      if (e.toString().contains('Unauthenticated')) {
+        setState(() {
+          _notifications = [];
+        });
+      }
+    }
+  }
+
+  Future<void> _loadPrayers() async {
+    try {
+      final response = await _apiService.getScheduledPrayer();
+      if (response['prayer'] != null) {
+        setState(() {
+          _prayers = [response['prayer']];
+        });
+      }
+    } catch (e) {
+      print('Error loading prayers: $e');
+      if (e.toString().contains('Unauthenticated')) {
+        setState(() {
+          _prayers = [];
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final notificationsAsync = ref.watch(
-      notificationsProvider({
-        'status': _selectedFilter == 'all' ? null : _selectedFilter,
-        'per_page': 50,
-      }),
-    );
-
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -44,25 +109,23 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          ref.invalidate(notificationsProvider);
-        },
+        onRefresh: _loadData,
         color: AppTheme.primaryGold,
         child: Column(
           children: [
             _buildFilterSection(),
             Expanded(
-              child: notificationsAsync.when(
-                data: (notifications) => _buildNotificationsList(notifications),
-                loading: () => const Center(
-                  child: CircularProgressIndicator(
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppTheme.primaryGold,
-                    ),
-                  ),
-                ),
-                error: (e, _) => _buildErrorState(e),
-              ),
+              child: _isLoading
+                  ? const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppTheme.primaryGold,
+                        ),
+                      ),
+                    )
+                  : _error != null
+                  ? _buildErrorState(_error!)
+                  : _buildCombinedList(),
             ),
           ],
         ),
@@ -104,6 +167,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
                   child: GestureDetector(
                     onTap: () {
                       setState(() => _selectedFilter = filter);
+                      _loadData();
                     },
                     child: Container(
                       padding: const EdgeInsets.symmetric(
@@ -142,20 +206,190 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     );
   }
 
-  Widget _buildNotificationsList(
-    PaginatedResponse<NotificationModel.Notification> notifications,
-  ) {
-    if (notifications.data.isEmpty) {
+  Widget _buildCombinedList() {
+    final combinedItems = <Map<String, dynamic>>[];
+
+    // Add prayers as special items
+    for (var prayer in _prayers) {
+      combinedItems.add({
+        'type': 'prayer',
+        'data': prayer,
+        'created_at': prayer['created_at'] ?? DateTime.now().toIso8601String(),
+      });
+    }
+
+    // Add notifications
+    for (var notification in _notifications) {
+      combinedItems.add({
+        'type': 'notification',
+        'data': notification,
+        'created_at': notification.createdAt,
+      });
+    }
+
+    // Sort by creation date (newest first)
+    combinedItems.sort((a, b) {
+      final dateA = DateTime.parse(a['created_at']);
+      final dateB = DateTime.parse(b['created_at']);
+      return dateB.compareTo(dateA);
+    });
+
+    if (combinedItems.isEmpty) {
       return _buildEmptyState();
     }
 
     return ListView.builder(
       padding: const EdgeInsets.all(16),
-      itemCount: notifications.data.length,
+      itemCount: combinedItems.length,
       itemBuilder: (context, index) {
-        final notification = notifications.data[index];
-        return _buildNotificationCard(notification);
+        final item = combinedItems[index];
+        if (item['type'] == 'prayer') {
+          return _buildPrayerCard(item['data']);
+        } else {
+          return _buildNotificationCard(item['data']);
+        }
       },
+    );
+  }
+
+  Widget _buildPrayerCard(Map<String, dynamic> prayer) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.accentGold.withOpacity(0.05),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.3),
+          width: 2,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryGold.withOpacity(0.1),
+            blurRadius: 8,
+            spreadRadius: 1,
+          ),
+        ],
+      ),
+      child: InkWell(
+        onTap: () => _onPrayerTapped(prayer),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: const Icon(
+                  Icons.play_circle_filled,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            prayer['title'] ?? 'Prayer Audio',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepGold,
+                            ),
+                          ),
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryGold,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Text(
+                            'PRAYER',
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.richBlack,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    if (prayer['pastor'] != null) ...[
+                      Text(
+                        'By ${prayer['pastor']['name']}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: AppTheme.primaryGold.withOpacity(0.8),
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                    ],
+                    Text(
+                      prayer['message'] ?? 'Prayer message available',
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.color?.withOpacity(0.8),
+                        height: 1.4,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.headphones,
+                          size: 14,
+                          color: AppTheme.primaryGold.withOpacity(0.7),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Tap to listen',
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: AppTheme.primaryGold.withOpacity(0.7),
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const Spacer(),
+                        Text(
+                          _formatNotificationTime(prayer['created_at'] ?? ''),
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 
@@ -316,7 +550,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     );
   }
 
-  Widget _buildErrorState(Object error) {
+  Widget _buildErrorState(String error) {
     return Center(
       child: CustomCard(
         child: Column(
@@ -333,7 +567,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              error.toString(),
+              error,
               style: Theme.of(
                 context,
               ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade600),
@@ -341,9 +575,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
             ),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () {
-                ref.invalidate(notificationsProvider);
-              },
+              onPressed: _loadData,
               icon: const Icon(Icons.refresh),
               label: const Text('Retry'),
               style: ElevatedButton.styleFrom(
@@ -357,10 +589,40 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     );
   }
 
-  void _onNotificationTapped(NotificationModel.Notification notification) {
+  void _onPrayerTapped(Map<String, dynamic> prayer) {
+    final audioUrl = prayer['audio_url'];
+    final title = prayer['title'] ?? 'Prayer';
+    final message = prayer['message'] ?? '';
+
+    if (audioUrl != null) {
+      _showPrayerAudioDialog(title, message, audioUrl);
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('No audio available for this prayer'),
+          backgroundColor: Colors.orange,
+        ),
+      );
+    }
+  }
+
+  void _onNotificationTapped(
+    NotificationModel.Notification notification,
+  ) async {
     if (!notification.isRead) {
-      // Mark as read
-      ref.read(markNotificationAsReadProvider(notification.id.toString()));
+      try {
+        await _apiService.markNotificationAsRead(notification.id.toString());
+        setState(() {
+          final index = _notifications.indexWhere(
+            (n) => n.id == notification.id,
+          );
+          if (index != -1) {
+            _notifications[index] = notification.copyWith(isRead: true);
+          }
+        });
+      } catch (e) {
+        print('Error marking notification as read: $e');
+      }
     }
 
     // Handle different notification types
@@ -373,7 +635,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
         _showPrayerReminderDialog(notification);
         break;
       case 'prayer_audio':
-        _showPrayerAudioDialog(notification);
+        _showNotificationPrayerDialog(notification);
         break;
       case 'deeper_prayer':
         _showDeeperPrayerDialog(notification);
@@ -446,94 +708,157 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
     );
   }
 
-  void _showPrayerAudioDialog(NotificationModel.Notification notification) {
+  void _showPrayerAudioDialog(String title, String message, String audioUrl) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          title: Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Icon(
-                  Icons.play_circle_filled,
-                  color: AppTheme.primaryGold,
-                  size: 24,
-                ),
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
               ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Prayer Audio Available',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.primaryGold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text(notification.body, style: const TextStyle(fontSize: 16)),
-              const SizedBox(height: 20),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.volume_up,
-                      color: AppTheme.primaryGold,
-                      size: 20,
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Tap to play prayer audio',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
+                    child: const Icon(
+                      Icons.play_circle_filled,
+                      color: AppTheme.primaryGold,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
                         color: AppTheme.primaryGold,
                       ),
                     ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (message.isNotEmpty) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryGold.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        message,
+                        style: const TextStyle(fontSize: 14, height: 1.4),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
                   ],
+                  StreamBuilder<PlayerState>(
+                    stream: PrayerService.playerStateStream,
+                    builder: (context, snapshot) {
+                      final isPlaying = snapshot.data == PlayerState.playing;
+                      return Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGold.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              isPlaying ? Icons.volume_up : Icons.volume_off,
+                              color: AppTheme.primaryGold,
+                              size: 20,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isPlaying
+                                  ? 'Prayer is playing...'
+                                  : 'Ready to play prayer',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: AppTheme.primaryGold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () async {
+                    await PrayerService.stopPrayerAudio();
+                    Navigator.pop(context);
+                  },
+                  child: const Text(
+                    'Close',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Later'),
-            ),
-            ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pop(context);
-                // Play audio logic here
-              },
-              icon: const Icon(Icons.play_arrow),
-              label: const Text('Play'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGold,
-                foregroundColor: AppTheme.richBlack,
-              ),
-            ),
-          ],
+                StreamBuilder<PlayerState>(
+                  stream: PrayerService.playerStateStream,
+                  builder: (context, snapshot) {
+                    final isPlaying = snapshot.data == PlayerState.playing;
+                    return ElevatedButton.icon(
+                      onPressed: () async {
+                        if (isPlaying) {
+                          await PrayerService.stopPrayerAudio();
+                        } else {
+                          final success = await PrayerService.playPrayerAudio(
+                            audioUrl,
+                          );
+                          if (!success && context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Failed to play prayer audio'),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
+                      },
+                      icon: Icon(
+                        isPlaying ? Icons.stop : Icons.play_arrow,
+                        size: 16,
+                      ),
+                      label: Text(isPlaying ? 'Stop' : 'Play Prayer'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGold,
+                        foregroundColor: AppTheme.richBlack,
+                      ),
+                    );
+                  },
+                ),
+              ],
+            );
+          },
         );
       },
+    );
+  }
+
+  void _showNotificationPrayerDialog(
+    NotificationModel.Notification notification,
+  ) {
+    _showPrayerAudioDialog(
+      'Prayer Audio Available',
+      notification.body,
+      '', // We would need to extract audio URL from notification data
     );
   }
 
