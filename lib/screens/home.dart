@@ -7,6 +7,7 @@ import 'package:jkmg/models/event.dart';
 // import 'package:jkmg/widgets/youtube_video_player.dart';  // Temporarily disabled for Windows build
 
 import '../auth/log_in.dart';
+import '../widgets/app_initializer.dart';
 import 'about/about_screen.dart';
 import 'bible_study/bible_study_corner.dart';
 import 'commonwealth/kingdom_commonwealth_screen.dart';
@@ -2711,14 +2712,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       // Call logout API
       await ref.read(logoutProvider.future);
+      
+      // Clear user session from provider
+      await ref.read(userSessionProvider.notifier).clearUserSession();
 
       // Close loading dialog
       if (context.mounted) {
         Navigator.of(context).pop();
 
-        Navigator.pushReplacement(
+        Navigator.pushAndRemoveUntil(
           context,
-          MaterialPageRoute(builder: (context) => LoginScreen()),
+          MaterialPageRoute(builder: (context) => const AppInitializer()),
+          (route) => false,
         );
       }
     } catch (e) {

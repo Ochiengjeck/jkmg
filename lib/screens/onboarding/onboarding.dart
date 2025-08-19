@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:jkmg/utils/app_theme.dart';
 import '../../auth/log_in.dart';
+import '../../services/preference_service.dart';
 import 'onboarding_data.dart';
 
 class OnboardingScreen extends StatefulWidget {
@@ -91,36 +92,56 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     super.dispose();
   }
 
-  void _nextPage() {
+  void _nextPage() async {
     if (_currentPage < onboardingData.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 400),
         curve: Curves.easeInOutCubic,
       );
     } else {
-      Navigator.pushReplacement(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) =>
-              const LoginScreen(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(1.0, 0.0),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeInOutCubic,
+      // Mark onboarding as completed
+      await _completeOnboarding();
+    }
+  }
+
+  Future<void> _completeOnboarding() async {
+    try {
+      final prefs = await PreferenceService.getInstance();
+      await prefs.setFirstLaunch(false);
+      
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          PageRouteBuilder(
+            pageBuilder: (context, animation, secondaryAnimation) =>
+                const LoginScreen(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(1.0, 0.0),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOutCubic,
+                      ),
                     ),
-                  ),
-              child: child,
-            );
-          },
-          transitionDuration: const Duration(milliseconds: 600),
-        ),
-      );
+                child: child,
+              );
+            },
+            transitionDuration: const Duration(milliseconds: 600),
+          ),
+        );
+      }
+    } catch (e) {
+      // If there's an error, still navigate to login
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginScreen()),
+        );
+      }
     }
   }
 
@@ -133,18 +154,9 @@ class _OnboardingScreenState extends State<OnboardingScreen>
     }
   }
 
-  void _skipToLogin() {
-    Navigator.pushReplacement(
-      context,
-      PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const LoginScreen(),
-        transitionsBuilder: (context, animation, secondaryAnimation, child) {
-          return FadeTransition(opacity: animation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 600),
-      ),
-    );
+  void _skipToLogin() async {
+    // Mark onboarding as completed even when skipped
+    await _completeOnboarding();
   }
 
   @override
