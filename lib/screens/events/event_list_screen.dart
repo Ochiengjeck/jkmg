@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:jkmg/models/event.dart';
-import 'package:jkmg/models/registration_model.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/widgets/event_card.dart';
-import '../../services/api_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import 'event_detail_screen.dart';
@@ -134,10 +131,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppTheme.charcoalBlack,
-                        AppTheme.richBlack,
-                      ],
+                      colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -204,10 +198,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),

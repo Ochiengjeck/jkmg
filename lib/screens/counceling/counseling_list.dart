@@ -60,15 +60,16 @@ class _CounselingListState extends State<CounselingList>
 
   Widget _buildAnimatedListItem(Widget child, int index) {
     return SlideTransition(
-      position: Tween<Offset>(
-        begin: Offset(0, 0.05 + (index * 0.01)),
-        end: Offset.zero,
-      ).animate(
-        CurvedAnimation(
-          parent: _listController,
-          curve: Interval(index * 0.08, 1.0, curve: Curves.easeOutCubic),
-        ),
-      ),
+      position:
+          Tween<Offset>(
+            begin: Offset(0, 0.05 + (index * 0.01)),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(
+              parent: _listController,
+              curve: Interval(index * 0.08, 1.0, curve: Curves.easeOutCubic),
+            ),
+          ),
       child: FadeTransition(
         opacity: Tween<double>(begin: 0.0, end: 1.0).animate(
           CurvedAnimation(
@@ -128,9 +129,7 @@ class _CounselingListState extends State<CounselingList>
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppTheme.primaryGold.withOpacity(0.15),
-        ),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.15)),
       ),
       child: Row(
         children: [
@@ -159,10 +158,7 @@ class _CounselingListState extends State<CounselingList>
           ),
           if (widget.sessions.isNotEmpty)
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 8,
-                vertical: 4,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: AppTheme.primaryGold.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
@@ -196,10 +192,7 @@ class _CounselingListState extends State<CounselingList>
                 color: Colors.white.withOpacity(0.03),
               ),
               child: TextField(
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                ),
+                style: const TextStyle(color: Colors.white, fontSize: 14),
                 decoration: InputDecoration(
                   labelText: 'Search sessions',
                   labelStyle: TextStyle(
@@ -248,9 +241,7 @@ class _CounselingListState extends State<CounselingList>
                 ],
               ),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: AppTheme.primaryGold.withOpacity(0.25),
-              ),
+              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.25)),
             ),
             child: IconButton(
               icon: const Icon(
@@ -362,10 +353,14 @@ class _CounselingListState extends State<CounselingList>
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _getStatusColor(session.status.label).withOpacity(0.15),
+                        color: _getStatusColor(
+                          session.status.label,
+                        ).withOpacity(0.15),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: _getStatusColor(session.status.label).withOpacity(0.25),
+                          color: _getStatusColor(
+                            session.status.label,
+                          ).withOpacity(0.25),
                         ),
                       ),
                       child: Icon(
@@ -396,10 +391,14 @@ class _CounselingListState extends State<CounselingList>
                               vertical: 2,
                             ),
                             decoration: BoxDecoration(
-                              color: _getStatusColor(session.status.label).withOpacity(0.1),
+                              color: _getStatusColor(
+                                session.status.label,
+                              ).withOpacity(0.1),
                               borderRadius: BorderRadius.circular(8),
                               border: Border.all(
-                                color: _getStatusColor(session.status.label).withOpacity(0.2),
+                                color: _getStatusColor(
+                                  session.status.label,
+                                ).withOpacity(0.2),
                               ),
                             ),
                             child: Text(
@@ -422,11 +421,12 @@ class _CounselingListState extends State<CounselingList>
                     ),
                   ],
                 ),
-                if (session.scheduledAt != null || session.counselor != null) ...[
+                if (session.scheduledAt != null ||
+                    session.counselor != null) ...[
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      if (session.scheduledAt != null) ...[ 
+                      if (session.scheduledAt != null) ...[
                         Expanded(
                           child: Row(
                             children: [
@@ -529,13 +529,19 @@ class _CounselingListState extends State<CounselingList>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              _getStatusColor(session.status.label).withOpacity(0.2),
-                              _getStatusColor(session.status.label).withOpacity(0.1),
+                              _getStatusColor(
+                                session.status.label,
+                              ).withOpacity(0.2),
+                              _getStatusColor(
+                                session.status.label,
+                              ).withOpacity(0.1),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: _getStatusColor(session.status.label).withOpacity(0.3),
+                            color: _getStatusColor(
+                              session.status.label,
+                            ).withOpacity(0.3),
                           ),
                         ),
                         child: Icon(
@@ -564,10 +570,14 @@ class _CounselingListState extends State<CounselingList>
                                 vertical: 4,
                               ),
                               decoration: BoxDecoration(
-                                color: _getStatusColor(session.status.label).withOpacity(0.15),
+                                color: _getStatusColor(
+                                  session.status.label,
+                                ).withOpacity(0.15),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                  color: _getStatusColor(session.status.label).withOpacity(0.3),
+                                  color: _getStatusColor(
+                                    session.status.label,
+                                  ).withOpacity(0.3),
                                 ),
                               ),
                               child: Text(
@@ -586,7 +596,8 @@ class _CounselingListState extends State<CounselingList>
                     ],
                   ),
                   const SizedBox(height: 24),
-                  if (session.scheduledAt != null || session.counselor != null) ...[
+                  if (session.scheduledAt != null ||
+                      session.counselor != null) ...[
                     Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
@@ -631,7 +642,8 @@ class _CounselingListState extends State<CounselingList>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Scheduled Time',
@@ -674,7 +686,8 @@ class _CounselingListState extends State<CounselingList>
                                 const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         'Counselor',
@@ -738,7 +751,8 @@ class _CounselingListState extends State<CounselingList>
                           ],
                         ),
                         const SizedBox(height: 12),
-                        if (session.intakeForm['issue_description'] != null) ...[
+                        if (session.intakeForm['issue_description'] !=
+                            null) ...[
                           _buildDetailRow(
                             'Issue Description',
                             session.intakeForm['issue_description'],
@@ -753,7 +767,8 @@ class _CounselingListState extends State<CounselingList>
                             Icons.priority_high_outlined,
                           ),
                         ],
-                        if (session.intakeForm['preferred_counselor'] != null) ...[
+                        if (session.intakeForm['preferred_counselor'] !=
+                            null) ...[
                           const SizedBox(height: 12),
                           _buildDetailRow(
                             'Preferred Counselor',
@@ -781,7 +796,7 @@ class _CounselingListState extends State<CounselingList>
                     ),
                   ),
                   const SizedBox(height: 24),
-                  Container(
+                  SizedBox(
                     width: double.infinity,
                     height: 48,
                     child: ElevatedButton.icon(
@@ -919,7 +934,9 @@ class _CounselingListState extends State<CounselingList>
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.primaryGold),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryGold,
+                        ),
                       ),
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.02),
@@ -960,7 +977,9 @@ class _CounselingListState extends State<CounselingList>
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.primaryGold),
+                        borderSide: const BorderSide(
+                          color: AppTheme.primaryGold,
+                        ),
                       ),
                       filled: true,
                       fillColor: Colors.white.withOpacity(0.02),

@@ -94,8 +94,7 @@ final loginProvider = FutureProvider.family<User, Map<String, dynamic>>((
 ) async {
   final apiService = ref.read(apiServiceProvider);
   return apiService.login(
-    phone: params['phone'] as String?,
-    email: params['email'] as String?,
+    username: params['username'] as String,
     password: params['password'] as String,
   );
 });

@@ -81,9 +81,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _isLoading = true;
       });
 
+      final username = _isEmailLogin ? _emailController.text : _phoneController.text;
       final params = {
-        if (_isEmailLogin) 'email': _emailController.text,
-        if (!_isEmailLogin) 'phone': _phoneController.text,
+        'username': username,
         'password': _passwordController.text,
       };
 
@@ -108,7 +108,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           setState(() {
             _isLoading = false;
           });
-          _showErrorSnackBar('Login failed: $e');
+          _showSmartErrorSnackBar(e.toString());
         }
       }
     }
@@ -132,6 +132,64 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showSmartErrorSnackBar(String error) {
+    String userFriendlyMessage;
+    Color backgroundColor = Colors.red;
+    IconData icon = Icons.error_outline;
+
+    if (error.contains('SocketException') || 
+        error.contains('Failed host lookup') || 
+        error.contains('Network is unreachable') ||
+        error.contains('No address associated with hostname')) {
+      userFriendlyMessage = 'No internet connection. Please check your network and try again.';
+      icon = Icons.wifi_off;
+    } else if (error.contains('TimeoutException') || 
+               error.contains('Connection timed out')) {
+      userFriendlyMessage = 'Connection timeout. Please check your internet and try again.';
+      icon = Icons.access_time;
+    } else if (error.contains('Invalid credentials') || 
+               error.contains('Unauthorized') ||
+               error.contains('401')) {
+      userFriendlyMessage = 'Invalid credentials. Please check your login details.';
+      icon = Icons.lock_outline;
+    } else if (error.contains('account not found') || 
+               error.contains('User not found')) {
+      userFriendlyMessage = 'Account not found. Please check your details or sign up.';
+      backgroundColor = Colors.orange;
+      icon = Icons.person_search;
+    } else if (error.contains('Server error') || 
+               error.contains('500') || 
+               error.contains('502') || 
+               error.contains('503')) {
+      userFriendlyMessage = 'Server temporarily unavailable. Please try again later.';
+      icon = Icons.cloud_off;
+    } else {
+      userFriendlyMessage = 'Login failed. Please try again.';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                userFriendlyMessage,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }

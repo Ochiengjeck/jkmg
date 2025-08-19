@@ -291,7 +291,7 @@ class _InboxScreenState extends ConsumerState<InboxScreen> {
             Text(
               _selectedFilter == 'all'
                   ? 'Your inbox is empty'
-                  : 'No ${_selectedFilter} notifications',
+                  : 'No $_selectedFilter notifications',
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w700,

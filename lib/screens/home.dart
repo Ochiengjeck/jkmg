@@ -189,11 +189,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final notificationsAsync = ref.watch(notificationsProvider({
-                  'status': 'unread',
-                  'per_page': 1,
-                }));
-                
+                final notificationsAsync = ref.watch(
+                  notificationsProvider({'status': 'unread', 'per_page': 1}),
+                );
+
                 return notificationsAsync.when(
                   data: (notifications) {
                     final unreadCount = notifications.data.length;
@@ -248,7 +247,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildDrawer(BuildContext context, WidgetRef ref) {
-    final _user = ref.watch(currentUserProvider).value;
+    final user = ref.watch(currentUserProvider).value;
     return Drawer(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -272,7 +271,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         child: Column(
           children: [
-            _buildDrawerHeader(context, _user),
+            _buildDrawerHeader(context, user),
             Expanded(
               child: CustomScrollView(
                 slivers: [
@@ -2630,9 +2629,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   void _showNotifications(BuildContext context) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const InboxScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const InboxScreen()),
     );
   }
 

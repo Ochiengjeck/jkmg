@@ -46,7 +46,10 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
       return; // Button should be disabled during non-midnight hours
     }
 
-    setState(() => {_isPlaying = true, _isSubmitting = true});
+    setState(() {
+      _isPlaying = true;
+      _isSubmitting = true;
+    });
 
     try {
       // Simulate playing audio based on selected duration
@@ -75,7 +78,10 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
 
       widget.onDeeperPrayerRecorded();
     } catch (e) {
-      setState(() => {_isSubmitting = false, _isPlaying = false});
+      setState(() {
+        _isSubmitting = false;
+        _isPlaying = false;
+      });
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('Error playing prayer: $e')));
@@ -92,7 +98,7 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
   Widget build(BuildContext context) {
     final todayParticipation = widget.deeperPrayerInfo?.todayParticipation;
     final totalCompleted =
-        widget.deeperPrayerInfo?.recentParticipations?.length ?? 0;
+        widget.deeperPrayerInfo?.recentParticipations.length ?? 0;
     final isTodayCompleted = todayParticipation?.completed == true;
 
     return CustomCard(

@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/api_providers.dart';
-import '../../provider/theme_notifier.dart';
 import '../../provider/providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
-import '../../services/preference_service.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});

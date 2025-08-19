@@ -15,11 +15,13 @@ class PrayerRequest {
   final String updatedAt;
 
   // Display getters with fallbacks
-  String get displayCategory => category.value.isEmpty ? 'General Prayer' : category.value;
+  String get displayCategory =>
+      category.value.isEmpty ? 'General Prayer' : category.value;
   String get displayStartDate => startDate.isEmpty ? 'Date not set' : startDate;
   String get displayEndDate => endDate.isEmpty ? 'Date not set' : endDate;
   String get displayUserName => user.displayName;
-  String get statusText => completed ? 'Completed' : (isActive ? 'Active' : 'Inactive');
+  String get statusText =>
+      completed ? 'Completed' : (isActive ? 'Active' : 'Inactive');
   int get remainingDays => daysRemaining.round();
   bool get isOverdue => daysRemaining < 0;
   bool get isAlmostDue => daysRemaining <= 1 && daysRemaining >= 0;
@@ -59,19 +61,25 @@ class PrayerRequest {
 
     return PrayerRequest(
       id: json['id'] as int? ?? 0,
-      category: json['category'] != null 
-          ? TypeValue.fromJson(json['category'] as Map<String, dynamic>) 
+      category: json['category'] != null
+          ? TypeValue.fromJson(json['category'] as Map<String, dynamic>)
           : TypeValue.empty(),
-      startDate: _safeParseDateString(json['start_date']) ?? DateTime.now().toIso8601String(),
-      endDate: _safeParseDateString(json['end_date']) ?? DateTime.now().add(Duration(days: 7)).toIso8601String(),
+      startDate:
+          _safeParseDateString(json['start_date']) ??
+          DateTime.now().toIso8601String(),
+      endDate:
+          _safeParseDateString(json['end_date']) ??
+          DateTime.now().add(Duration(days: 7)).toIso8601String(),
       completed: json['completed'] as bool? ?? false,
       daysRemaining: _safeParseDouble(json['days_remaining']) ?? 7.0,
       isActive: json['is_active'] as bool? ?? true,
-      user: json['user'] != null 
-          ? User.fromJson(json['user'] as Map<String, dynamic>) 
+      user: json['user'] != null
+          ? User.fromJson(json['user'] as Map<String, dynamic>)
           : User.empty(),
-      createdAt: json['created_at'] as String? ?? DateTime.now().toIso8601String(),
-      updatedAt: json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
+      createdAt:
+          json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      updatedAt:
+          json['updated_at'] as String? ?? DateTime.now().toIso8601String(),
     );
   }
 
@@ -154,7 +162,8 @@ class PrayerSchedule {
   bool get hasActivePrayers => activePrayers.isNotEmpty;
   bool get hasCompletedPrayers => completedPrayers.isNotEmpty;
   String get displayTimezone => userTimezone.isEmpty ? 'UTC' : userTimezone;
-  List<String> get displayPrayerTimes => prayerTimes.isEmpty ? ['06:00', '12:00', '18:00'] : prayerTimes;
+  List<String> get displayPrayerTimes =>
+      prayerTimes.isEmpty ? ['06:00', '12:00', '18:00'] : prayerTimes;
 
   PrayerSchedule({
     required this.activePrayers,
@@ -229,9 +238,11 @@ class DeeperPrayerParticipation {
 
   // Display getters
   String get displayDate => date.isEmpty ? 'Date not set' : date;
-  String get displayCompletedAt => completedAt.isEmpty ? 'Not completed' : completedAt;
+  String get displayCompletedAt =>
+      completedAt.isEmpty ? 'Not completed' : completedAt;
   String get displayNotes => notes?.isEmpty == false ? notes! : 'No notes';
-  String get durationText => duration > 0 ? '${duration} minutes' : 'Duration not set';
+  String get durationText =>
+      duration > 0 ? '$duration minutes' : 'Duration not set';
   String get statusText => completed ? 'Completed' : 'Pending';
 
   DeeperPrayerParticipation({
@@ -261,7 +272,9 @@ class DeeperPrayerParticipation {
 
     return DeeperPrayerParticipation(
       id: json['id'] as int? ?? 0,
-      date: json['date'] as String? ?? DateTime.now().toIso8601String().split('T')[0],
+      date:
+          json['date'] as String? ??
+          DateTime.now().toIso8601String().split('T')[0],
       duration: json['duration'] as int? ?? 0,
       completed: json['completed'] as bool? ?? false,
       completedAt: json['completed_at'] as String? ?? '',
@@ -307,12 +320,18 @@ class DeeperPrayerInfo {
   final List<int> availableDurations;
 
   // Display getters
-  bool get hasParticipatedToday => todayParticipation != null && todayParticipation!.completed;
-  bool get canParticipateToday => todayParticipation == null || !todayParticipation!.completed;
+  bool get hasParticipatedToday =>
+      todayParticipation != null && todayParticipation!.completed;
+  bool get canParticipateToday =>
+      todayParticipation == null || !todayParticipation!.completed;
   int get recentParticipationsCount => recentParticipations.length;
-  String get todayStatus => hasParticipatedToday ? 'Completed' : 'Not completed';
-  List<int> get displayDurations => availableDurations.isEmpty ? [30, 60, 90] : availableDurations;
-  String get totalCompletedText => totalCompleted == 1 ? '1 session completed' : '$totalCompleted sessions completed';
+  String get todayStatus =>
+      hasParticipatedToday ? 'Completed' : 'Not completed';
+  List<int> get displayDurations =>
+      availableDurations.isEmpty ? [30, 60, 90] : availableDurations;
+  String get totalCompletedText => totalCompleted == 1
+      ? '1 session completed'
+      : '$totalCompleted sessions completed';
 
   DeeperPrayerInfo({
     this.todayParticipation,
@@ -336,23 +355,34 @@ class DeeperPrayerInfo {
 
     return DeeperPrayerInfo(
       todayParticipation: json['today_participation'] != null
-          ? DeeperPrayerParticipation.fromJson(json['today_participation'] as Map<String, dynamic>)
+          ? DeeperPrayerParticipation.fromJson(
+              json['today_participation'] as Map<String, dynamic>,
+            )
           : null,
-      recentParticipations: _safeParseParticipationList(json['recent_participations']),
+      recentParticipations: _safeParseParticipationList(
+        json['recent_participations'],
+      ),
       totalCompleted: json['total_completed'] as int? ?? 0,
       availableDurations: _safeParseIntList(json['available_durations']),
     );
   }
 
-  static List<DeeperPrayerParticipation> _safeParseParticipationList(dynamic listData) {
+  static List<DeeperPrayerParticipation> _safeParseParticipationList(
+    dynamic listData,
+  ) {
     if (listData == null || listData is! List) {
       return <DeeperPrayerParticipation>[];
     }
 
     return listData
         .where((item) => item != null && item is Map<String, dynamic>)
-        .map((item) => DeeperPrayerParticipation.fromJson(item as Map<String, dynamic>))
-        .where((participation) => participation.id != 0) // Filter out empty participations
+        .map(
+          (item) =>
+              DeeperPrayerParticipation.fromJson(item as Map<String, dynamic>),
+        )
+        .where(
+          (participation) => participation.id != 0,
+        ) // Filter out empty participations
         .toList();
   }
 
@@ -375,7 +405,9 @@ class DeeperPrayerInfo {
   Map<String, dynamic> toJson() {
     return {
       'today_participation': todayParticipation?.toJson(),
-      'recent_participations': recentParticipations.map((p) => p.toJson()).toList(),
+      'recent_participations': recentParticipations
+          .map((p) => p.toJson())
+          .toList(),
       'total_completed': totalCompleted,
       'available_durations': availableDurations,
     };

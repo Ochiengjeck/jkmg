@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../models/event.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -11,10 +10,12 @@ class EvangelicalOutreachScreen extends ConsumerStatefulWidget {
   const EvangelicalOutreachScreen({super.key});
 
   @override
-  ConsumerState<EvangelicalOutreachScreen> createState() => _EvangelicalOutreachScreenState();
+  ConsumerState<EvangelicalOutreachScreen> createState() =>
+      _EvangelicalOutreachScreenState();
 }
 
-class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachScreen>
+class _EvangelicalOutreachScreenState
+    extends ConsumerState<EvangelicalOutreachScreen>
     with TickerProviderStateMixin {
   late AnimationController _heroController;
   late AnimationController _fadeController;
@@ -44,8 +45,8 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+        );
 
     _heroController.forward();
     _fadeController.forward();
@@ -160,7 +161,10 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
                 ),
                 const SizedBox(height: 16),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryGold.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
@@ -203,7 +207,9 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                    ),
                   ),
                   child: const Text(
                     'Browse the images and video links below to see how God is using JKMG to evangelize and transform lives. This is the heart of our calling and mission.\n\nThrough passionate evangelism, community outreach, and powerful testimonies, we are witnessing God\'s transformative power at work across nations and cultures.',
@@ -243,12 +249,36 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
-                  _buildGalleryItem(Icons.groups, 'Community\nOutreach', 'Reaching local communities with love'),
-                  _buildGalleryItem(Icons.public, 'Global\nMissions', 'Expanding across nations'),
-                  _buildGalleryItem(Icons.volunteer_activism, 'Volunteer\nPrograms', 'Mobilizing passionate servants'),
-                  _buildGalleryItem(Icons.church, 'Church\nPlanting', 'Establishing new congregations'),
-                  _buildGalleryItem(Icons.school, 'Education\nInitiatives', 'Building schools and literacy programs'),
-                  _buildGalleryItem(Icons.healing, 'Healing\nMiracles', 'Witnessing supernatural interventions'),
+                  _buildGalleryItem(
+                    Icons.groups,
+                    'Community\nOutreach',
+                    'Reaching local communities with love',
+                  ),
+                  _buildGalleryItem(
+                    Icons.public,
+                    'Global\nMissions',
+                    'Expanding across nations',
+                  ),
+                  _buildGalleryItem(
+                    Icons.volunteer_activism,
+                    'Volunteer\nPrograms',
+                    'Mobilizing passionate servants',
+                  ),
+                  _buildGalleryItem(
+                    Icons.church,
+                    'Church\nPlanting',
+                    'Establishing new congregations',
+                  ),
+                  _buildGalleryItem(
+                    Icons.school,
+                    'Education\nInitiatives',
+                    'Building schools and literacy programs',
+                  ),
+                  _buildGalleryItem(
+                    Icons.healing,
+                    'Healing\nMiracles',
+                    'Witnessing supernatural interventions',
+                  ),
                 ],
               ),
             ],
@@ -399,7 +429,7 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
 
   Widget _buildUpcomingOutreachEvents() {
     final allEventsAsync = ref.watch(allEventsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -418,11 +448,11 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
                   final outreachEvents = response.data
                       .where((event) => event.type.value == 'outreach')
                       .toList();
-                  
+
                   if (outreachEvents.isEmpty) {
                     return _buildEmptyEventsState();
                   }
-                  
+
                   return Column(
                     children: outreachEvents.map((event) {
                       return Container(
@@ -458,7 +488,7 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
 
   Widget _buildMyOutreachRegistrations() {
     final myRegistrationsAsync = ref.watch(myRegistrationsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -477,11 +507,11 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
                   final outreachRegistrations = response.data
                       .where((reg) => reg.event?.type.value == 'outreach')
                       .toList();
-                  
+
                   if (outreachRegistrations.isEmpty) {
                     return _buildEmptyRegistrationsState();
                   }
-                  
+
                   return Column(
                     children: outreachRegistrations.map((registration) {
                       final event = registration.event!;
@@ -646,10 +676,7 @@ class _EvangelicalOutreachScreenState extends ConsumerState<EvangelicalOutreachS
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [
-            Colors.red.withOpacity(0.1),
-            Colors.red.withOpacity(0.05),
-          ],
+          colors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.05)],
         ),
         border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),

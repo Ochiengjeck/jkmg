@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import '../../models/event.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -45,8 +44,8 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
 
     _slideAnimation =
         Tween<Offset>(begin: const Offset(0, 0.3), end: Offset.zero).animate(
-      CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
-    );
+          CurvedAnimation(parent: _fadeController, curve: Curves.easeOutCubic),
+        );
 
     _heroController.forward();
     _fadeController.forward();
@@ -134,10 +133,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        AppTheme.charcoalBlack,
-                        AppTheme.richBlack,
-                      ],
+                      colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -182,21 +178,35 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                           return eventsAsync.when(
                             data: (response) {
                               final rhemaFeastEvents = response.data
-                                  .where((event) => event.type.value == 'rhema_feast')
+                                  .where(
+                                    (event) =>
+                                        event.type.value == 'rhema_feast',
+                                  )
                                   .toList();
-                              
+
                               if (rhemaFeastEvents.isNotEmpty) {
                                 final nextEvent = rhemaFeastEvents.first;
-                                final startDate = DateTime.parse(nextEvent.startDate);
-                                final formattedDate = DateFormat('MMM d, y').format(startDate);
-                                
-                                return _buildEventInfoChip('$formattedDate • ${nextEvent.location}');
+                                final startDate = DateTime.parse(
+                                  nextEvent.startDate,
+                                );
+                                final formattedDate = DateFormat(
+                                  'MMM d, y',
+                                ).format(startDate);
+
+                                return _buildEventInfoChip(
+                                  '$formattedDate • ${nextEvent.location}',
+                                );
                               }
-                              
-                              return _buildEventInfoChip('Next Event Date • To Be Announced');
+
+                              return _buildEventInfoChip(
+                                'Next Event Date • To Be Announced',
+                              );
                             },
-                            loading: () => _buildEventInfoChip('Loading event details...'),
-                            error: (_, __) => _buildEventInfoChip('Event Details • Check Back Soon'),
+                            loading: () =>
+                                _buildEventInfoChip('Loading event details...'),
+                            error: (_, __) => _buildEventInfoChip(
+                              'Event Details • Check Back Soon',
+                            ),
                           );
                         },
                       ),
@@ -230,10 +240,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
@@ -255,10 +262,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
 
   Widget _buildEventInfoChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 12,
-        vertical: 6,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.2),
         borderRadius: BorderRadius.circular(20),
@@ -295,7 +299,9 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                   decoration: BoxDecoration(
                     color: AppTheme.accentGold.withOpacity(0.05),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                    ),
                   ),
                   child: const Text(
                     'Rhema Feast is a landmark annual spiritual gathering that began in 2015. As part of an apostolic movement led by visionary leader Rev. Julian Kyula, its mission is to deliver the unadulterated, authentic Word of God to nations and generations.\n\nOver the course of four days, believers from across the globe will come together to \'feast\' on God\'s Word—engaging in powerful worship, fervent prayer, meaningful fellowship, and, new this year, marketplace and business coaching.',
@@ -328,13 +334,29 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                 subtitle: 'Four core pillars of spiritual experience',
               ),
               const SizedBox(height: 12),
-              _buildPillarCard(Icons.menu_book, 'Word', 'Unadulterated, authentic Word of God'),
+              _buildPillarCard(
+                Icons.menu_book,
+                'Word',
+                'Unadulterated, authentic Word of God',
+              ),
               const SizedBox(height: 12),
-              _buildPillarCard(Icons.music_note, 'Worship', 'Powerful worship and praise'),
+              _buildPillarCard(
+                Icons.music_note,
+                'Worship',
+                'Powerful worship and praise',
+              ),
               const SizedBox(height: 12),
-              _buildPillarCard(Icons.favorite, 'Prayer', 'Fervent prayer and intercession'),
+              _buildPillarCard(
+                Icons.favorite,
+                'Prayer',
+                'Fervent prayer and intercession',
+              ),
               const SizedBox(height: 12),
-              _buildPillarCard(Icons.people, 'Fellowship', 'Unified fellowship and community'),
+              _buildPillarCard(
+                Icons.people,
+                'Fellowship',
+                'Unified fellowship and community',
+              ),
             ],
           ),
         );
@@ -399,7 +421,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
 
   Widget _buildUpcomingRhemaFeastEvents() {
     final allEventsAsync = ref.watch(allEventsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -418,11 +440,11 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                   final rhemaFeastEvents = response.data
                       .where((event) => event.type.value == 'rhema_feast')
                       .toList();
-                  
+
                   if (rhemaFeastEvents.isEmpty) {
                     return _buildEmptyEventsState();
                   }
-                  
+
                   return Column(
                     children: rhemaFeastEvents.map((event) {
                       return Container(
@@ -458,7 +480,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
 
   Widget _buildMyRhemaFeastRegistrations() {
     final myRegistrationsAsync = ref.watch(myRegistrationsProvider);
-    
+
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -477,11 +499,11 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                   final rhemaFeastRegistrations = response.data
                       .where((reg) => reg.event?.type.value == 'rhema_feast')
                       .toList();
-                  
+
                   if (rhemaFeastRegistrations.isEmpty) {
                     return _buildEmptyRegistrationsState();
                   }
-                  
+
                   return Column(
                     children: rhemaFeastRegistrations.map((registration) {
                       final event = registration.event!;
@@ -646,10 +668,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(16),
         gradient: LinearGradient(
-          colors: [
-            Colors.red.withOpacity(0.1),
-            Colors.red.withOpacity(0.05),
-          ],
+          colors: [Colors.red.withOpacity(0.1), Colors.red.withOpacity(0.05)],
         ),
         border: Border.all(color: Colors.red.withOpacity(0.3)),
       ),

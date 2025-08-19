@@ -66,13 +66,13 @@ class AppTheme {
               letterSpacing: 0.8,
             ),
           ).copyWith(
-            overlayColor: MaterialStateProperty.resolveWith<Color?>((
-              Set<MaterialState> states,
+            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
             ) {
-              if (states.contains(MaterialState.pressed)) {
+              if (states.contains(WidgetState.pressed)) {
                 return darkGold.withOpacity(0.3);
               }
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return darkGold.withOpacity(0.1);
               }
               return null;
@@ -250,13 +250,13 @@ class AppTheme {
               letterSpacing: 0.8,
             ),
           ).copyWith(
-            overlayColor: MaterialStateProperty.resolveWith<Color?>((
-              Set<MaterialState> states,
+            overlayColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
             ) {
-              if (states.contains(MaterialState.pressed)) {
+              if (states.contains(WidgetState.pressed)) {
                 return darkGold.withOpacity(0.3);
               }
-              if (states.contains(MaterialState.hovered)) {
+              if (states.contains(WidgetState.hovered)) {
                 return darkGold.withOpacity(0.1);
               }
               return null;

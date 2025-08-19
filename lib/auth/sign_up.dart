@@ -26,7 +26,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   bool _receiveMarketing = false;
   String? _selectedCountry;
   String? _selectedTimezone;
-  List<String> _selectedPrayerTimes = [];
+  final List<String> _selectedPrayerTimes = [];
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
@@ -285,6 +285,10 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   @override
   void initState() {
     super.initState();
+    
+    // Auto-select all prayer times by default
+    _selectedPrayerTimes.addAll(_prayerTimesOptions);
+    
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 1200),
       vsync: this,
@@ -367,7 +371,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           setState(() {
             _isLoading = false;
           });
-          _showErrorSnackBar('Sign-up failed: $e');
+          _showSmartErrorSnackBar(e.toString());
         }
       }
     } else if (!_termsAccepted) {
@@ -393,6 +397,65 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showSmartErrorSnackBar(String error) {
+    String userFriendlyMessage;
+    Color backgroundColor = Colors.red;
+    IconData icon = Icons.error_outline;
+
+    if (error.contains('SocketException') || 
+        error.contains('Failed host lookup') || 
+        error.contains('Network is unreachable') ||
+        error.contains('No address associated with hostname')) {
+      userFriendlyMessage = 'No internet connection. Please check your network and try again.';
+      icon = Icons.wifi_off;
+    } else if (error.contains('TimeoutException') || 
+               error.contains('Connection timed out')) {
+      userFriendlyMessage = 'Connection timeout. Please check your internet and try again.';
+      icon = Icons.access_time;
+    } else if (error.contains('phone has already been taken') || 
+               error.contains('email has already been taken') ||
+               error.contains('already exists')) {
+      userFriendlyMessage = 'This phone number or email is already registered. Try logging in instead.';
+      backgroundColor = Colors.orange;
+      icon = Icons.person_outline;
+    } else if (error.contains('validation failed') || 
+               error.contains('422')) {
+      userFriendlyMessage = 'Please check your information and try again.';
+      backgroundColor = Colors.orange;
+      icon = Icons.edit_outlined;
+    } else if (error.contains('Server error') || 
+               error.contains('500') || 
+               error.contains('502') || 
+               error.contains('503')) {
+      userFriendlyMessage = 'Server temporarily unavailable. Please try again later.';
+      icon = Icons.cloud_off;
+    } else {
+      userFriendlyMessage = 'Registration failed. Please try again.';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                userFriendlyMessage,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -921,7 +984,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
           ),
           const SizedBox(height: 8),
           Text(
-            'Prayer times are: 6 AM, 12 PM, 6 PM, and Deep in Prayer at 12 AM (optional)',
+            'All prayer times are selected by default. Tap to customize your schedule.',
             style: TextStyle(
               fontSize: 14,
               color: Colors.white.withOpacity(0.7),

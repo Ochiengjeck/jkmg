@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../utils/app_theme.dart';
-import '../models/models.dart';
 
 class WelcomeSection extends StatelessWidget {
   final String title;

@@ -85,22 +85,13 @@ class ApiService {
   }
 
   Future<User> login({
-    String? phone, 
-    String? email, 
+    required String username,
     required String password
   }) async {
-    final Map<String, dynamic> loginData = {'password': password};
-    
-    if (phone != null) {
-      loginData['phone'] = phone;
-    }
-    if (email != null) {
-      loginData['email'] = email;
-    }
-    
-    if (phone == null && email == null) {
-      throw Exception('Either phone or email must be provided');
-    }
+    final Map<String, dynamic> loginData = {
+      'username': username,
+      'password': password,
+    };
 
     final response = await http.post(
       Uri.parse('$baseUrl/login'),

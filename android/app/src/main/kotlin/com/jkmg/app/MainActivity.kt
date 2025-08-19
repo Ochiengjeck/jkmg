@@ -1,4 +1,4 @@
-package com.example.jkmg
+package com.jkmg.app
 
 import io.flutter.embedding.android.FlutterActivity
 

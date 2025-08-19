@@ -49,10 +49,7 @@ class _HelpSupportScreenState extends ConsumerState<HelpSupportScreen>
               child: TabBarView(
                 controller: _tabController,
                 children: [
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildFAQTab(),
-                  ),
+                  Container(color: AppTheme.richBlack, child: _buildFAQTab()),
                   Container(
                     color: AppTheme.richBlack,
                     child: _buildContactTab(),
@@ -237,7 +234,7 @@ class _HelpSupportScreenState extends ConsumerState<HelpSupportScreen>
               ],
             ),
             const SizedBox(height: 16),
-            ...items.map((item) => _buildFAQItem(item)).toList(),
+            ...items.map((item) => _buildFAQItem(item)),
           ],
         ),
       ),
@@ -600,7 +597,7 @@ class _HelpSupportScreenState extends ConsumerState<HelpSupportScreen>
               ],
             ),
             const SizedBox(height: 16),
-            ...items.map((item) => _buildResourceItem(item)).toList(),
+            ...items.map((item) => _buildResourceItem(item)),
           ],
         ),
       ),

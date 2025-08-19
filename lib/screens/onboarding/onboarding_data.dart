@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'onboarding.dart';
-
 final List<OnboardingData> onboardingData = [
   OnboardingData(
     title: "Welcome to JKMG",

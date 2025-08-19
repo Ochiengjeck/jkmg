@@ -99,7 +99,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
           setState(() {
             _isLoading = false;
           });
-          _showErrorSnackBar('Failed to send OTP: $e');
+          _showSmartErrorSnackBar(e.toString());
         }
       }
     }
@@ -123,6 +123,65 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
+
+  void _showSmartErrorSnackBar(String error) {
+    String userFriendlyMessage;
+    Color backgroundColor = Colors.red;
+    IconData icon = Icons.error_outline;
+
+    if (error.contains('SocketException') || 
+        error.contains('Failed host lookup') || 
+        error.contains('Network is unreachable') ||
+        error.contains('No address associated with hostname')) {
+      userFriendlyMessage = 'No internet connection. Please check your network and try again.';
+      icon = Icons.wifi_off;
+    } else if (error.contains('TimeoutException') || 
+               error.contains('Connection timed out')) {
+      userFriendlyMessage = 'Connection timeout. Please check your internet and try again.';
+      icon = Icons.access_time;
+    } else if (error.contains('email not found') || 
+               error.contains('User not found') ||
+               error.contains('404')) {
+      userFriendlyMessage = 'Email address not found. Please check and try again.';
+      backgroundColor = Colors.orange;
+      icon = Icons.mail_outline;
+    } else if (error.contains('rate limit') || 
+               error.contains('too many requests')) {
+      userFriendlyMessage = 'Too many attempts. Please wait a moment and try again.';
+      backgroundColor = Colors.orange;
+      icon = Icons.access_time;
+    } else if (error.contains('Server error') || 
+               error.contains('500') || 
+               error.contains('502') || 
+               error.contains('503')) {
+      userFriendlyMessage = 'Server temporarily unavailable. Please try again later.';
+      icon = Icons.cloud_off;
+    } else {
+      userFriendlyMessage = 'Failed to send verification code. Please try again.';
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Row(
+          children: [
+            Icon(icon, color: Colors.white, size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                userFriendlyMessage,
+                style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500),
+              ),
+            ),
+          ],
+        ),
+        backgroundColor: backgroundColor,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        duration: const Duration(seconds: 4),
+        margin: const EdgeInsets.all(16),
       ),
     );
   }
@@ -251,7 +310,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                           const SizedBox(height: 8),
                           
                           Text(
-                            'Enter your email address and we\'ll send you a link to reset your password',
+                            'Enter your email address and we\'ll send you a verification code to reset your password',
                             style: TextStyle(
                               fontSize: 14,
                               color: Colors.white.withOpacity(0.7),
@@ -298,7 +357,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen>
                                     ),
                                   )
                                 : const Text(
-                                    'Send Reset Link',
+                                    'Send Verification Code',
                                     style: TextStyle(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
