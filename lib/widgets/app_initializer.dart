@@ -5,6 +5,7 @@ import '../auth/log_in.dart';
 import '../screens/home.dart';
 import '../services/preference_service.dart';
 import '../provider/api_providers.dart';
+import 'auth_wrapper.dart';
 
 class AppInitializer extends ConsumerWidget {
   const AppInitializer({super.key});
@@ -43,7 +44,7 @@ class AppInitializer extends ConsumerWidget {
         final user = ref.read(userSessionProvider);
         
         if (user != null) {
-          return const HomeScreen();
+          return const AuthWrapper(child: HomeScreen());
         }
       }
       

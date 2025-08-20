@@ -346,7 +346,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
       final params = {
         'name': _nameController.text,
-        'phone': '${_selectedCountryCode.dialCode}${_phoneController.text.replaceAll(RegExp(r'^\+?\d{1,4}'), '')}',
+        'phone': '${_selectedCountryCode.dialCode}${_phoneController.text.startsWith('0') ? _phoneController.text.substring(1) : _phoneController.text}',
         'country': _selectedCountry!,
         'password': _passwordController.text,
         'password_confirmation': _confirmPasswordController.text,

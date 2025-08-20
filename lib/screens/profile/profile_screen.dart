@@ -57,35 +57,80 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     return Scaffold(
       backgroundColor: AppTheme.richBlack,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(context, user.value),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildProfileTab(user.value),
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 280.0,
+                floating: false,
+                pinned: true,
+                backgroundColor: AppTheme.richBlack,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildHeaderContent(context, user.value),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(60.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: Colors.black87,
+                      unselectedLabelColor: Colors.white60,
+                      indicatorColor: Colors.transparent,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      dividerHeight: 0,
+                      indicator: BoxDecoration(
+                        color: AppTheme.primaryGold,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
+                      labelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      tabs: [
+                        SizedBox(width: 100, child: Tab(text: 'Profile')),
+                        SizedBox(width: 100, child: Tab(text: 'Settings')),
+                        SizedBox(width: 100, child: Tab(text: 'Activity')),
+                      ],
+                    ),
                   ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildPreferencesTab(),
-                  ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildActivityTab(),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              Container(
+                color: AppTheme.richBlack,
+                child: _buildProfileTab(user.value),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: _buildPreferencesTab(),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: _buildActivityTab(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader(BuildContext context, dynamic user) {
+  Widget _buildHeaderContent(BuildContext context, dynamic user) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -143,41 +188,6 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 color: AppTheme.primaryGold,
                 fontWeight: FontWeight.w600,
               ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.black87,
-              unselectedLabelColor: Colors.white60,
-              indicatorColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.label,
-              dividerHeight: 0,
-              indicator: BoxDecoration(
-                color: AppTheme.primaryGold,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
-              labelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: [
-                SizedBox(width: 100, child: Tab(text: 'Profile')),
-                SizedBox(width: 100, child: Tab(text: 'Settings')),
-                SizedBox(width: 100, child: Tab(text: 'Activity')),
-              ],
             ),
           ),
         ],
@@ -872,8 +882,18 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
     setState(() => _isUpdating = true);
 
     try {
-      // TODO: Implement actual profile update API call
-      await Future.delayed(const Duration(seconds: 2));
+      // Call the actual API to update profile
+      final updatedUser = await ref.read(updateProfileProvider({
+        'name': _nameController.text,
+        'email': _emailController.text.isEmpty ? null : _emailController.text,
+        'country': _countryController.text.isEmpty ? null : _countryController.text,
+      }).future);
+
+      // Update the user session with the new data
+      await ref.read(userSessionProvider.notifier).saveUserSession(updatedUser);
+
+      // Refresh the current user provider to show updated data
+      ref.invalidate(currentUserProvider);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

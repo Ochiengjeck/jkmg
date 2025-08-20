@@ -154,7 +154,19 @@ final logoutProvider = FutureProvider<void>((ref) async {
 // User Management Providers
 final currentUserProvider = FutureProvider<User>((ref) async {
   final apiService = ref.read(apiServiceProvider);
-  return apiService.getCurrentUser();
+  try {
+    return await apiService.getCurrentUser();
+  } catch (e) {
+    // If it's an authentication error, propagate it so AuthWrapper can handle it
+    if (e.toString().contains('Unauthenticated') || 
+        e.toString().contains('401')) {
+      print('🔴 PROVIDER: Authentication error in currentUserProvider: $e');
+      rethrow; // Let AuthWrapper handle the redirect
+    }
+    
+    // For other errors, still rethrow
+    rethrow;
+  }
 });
 
 final updateProfileProvider = FutureProvider.family<User, Map<String, dynamic>>(
@@ -530,6 +542,15 @@ final unreadNotificationsCountProvider = FutureProvider<int>((ref) async {
     return result.meta?['unread_count'] ?? 0;
   } catch (e) {
     print('🔴 PROVIDER: Error in unreadNotificationsCountProvider: $e');
+    
+    // If it's an authentication error, don't throw - just return 0
+    if (e.toString().contains('Unauthenticated') || 
+        e.toString().contains('401')) {
+      print('🔴 PROVIDER: Authentication error - returning 0 for notifications count');
+      return 0;
+    }
+    
+    // For other errors, still return 0 to avoid crashing
     return 0;
   }
 });

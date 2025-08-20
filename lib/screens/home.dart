@@ -245,7 +245,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildDrawer(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider).value;
+    final userAsyncValue = ref.watch(currentUserProvider);
+    
+    // Handle loading and error states
+    if (userAsyncValue.isLoading) {
+      return const Drawer(
+        child: Center(
+          child: CircularProgressIndicator(
+            color: Color(0xFFD4AF37),
+          ),
+        ),
+      );
+    }
+    
+    if (userAsyncValue.hasError) {
+      // Error will be handled by AuthWrapper
+      return const Drawer(
+        child: Center(
+          child: Text('Loading...'),
+        ),
+      );
+    }
+    
+    final user = userAsyncValue.value;
     return Drawer(
       backgroundColor: Colors.transparent,
       elevation: 0,

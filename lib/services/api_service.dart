@@ -16,7 +16,6 @@ import '../models/notification.dart';
 import '../models/feedback.dart';
 import 'preference_service.dart';
 
-
 class ApiService {
   final String baseUrl =
       dotenv.env['BASE_URL'] ?? 'https://jkmg.laravel.cloud/api';
@@ -37,7 +36,7 @@ class ApiService {
     if (_token == null) {
       await _loadTokenFromStorage();
     }
-    
+
     final headers = {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
@@ -82,7 +81,6 @@ class ApiService {
       final prefs = await PreferenceService.getInstance();
       await prefs.saveAuthToken(_token!);
 
-
       return User.fromJson(data['user']);
     } else {
       throw Exception('Failed to register: ${response.body}');
@@ -91,7 +89,7 @@ class ApiService {
 
   Future<User> login({
     required String username,
-    required String password
+    required String password,
   }) async {
     final Map<String, dynamic> loginData = {
       'username': username,
@@ -111,7 +109,6 @@ class ApiService {
       // Save token to storage
       final prefs = await PreferenceService.getInstance();
       await prefs.saveAuthToken(_token!);
-
 
       return User.fromJson(data['user']);
     } else {
@@ -137,10 +134,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/email/verification/send'),
       headers: await _getHeaders(false),
-      body: jsonEncode({
-        'email': email,
-        'for_reset': true,
-      }),
+      body: jsonEncode({'email': email, 'for_reset': true}),
     );
 
     if (response.statusCode != 200) {
@@ -157,10 +151,7 @@ class ApiService {
     final response = await http.post(
       Uri.parse('$baseUrl/email/verification/verify'),
       headers: await _getHeaders(false),
-      body: jsonEncode({
-        'email': email,
-        'otp': otp,
-      }),
+      body: jsonEncode({'email': email, 'otp': otp}),
     );
 
     if (response.statusCode == 200) {
@@ -209,9 +200,18 @@ class ApiService {
       // Clear token from storage
       final prefs = await PreferenceService.getInstance();
       await prefs.clearAuthData();
-
     } else {
       throw Exception('Failed to logout: ${response.body}');
+    }
+  }
+
+  // Helper method to check for authentication errors and clear tokens
+  Future<void> _handleAuthenticationError(http.Response response) async {
+    if (response.statusCode == 401) {
+      // Clear stored token when we get unauthorized
+      _token = null;
+      final prefs = await PreferenceService.getInstance();
+      await prefs.clearAuthData();
     }
   }
 
@@ -226,6 +226,7 @@ class ApiService {
       final data = jsonDecode(response.body);
       return User.fromJson(data['user']);
     } else {
+      await _handleAuthenticationError(response);
       throw Exception('Failed to get user: ${response.body}');
     }
   }
@@ -487,13 +488,15 @@ class ApiService {
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      
+
       // Handle the custom response format for registrations
       final registrations = data['registrations'] as List;
       final pagination = data['pagination'] as Map<String, dynamic>;
-      
+
       return PaginatedResponse<EventRegistration>(
-        data: registrations.map((item) => EventRegistration.fromJson(item)).toList(),
+        data: registrations
+            .map((item) => EventRegistration.fromJson(item))
+            .toList(),
         links: {}, // API doesn't provide links in this format
         meta: pagination, // Use pagination object as meta
       );
@@ -776,8 +779,9 @@ class ApiService {
       if (search != null) 'search': search,
     };
 
-    final uri = Uri.parse('$baseUrl/salvation/decisions')
-        .replace(queryParameters: queryParameters);
+    final uri = Uri.parse(
+      '$baseUrl/salvation/decisions',
+    ).replace(queryParameters: queryParameters);
 
     final response = await http.get(uri, headers: await _getHeaders());
 
@@ -801,15 +805,16 @@ class ApiService {
       'offset': offset.toString(),
     };
 
-    final uri = Uri.parse('$baseUrl/salvation/testimonies')
-        .replace(queryParameters: queryParameters);
+    final uri = Uri.parse(
+      '$baseUrl/salvation/testimonies',
+    ).replace(queryParameters: queryParameters);
 
     final response = await http.get(uri, headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
       return List<Map<String, String>>.from(
-        data['data'].map((item) => Map<String, String>.from(item))
+        data['data'].map((item) => Map<String, String>.from(item)),
       );
     } else {
       throw Exception('Failed to get salvation testimonies: ${response.body}');
@@ -821,35 +826,25 @@ class ApiService {
     String? status,
     int? perPage,
   }) async {
-    print('🔵 API: getNotifications called - status: $status, perPage: $perPage');
-    
     final queryParameters = {
       if (status != null) 'status': status,
       if (perPage != null) 'per_page': perPage.toString(),
     };
-    print('🔵 API: Query parameters: $queryParameters');
-    
-    final uri = Uri.parse('$baseUrl/notifications').replace(queryParameters: queryParameters);
-    print('🔵 API: Final URI: $uri');
-    
-    print('🔵 API: Making HTTP GET request...');
-    final response = await http.get(
-      uri,
-      headers: await _getHeaders(),
-    );
-    
-    print('🔵 API: Response status code: ${response.statusCode}');
-    print('🔵 API: Response body: ${response.body}');
+
+    final uri = Uri.parse(
+      '$baseUrl/notifications',
+    ).replace(queryParameters: queryParameters);
+
+    final response = await http.get(uri, headers: await _getHeaders());
 
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
-      print('🟢 API: Successfully parsed JSON data');
       return PaginatedResponse.fromJson(
         data,
         (json) => Notification.fromJson(json),
       );
     } else {
-      print('🔴 API: HTTP Error ${response.statusCode}: ${response.body}');
+      await _handleAuthenticationError(response);
       throw Exception('Failed to get notifications: ${response.body}');
     }
   }

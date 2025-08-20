@@ -86,7 +86,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
 
       final username = _isEmailLogin 
           ? _emailController.text 
-          : '${_selectedCountryCode.dialCode}${_phoneController.text.replaceAll(RegExp(r'^\+?\d{1,4}'), '')}';
+          : '${_selectedCountryCode.dialCode}${_phoneController.text.startsWith('0') ? _phoneController.text.substring(1) : _phoneController.text}';
       final params = {
         'username': username,
         'password': _passwordController.text,

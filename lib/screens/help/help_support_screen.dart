@@ -42,32 +42,77 @@ class _HelpSupportScreenState extends ConsumerState<HelpSupportScreen>
     return Scaffold(
       backgroundColor: AppTheme.richBlack,
       body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Container(color: AppTheme.richBlack, child: _buildFAQTab()),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildContactTab(),
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 240.0,
+                floating: false,
+                pinned: true,
+                backgroundColor: AppTheme.richBlack,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: _buildHeaderContent(),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(60.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: TabBar(
+                      controller: _tabController,
+                      labelColor: Colors.black87,
+                      unselectedLabelColor: Colors.white60,
+                      indicatorColor: Colors.transparent,
+                      indicatorSize: TabBarIndicatorSize.label,
+                      dividerHeight: 0,
+                      indicator: BoxDecoration(
+                        color: AppTheme.primaryGold,
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
+                      labelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                      unselectedLabelStyle: const TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      tabs: [
+                        SizedBox(width: 100, child: Tab(text: 'FAQ')),
+                        SizedBox(width: 100, child: Tab(text: 'Contact')),
+                        SizedBox(width: 100, child: Tab(text: 'Resources')),
+                      ],
+                    ),
                   ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: _buildResourcesTab(),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              Container(color: AppTheme.richBlack, child: _buildFAQTab()),
+              Container(
+                color: AppTheme.richBlack,
+                child: _buildContactTab(),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: _buildResourcesTab(),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildHeaderContent() {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -96,41 +141,6 @@ class _HelpSupportScreenState extends ConsumerState<HelpSupportScreen>
             'We\'re here to help you every step of the way',
             style: TextStyle(fontSize: 14, color: Colors.white70),
             textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(25),
-              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-            ),
-            margin: const EdgeInsets.symmetric(horizontal: 16),
-            child: TabBar(
-              controller: _tabController,
-              labelColor: Colors.black87,
-              unselectedLabelColor: Colors.white60,
-              indicatorColor: Colors.transparent,
-              indicatorSize: TabBarIndicatorSize.label,
-              dividerHeight: 0,
-              indicator: BoxDecoration(
-                color: AppTheme.primaryGold,
-                borderRadius: BorderRadius.circular(20),
-              ),
-              indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
-              labelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-              ),
-              unselectedLabelStyle: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w500,
-              ),
-              tabs: [
-                SizedBox(width: 100, child: Tab(text: 'FAQ')),
-                SizedBox(width: 100, child: Tab(text: 'Contact')),
-                SizedBox(width: 100, child: Tab(text: 'Resources')),
-              ],
-            ),
           ),
         ],
       ),

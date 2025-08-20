@@ -53,9 +53,7 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
           children: [
             _buildCountrySelector(),
             const SizedBox(width: 12),
-            Expanded(
-              child: _buildPhoneInput(),
-            ),
+            Expanded(child: _buildPhoneInput()),
           ],
         ),
       ],
@@ -68,12 +66,12 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
         decoration: BoxDecoration(
-          color: widget.enabled 
+          color: widget.enabled
               ? AppTheme.primaryGold.withOpacity(0.05)
               : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: widget.enabled 
+            color: widget.enabled
                 ? AppTheme.primaryGold.withOpacity(0.3)
                 : Colors.grey.withOpacity(0.3),
             width: 1.5,
@@ -82,10 +80,7 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text(
-              _selectedCountry.flag,
-              style: const TextStyle(fontSize: 20),
-            ),
+            Text(_selectedCountry.flag, style: const TextStyle(fontSize: 20)),
             const SizedBox(width: 8),
             Text(
               _selectedCountry.dialCode,
@@ -145,24 +140,15 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppTheme.primaryGold,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppTheme.primaryGold, width: 2),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppTheme.errorRed,
-            width: 1.5,
-          ),
+          borderSide: const BorderSide(color: AppTheme.errorRed, width: 1.5),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(
-            color: AppTheme.errorRed,
-            width: 2,
-          ),
+          borderSide: const BorderSide(color: AppTheme.errorRed, width: 2),
         ),
         disabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
@@ -219,7 +205,11 @@ class _PhoneInputFieldState extends State<PhoneInputField> {
 
   // Method to get the full phone number with country code
   String getFullPhoneNumber() {
-    final localNumber = widget.controller.text.replaceAll(RegExp(r'^\+?\d{1,4}'), '');
+    String localNumber = widget.controller.text;
+    // Remove leading zero if present (common in local phone formats)
+    if (localNumber.startsWith('0')) {
+      localNumber = localNumber.substring(1);
+    }
     return '${_selectedCountry.dialCode}$localNumber';
   }
 }
@@ -234,7 +224,8 @@ class _CountryPickerBottomSheet extends StatefulWidget {
   });
 
   @override
-  State<_CountryPickerBottomSheet> createState() => _CountryPickerBottomSheetState();
+  State<_CountryPickerBottomSheet> createState() =>
+      _CountryPickerBottomSheetState();
 }
 
 class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
@@ -258,8 +249,8 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
     setState(() {
       _filteredCountries = CountryCodes.countries.where((country) {
         return country.name.toLowerCase().contains(query) ||
-               country.dialCode.contains(query) ||
-               country.code.toLowerCase().contains(query);
+            country.dialCode.contains(query) ||
+            country.code.toLowerCase().contains(query);
       }).toList();
     });
   }
@@ -290,11 +281,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
             padding: const EdgeInsets.all(20),
             child: Row(
               children: [
-                Icon(
-                  Icons.public,
-                  color: AppTheme.primaryGold,
-                  size: 24,
-                ),
+                Icon(Icons.public, color: AppTheme.primaryGold, size: 24),
                 const SizedBox(width: 12),
                 const Text(
                   'Select Country',
@@ -307,10 +294,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ],
             ),
@@ -325,10 +309,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
               decoration: InputDecoration(
                 hintText: 'Search country...',
                 hintStyle: TextStyle(color: Colors.white.withOpacity(0.5)),
-                prefixIcon: Icon(
-                  Icons.search,
-                  color: AppTheme.primaryGold,
-                ),
+                prefixIcon: Icon(Icons.search, color: AppTheme.primaryGold),
                 filled: true,
                 fillColor: Colors.black.withOpacity(0.3),
                 border: OutlineInputBorder(
@@ -337,10 +318,7 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(
-                    color: AppTheme.primaryGold,
-                    width: 2,
-                  ),
+                  borderSide: BorderSide(color: AppTheme.primaryGold, width: 2),
                 ),
               ),
             ),
@@ -384,7 +362,9 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
                       country.name,
                       style: TextStyle(
                         color: isSelected ? AppTheme.primaryGold : Colors.white,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        fontWeight: isSelected
+                            ? FontWeight.w600
+                            : FontWeight.w400,
                       ),
                     ),
                     trailing: Container(
@@ -401,7 +381,9 @@ class _CountryPickerBottomSheetState extends State<_CountryPickerBottomSheet> {
                       child: Text(
                         country.dialCode,
                         style: TextStyle(
-                          color: isSelected ? AppTheme.primaryGold : Colors.white,
+                          color: isSelected
+                              ? AppTheme.primaryGold
+                              : Colors.white,
                           fontWeight: FontWeight.w600,
                           fontSize: 14,
                         ),

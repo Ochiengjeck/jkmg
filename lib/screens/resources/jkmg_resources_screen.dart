@@ -52,41 +52,56 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
     return Scaffold(
       backgroundColor: AppTheme.richBlack,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Hero section above tabs
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: _buildHeroSection(),
-            ),
-            const SizedBox(height: 16),
-            // Tabs below hero section
-            _buildTabBar(),
-            const SizedBox(height: 16),
-            Expanded(
-              child: TabBarView(
-                controller: _tabController,
-                children: [
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: ResourcesTabContent(type: null),
+        child: NestedScrollView(
+          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
+            return [
+              SliverAppBar(
+                expandedHeight: 360.0,
+                floating: false,
+                pinned: true,
+                backgroundColor: AppTheme.richBlack,
+                flexibleSpace: FlexibleSpaceBar(
+                  background: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _buildHeroSection(),
                   ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: ResourcesTabContent(type: 'ebook'),
+                ),
+                bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(80.0),
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(25),
+                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                    ),
+                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    child: _buildTabBarContent(),
                   ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: ResourcesTabContent(type: 'audiobook'),
-                  ),
-                  Container(
-                    color: AppTheme.richBlack,
-                    child: ResourcesTabContent(type: 'sermon'),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ];
+          },
+          body: TabBarView(
+            controller: _tabController,
+            children: [
+              Container(
+                color: AppTheme.richBlack,
+                child: ResourcesTabContent(type: null),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: ResourcesTabContent(type: 'ebook'),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: ResourcesTabContent(type: 'audiobook'),
+              ),
+              Container(
+                color: AppTheme.richBlack,
+                child: ResourcesTabContent(type: 'sermon'),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -222,15 +237,8 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
     );
   }
 
-  Widget _buildTabBar() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(25),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-      ),
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: TabBar(
+  Widget _buildTabBarContent() {
+    return TabBar(
         controller: _tabController,
         labelColor: Colors.black87,
         unselectedLabelColor: Colors.white60,
@@ -304,8 +312,7 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
             ),
           ),
         ],
-      ),
-    );
+      );
   }
 }
 
