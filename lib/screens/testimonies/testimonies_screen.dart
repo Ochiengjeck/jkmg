@@ -15,7 +15,8 @@ final allTestimoniesProvider = FutureProvider<List<Testimony>>((ref) async {
     return response.data.where((t) => t.isApproved).toList();
   } catch (e) {
     // If authentication fails, return empty response
-    if (e.toString().contains('unauthenticated') || e.toString().contains('401')) {
+    if (e.toString().contains('unauthenticated') ||
+        e.toString().contains('401')) {
       return [];
     }
     rethrow;
@@ -56,84 +57,131 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppTheme.richBlack,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Testimonies',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
+        title: ShaderMask(
+          shaderCallback: (bounds) =>
+              AppTheme.primaryGoldGradient.createShader(bounds),
+          child: const Text(
+            'Testimonies',
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 24,
+              color: Colors.white,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
-        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.primaryGold.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: IconButton(
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppTheme.primaryGold,
+              size: 20,
+            ),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
         actions: [
-          PopupMenuButton<String>(
-            onSelected: (value) {
-              switch (value) {
-                case 'submit':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const SubmitTestimonyScreen(),
-                    ),
-                  );
-                  break;
-                case 'my_testimonies':
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const MyTestimoniesScreen(),
-                    ),
-                  );
-                  break;
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'submit',
-                child: Row(
-                  children: [
-                    Icon(Icons.add, color: AppTheme.primaryGold),
-                    SizedBox(width: 8),
-                    Text('Submit Testimony'),
-                  ],
-                ),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGold.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: AppTheme.primaryGold.withOpacity(0.3),
+                width: 1,
               ),
-              const PopupMenuItem(
-                value: 'my_testimonies',
-                child: Row(
-                  children: [
-                    Icon(Icons.person, color: AppTheme.primaryGold),
-                    SizedBox(width: 8),
-                    Text('My Testimonies'),
-                  ],
-                ),
+            ),
+            child: PopupMenuButton<String>(
+              icon: const Icon(
+                Icons.more_vert,
+                color: AppTheme.primaryGold,
+                size: 20,
               ),
-            ],
+              onSelected: (value) {
+                switch (value) {
+                  case 'submit':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const SubmitTestimonyScreen(),
+                      ),
+                    );
+                    break;
+                  case 'my_testimonies':
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => const MyTestimoniesScreen(),
+                      ),
+                    );
+                    break;
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'submit',
+                  child: Row(
+                    children: [
+                      Icon(Icons.add, color: AppTheme.primaryGold),
+                      SizedBox(width: 8),
+                      Text('Submit Testimony'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem(
+                  value: 'my_testimonies',
+                  child: Row(
+                    children: [
+                      Icon(Icons.person, color: AppTheme.primaryGold),
+                      SizedBox(width: 8),
+                      Text('My Testimonies'),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ],
       ),
-      body: AnimatedBuilder(
-        animation: _fadeAnimation,
-        builder: (context, child) {
-          return FadeTransition(
-            opacity: _fadeAnimation,
-            child: Column(
-              children: [
-                _buildHeader(),
-                Expanded(child: _buildTestimoniesList()),
-              ],
-            ),
-          );
-        },
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.darkBackgroundGradient,
+        ),
+        child: AnimatedBuilder(
+          animation: _fadeAnimation,
+          builder: (context, child) {
+            return FadeTransition(
+              opacity: _fadeAnimation,
+              child: Column(
+                children: [
+                  const SizedBox(height: kToolbarHeight + 40),
+                  _buildHeader(),
+                  Expanded(child: _buildTestimoniesList()),
+                ],
+              ),
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(
-              builder: (_) => const SubmitTestimonyScreen(),
-            ),
+            MaterialPageRoute(builder: (_) => const SubmitTestimonyScreen()),
           );
         },
         backgroundColor: AppTheme.primaryGold,
@@ -153,18 +201,17 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryGold.withOpacity(0.1), AppTheme.primaryGold.withOpacity(0.05)],
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.primaryGold.withOpacity(0.05),
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
       ),
       child: Column(
         children: [
-          Icon(
-            Icons.favorite,
-            size: 48,
-            color: AppTheme.primaryGold,
-          ),
+          Icon(Icons.favorite, size: 48, color: AppTheme.primaryGold),
           const SizedBox(height: 12),
           const Text(
             'Testimonies of Faith',
@@ -213,7 +260,8 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => TestimonyDetailScreen(testimony: testimony),
+                      builder: (_) =>
+                          TestimonyDetailScreen(testimony: testimony),
                     ),
                   );
                 },
@@ -236,11 +284,7 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_border,
-            size: 80,
-            color: Colors.grey.shade300,
-          ),
+          Icon(Icons.favorite_border, size: 80, color: Colors.grey.shade300),
           const SizedBox(height: 24),
           Text(
             'No Testimonies Yet',
@@ -287,11 +331,7 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.error_outline,
-            size: 80,
-            color: Colors.red.shade300,
-          ),
+          Icon(Icons.error_outline, size: 80, color: Colors.red.shade300),
           const SizedBox(height: 24),
           Text(
             'Failed to Load Testimonies',
@@ -304,10 +344,7 @@ class _TestimoniesScreenState extends ConsumerState<TestimoniesScreen>
           Text(
             'Please check your connection and try again.',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              color: Colors.grey.shade500,
-              fontSize: 16,
-            ),
+            style: TextStyle(color: Colors.grey.shade500, fontSize: 16),
           ),
           const SizedBox(height: 24),
           ElevatedButton.icon(
@@ -343,9 +380,7 @@ class TestimonyCard extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.only(bottom: 16),
       elevation: 2,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(12),
@@ -431,9 +466,12 @@ class TestimonyCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
-                      color: testimony.isApproved 
+                      color: testimony.isApproved
                           ? Colors.green.withOpacity(0.1)
                           : Colors.orange.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
@@ -443,7 +481,9 @@ class TestimonyCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: testimony.isApproved ? Colors.green : Colors.orange,
+                        color: testimony.isApproved
+                            ? Colors.green
+                            : Colors.orange,
                       ),
                     ),
                   ),

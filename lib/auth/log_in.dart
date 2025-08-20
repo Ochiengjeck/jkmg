@@ -4,6 +4,8 @@ import 'package:jkmg/utils/app_theme.dart';
 
 import '../provider/api_providers.dart';
 import '../screens/home.dart';
+import '../utils/country_codes.dart';
+import '../widgets/phone_input_field.dart';
 import 'forgot_password.dart';
 import 'sign_up.dart';
 
@@ -24,6 +26,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
   bool _isPasswordVisible = false;
   bool _isLoading = false;
   bool _isEmailLogin = false; // Toggle between email and phone login
+  CountryCode _selectedCountryCode = CountryCodes.defaultCountry;
   
   late AnimationController _animationController;
   late AnimationController _floatingController;
@@ -81,7 +84,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
         _isLoading = true;
       });
 
-      final username = _isEmailLogin ? _emailController.text : _phoneController.text;
+      final username = _isEmailLogin 
+          ? _emailController.text 
+          : '${_selectedCountryCode.dialCode}${_phoneController.text.replaceAll(RegExp(r'^\+?\d{1,4}'), '')}';
       final params = {
         'username': username,
         'password': _passwordController.text,
@@ -419,20 +424,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                                     return null;
                                   },
                                 )
-                              : _buildTextField(
+                              : PhoneInputField(
                                   controller: _phoneController,
-                                  label: 'Phone Number',
-                                  hint: '+254712345678',
-                                  icon: Icons.phone,
-                                  keyboardType: TextInputType.phone,
-                                  validator: (value) {
-                                    if (value == null || value.isEmpty) {
-                                      return 'Please enter your phone number';
-                                    }
-                                    if (!RegExp(r'^\+\d{10,15}$').hasMatch(value)) {
-                                      return 'Please enter a valid phone number';
-                                    }
-                                    return null;
+                                  onCountryChanged: (country) {
+                                    setState(() {
+                                      _selectedCountryCode = country;
+                                    });
                                   },
                                 ),
                           

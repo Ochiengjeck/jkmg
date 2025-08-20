@@ -4,6 +4,8 @@ import 'package:jkmg/utils/app_theme.dart';
 
 import '../provider/api_providers.dart';
 import '../screens/home.dart';
+import '../utils/country_codes.dart';
+import '../widgets/phone_input_field.dart';
 import 'log_in.dart';
 
 class SignUpScreen extends ConsumerStatefulWidget {
@@ -30,6 +32,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
+  CountryCode _selectedCountryCode = CountryCodes.defaultCountry;
 
   late AnimationController _animationController;
   late AnimationController _floatingController;
@@ -286,6 +289,9 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
   void initState() {
     super.initState();
     
+    // Set Kenya as default country
+    _selectedCountry = 'Kenya';
+    
     // Auto-select all prayer times by default
     _selectedPrayerTimes.addAll(_prayerTimesOptions);
     
@@ -340,7 +346,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
       final params = {
         'name': _nameController.text,
-        'phone': _phoneController.text,
+        'phone': '${_selectedCountryCode.dialCode}${_phoneController.text.replaceAll(RegExp(r'^\+?\d{1,4}'), '')}',
         'country': _selectedCountry!,
         'password': _passwordController.text,
         'password_confirmation': _confirmPasswordController.text,
@@ -603,20 +609,12 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen>
 
                           const SizedBox(height: 20),
 
-                          _buildTextField(
+                          PhoneInputField(
                             controller: _phoneController,
-                            label: 'Phone Number',
-                            hint: '+254712345678',
-                            icon: Icons.phone_outlined,
-                            keyboardType: TextInputType.phone,
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your phone number';
-                              }
-                              if (!RegExp(r'^\+\d{10,15}$').hasMatch(value)) {
-                                return 'Please enter a valid phone number';
-                              }
-                              return null;
+                            onCountryChanged: (country) {
+                              setState(() {
+                                _selectedCountryCode = country;
+                              });
                             },
                           ),
 

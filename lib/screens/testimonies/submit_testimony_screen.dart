@@ -29,23 +29,53 @@ class _SubmitTestimonyScreenState extends ConsumerState<SubmitTestimonyScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppTheme.richBlack,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text(
-          'Share Your Testimony',
-          style: TextStyle(fontWeight: FontWeight.bold),
+        title: ShaderMask(
+          shaderCallback: (bounds) => AppTheme.primaryGoldGradient.createShader(bounds),
+          child: const Text(
+            'Share Your Testimony',
+            style: TextStyle(
+              fontWeight: FontWeight.w900,
+              fontSize: 22,
+              color: Colors.white,
+              letterSpacing: 0.3,
+            ),
+          ),
         ),
-        centerTitle: true,
+        backgroundColor: Colors.transparent,
         elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryGold.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: AppTheme.primaryGold.withOpacity(0.3),
+              width: 1,
+            ),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryGold, size: 20),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _buildHeader(),
-            const SizedBox(height: 24),
-            _buildForm(),
-          ],
+      body: Container(
+        decoration: const BoxDecoration(
+          gradient: AppTheme.darkBackgroundGradient,
+        ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, kToolbarHeight + 56, 16, 16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildHeader(),
+              const SizedBox(height: 24),
+              _buildForm(),
+            ],
+          ),
         ),
       ),
     );
