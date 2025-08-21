@@ -4,6 +4,7 @@ import '../../models/counseling.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import 'ai_counseling_screen.dart';
 // import 'book_counseling.dart';
 // import 'counseling_list.dart';
 
@@ -767,11 +768,10 @@ class _CounselingCornerScreenState
   }
 
   void _launchAIAssistant() {
-    // TODO: Launch AI assistant (Pickaxe integration)
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('AI healing session will be available soon!'),
-        backgroundColor: AppTheme.primaryGold,
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AICounselingScreen(),
       ),
     );
   }

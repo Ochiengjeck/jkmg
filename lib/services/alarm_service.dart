@@ -12,10 +12,11 @@ class AlarmService {
   static const int noonAlarmId = 2;
   static const int eveningAlarmId = 3;
   static const int deeperPrayerAlarmId = 4;
-  
+
   // SharedPreferences keys
   static const String _prayerAlarmsEnabledKey = 'prayer_alarms_enabled';
-  static const String _deeperPrayerAlarmsEnabledKey = 'deeper_prayer_alarms_enabled';
+  static const String _deeperPrayerAlarmsEnabledKey =
+      'deeper_prayer_alarms_enabled';
 
   static final FlutterLocalNotificationsPlugin _notifications =
       FlutterLocalNotificationsPlugin();
@@ -25,20 +26,20 @@ class AlarmService {
     // Initialize notifications for both platforms
     const AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings('@mipmap/launcher_icon');
-        
+
     const DarwinInitializationSettings initializationSettingsIOS =
         DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-      requestCriticalPermission: true,
-    );
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+          requestCriticalPermission: true,
+        );
 
     const InitializationSettings initializationSettings =
         InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-    );
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+        );
 
     await _notifications.initialize(initializationSettings);
 
@@ -66,8 +67,9 @@ class AlarmService {
   static Future<void> schedulePrayerAlarms() async {
     final prefs = await SharedPreferences.getInstance();
     final prayerAlarmsEnabled = prefs.getBool(_prayerAlarmsEnabledKey) ?? true;
-    final deeperPrayerAlarmsEnabled = prefs.getBool(_deeperPrayerAlarmsEnabledKey) ?? true;
-    
+    final deeperPrayerAlarmsEnabled =
+        prefs.getBool(_deeperPrayerAlarmsEnabledKey) ?? true;
+
     if (prayerAlarmsEnabled) {
       if (Platform.isAndroid) {
         await _scheduleAndroidAlarms();
@@ -75,7 +77,7 @@ class AlarmService {
         await _scheduleIOSAlarms();
       }
     }
-    
+
     if (deeperPrayerAlarmsEnabled) {
       if (Platform.isAndroid) {
         await _scheduleAndroidDeeperPrayerAlarm();
@@ -200,7 +202,7 @@ class AlarmService {
     await AndroidAlarmManager.cancel(deeperPrayerAlarmId);
 
     final now = DateTime.now();
-    
+
     // Schedule deeper prayer (12:00 AM - Midnight)
     final midnightTime = DateTime(now.year, now.month, now.day, 0, 0);
     final nextMidnight = midnightTime.isBefore(now)
@@ -252,7 +254,7 @@ class AlarmService {
   ) async {
     final now = DateTime.now();
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, 0);
-    
+
     // If the time has passed today, schedule for tomorrow
     if (scheduledDate.isBefore(now)) {
       scheduledDate = scheduledDate.add(const Duration(days: 1));
@@ -260,19 +262,20 @@ class AlarmService {
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =
         DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'cellphone-ringing-6475.mp3',
-      interruptionLevel: InterruptionLevel.critical,
-    );
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          sound: 'cellphone-ringing-6475.mp3',
+          interruptionLevel: InterruptionLevel.critical,
+        );
 
-    const NotificationDetails platformChannelSpecifics =
-        NotificationDetails(iOS: iOSPlatformChannelSpecifics);
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      iOS: iOSPlatformChannelSpecifics,
+    );
 
     await _notifications.zonedSchedule(
       id,
-      'Prayer Time! 🕌',
+      'Prayer Time! ',
       'It\'s time for $prayerType. Join Rev. Julian in this sacred moment.',
       tz.TZDateTime.from(scheduledDate, tz.local),
       platformChannelSpecifics,
@@ -292,7 +295,9 @@ class AlarmService {
             channelDescription: 'Notifications for prayer times',
             importance: Importance.max,
             priority: Priority.high,
-            sound: RawResourceAndroidNotificationSound('cellphone_ringing_6475'),
+            sound: RawResourceAndroidNotificationSound(
+              'cellphone_ringing_6475',
+            ),
             playSound: true,
             enableVibration: true,
             vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
@@ -309,15 +314,16 @@ class AlarmService {
     } else if (Platform.isIOS) {
       const DarwinNotificationDetails iOSPlatformChannelSpecifics =
           DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-        sound: 'cellphone-ringing-6475.mp3',
-        interruptionLevel: InterruptionLevel.critical,
-      );
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            sound: 'cellphone-ringing-6475.mp3',
+            interruptionLevel: InterruptionLevel.critical,
+          );
 
-      const NotificationDetails platformChannelSpecifics =
-          NotificationDetails(iOS: iOSPlatformChannelSpecifics);
+      const NotificationDetails platformChannelSpecifics = NotificationDetails(
+        iOS: iOSPlatformChannelSpecifics,
+      );
 
       await _notifications.show(0, title, body, platformChannelSpecifics);
     }

@@ -72,9 +72,14 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                      border: Border.all(
+                        color: AppTheme.primaryGold.withOpacity(0.2),
+                      ),
                     ),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: _buildTabBarContent(),
                   ),
                 ),
@@ -147,10 +152,7 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  AppTheme.charcoalBlack,
-                  AppTheme.richBlack,
-                ],
+                colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -178,11 +180,12 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Access comprehensive digital resources for spiritual growth',
+                  'Access Comprehensive digital resources for your Spiritual growth and Advancement in the market place by Rev Julian Kyula',
                   style: TextStyle(
                     fontSize: 13,
                     color: Colors.white70,
                     fontWeight: FontWeight.w500,
+
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -214,10 +217,7 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
@@ -239,80 +239,77 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
 
   Widget _buildTabBarContent() {
     return TabBar(
-        controller: _tabController,
-        labelColor: Colors.black87,
-        unselectedLabelColor: Colors.white60,
-        indicatorColor: Colors.transparent,
-        indicatorSize: TabBarIndicatorSize.label,
-        dividerHeight: 0,
-        indicator: BoxDecoration(
-          color: AppTheme.primaryGold,
-          borderRadius: BorderRadius.circular(20),
+      controller: _tabController,
+      labelColor: Colors.black87,
+      unselectedLabelColor: Colors.white60,
+      indicatorColor: Colors.transparent,
+      indicatorSize: TabBarIndicatorSize.label,
+      dividerHeight: 0,
+      indicator: BoxDecoration(
+        color: AppTheme.primaryGold,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
+      labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+      unselectedLabelStyle: const TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w500,
+      ),
+      tabs: [
+        SizedBox(
+          width: 80,
+          child: Tab(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.library_books, size: 14),
+                SizedBox(height: 2),
+                Text('All', textAlign: TextAlign.center),
+              ],
+            ),
+          ),
         ),
-        indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
-        labelStyle: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
+        SizedBox(
+          width: 80,
+          child: Tab(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.menu_book, size: 14),
+                SizedBox(height: 2),
+                Text('E-Books', textAlign: TextAlign.center),
+              ],
+            ),
+          ),
         ),
-        unselectedLabelStyle: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w500,
+        SizedBox(
+          width: 80,
+          child: Tab(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.headphones, size: 14),
+                SizedBox(height: 2),
+                Text('Audio', textAlign: TextAlign.center),
+              ],
+            ),
+          ),
         ),
-        tabs: [
-          SizedBox(
-            width: 80,
-            child: Tab(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.library_books, size: 14),
-                  SizedBox(height: 2),
-                  Text('All', textAlign: TextAlign.center),
-                ],
-              ),
+        SizedBox(
+          width: 80,
+          child: Tab(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: const [
+                Icon(Icons.play_circle, size: 14),
+                SizedBox(height: 2),
+                Text('Sermons', textAlign: TextAlign.center),
+              ],
             ),
           ),
-          SizedBox(
-            width: 80,
-            child: Tab(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.menu_book, size: 14),
-                  SizedBox(height: 2),
-                  Text('E-Books', textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 80,
-            child: Tab(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.headphones, size: 14),
-                  SizedBox(height: 2),
-                  Text('Audio', textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          ),
-          SizedBox(
-            width: 80,
-            child: Tab(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.play_circle, size: 14),
-                  SizedBox(height: 2),
-                  Text('Sermons', textAlign: TextAlign.center),
-                ],
-              ),
-            ),
-          ),
-        ],
-      );
+        ),
+      ],
+    );
   }
 }
 
@@ -339,7 +336,6 @@ class ResourcesTabContent extends ConsumerWidget {
       ),
     );
   }
-
 
   Widget _buildAboutSection() {
     return Column(

@@ -164,10 +164,7 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
@@ -438,81 +435,360 @@ class _AboutScreenState extends ConsumerState<AboutScreen>
           subtitle: 'Founder and visionary leader',
         ),
         const SizedBox(height: 12),
+        /*
+        // Fade-into-image design (commented out)
         Container(
-          padding: const EdgeInsets.all(20),
+          height: 400,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryGold.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              // Background Image
+              Positioned.fill(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(20),
+                  child: Stack(
+                    children: [
+                      // Julian's Image positioned to the right
+                      Positioned(
+                        right: -20,
+                        top: 0,
+                        bottom: 0,
+                        width: 250,
+                        child: Image.asset(
+                          'assets/images/no bg julian kyula.png',
+                          fit: BoxFit.cover,
+                          alignment: Alignment.centerRight,
+                        ),
+                      ),
+                      // Gradient overlay that fades the image into text area
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: LinearGradient(
+                              colors: [
+                                AppTheme.charcoalBlack,
+                                AppTheme.charcoalBlack.withOpacity(0.9),
+                                AppTheme.charcoalBlack.withOpacity(0.7),
+                                AppTheme.charcoalBlack.withOpacity(0.4),
+                                Colors.transparent,
+                              ],
+                              begin: Alignment.centerLeft,
+                              end: Alignment.centerRight,
+                              stops: const [0.0, 0.3, 0.5, 0.7, 1.0],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              // Content overlay with condensed highlights
+              Positioned.fill(
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Rev. Julian Kyula',
+                        style: TextStyle(
+                          color: AppTheme.primaryGold,
+                          fontSize: 28,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 0.5,
+                          shadows: [
+                            Shadow(
+                              offset: Offset(0, 2),
+                              blurRadius: 4,
+                              color: Colors.black54,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 6),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGold.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(15),
+                          border: Border.all(
+                            color: AppTheme.primaryGold.withOpacity(0.4),
+                            width: 1,
+                          ),
+                        ),
+                        child: const Text(
+                          'Founder & Overseer',
+                          style: TextStyle(
+                            color: AppTheme.primaryGold,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildFadedHighlight('Ministry Leadership', 'Founder of Ruach Ministries (est. 2007)'),
+                      _buildFadedHighlight('Business Innovation', 'MODE Group - fintech across 14+ African nations'),
+                      _buildFadedHighlight('Global Impact', 'UN agreement for 100,000 affordable houses in Kenya'),
+                      _buildFadedHighlight('Family Man', 'Married to Amanda, father of three sons'),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        */
+
+        // Original circular profile design (active)
+        Container(
           decoration: BoxDecoration(
             gradient: LinearGradient(
               colors: [AppTheme.charcoalBlack, AppTheme.softBlack],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(16),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryGold.withOpacity(0.15),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Row(
-                children: [
-                  Container(
-                    width: 60,
-                    height: 60,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppTheme.primaryGold, width: 2),
-                    ),
-                    child: const Icon(
-                      Icons.person,
-                      color: AppTheme.primaryGold,
-                      size: 32,
-                    ),
+              // Profile Header Section
+              Container(
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryGold.withOpacity(0.1),
+                      Colors.transparent,
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                   ),
-                  const SizedBox(width: 16),
-                  const Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Rev. Julian Kyula',
-                          style: TextStyle(
-                            color: AppTheme.primaryGold,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(20),
+                    topRight: Radius.circular(20),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    // Profile Image
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        gradient: LinearGradient(
+                          colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppTheme.primaryGold.withOpacity(0.4),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                      ),
+                      child: Container(
+                        margin: const EdgeInsets.all(3),
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.charcoalBlack,
+                            width: 2,
                           ),
                         ),
-                        Text(
-                          'Founder & Overseer',
-                          style: TextStyle(color: Colors.white70, fontSize: 12),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(60),
+                          child: Image.asset(
+                            'assets/images/julian kyula.png',
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      AppTheme.charcoalBlack,
+                                      AppTheme.softBlack,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.person,
+                                  color: AppTheme.primaryGold,
+                                  size: 50,
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ],
+                      ),
                     ),
-                  ),
-                ],
+                    const SizedBox(height: 20),
+                    // Name and Title
+                    const Text(
+                      'Rev. Julian Kyula',
+                      style: TextStyle(
+                        color: AppTheme.primaryGold,
+                        fontSize: 24,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryGold.withOpacity(0.15),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: AppTheme.primaryGold.withOpacity(0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: const Text(
+                        'Founder & Overseer',
+                        style: TextStyle(
+                          color: AppTheme.primaryGold,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 16),
-              _buildJulianHighlight(
-                'Ministry Leadership',
-                'Founder and overseer of Ruach Ministries (est. 2007, originally The Purpose Centre Church)',
-              ),
-              _buildJulianHighlight(
-                'Business Innovation',
-                'Launched MODE Group (2010) - multinational fintech corporation operating in 14+ African nations',
-              ),
-              _buildJulianHighlight(
-                'Housing Development',
-                'Chairman at Beulah City Ltd - affordable housing solutions for the African middle class',
-              ),
-              _buildJulianHighlight(
-                'Global Impact',
-                'Brokered UN agreement for 100,000 affordable houses in Kenya\'s Big 4 Initiative (2019)',
-              ),
-              _buildJulianHighlight(
-                'Family',
-                'Married to Amanda Kyula, proud father of three sons',
+              // Achievements Section
+              Container(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildJulianHighlight(
+                      'Ministry Leadership',
+                      'Founder and Visionary of Ruach Ministries (est. 2007, originally The Purpose Centre Church)',
+                    ),
+                    _buildJulianHighlight(
+                      'Business Innovation',
+                      'Launched MODE Group (2010) - multinational fintech corporation operating in 14+ African nations',
+                    ),
+                    _buildJulianHighlight(
+                      'Housing Development',
+                      'Chairman at Beulah City Ltd - affordable housing solutions for the African middle class',
+                    ),
+                    _buildJulianHighlight(
+                      'Global Impact',
+                      'Brokered UN agreement for 100,000 affordable houses in Kenya\'s Big 4 Initiative (2019)',
+                    ),
+                    _buildJulianHighlight(
+                      'Family',
+                      'Married to Amanda Kyula, proud father of three sons',
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildFadedHighlight(String title, String description) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 4,
+            height: 4,
+            margin: const EdgeInsets.only(top: 8),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGold,
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryGold.withOpacity(0.6),
+                  blurRadius: 4,
+                  spreadRadius: 1,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    color: AppTheme.primaryGold,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  description,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 11,
+                    height: 1.3,
+                    fontWeight: FontWeight.w500,
+                    shadows: [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 2,
+                        color: Colors.black54,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 

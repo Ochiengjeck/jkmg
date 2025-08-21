@@ -190,7 +190,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             Consumer(
               builder: (context, ref, _) {
-                final unreadCountAsync = ref.watch(unreadNotificationsCountProvider);
+                final unreadCountAsync = ref.watch(
+                  unreadNotificationsCountProvider,
+                );
 
                 return unreadCountAsync.when(
                   data: (unreadCount) {
@@ -246,27 +248,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   Widget _buildDrawer(BuildContext context, WidgetRef ref) {
     final userAsyncValue = ref.watch(currentUserProvider);
-    
+
     // Handle loading and error states
     if (userAsyncValue.isLoading) {
       return const Drawer(
         child: Center(
-          child: CircularProgressIndicator(
-            color: Color(0xFFD4AF37),
-          ),
+          child: CircularProgressIndicator(color: Color(0xFFD4AF37)),
         ),
       );
     }
-    
+
     if (userAsyncValue.hasError) {
       // Error will be handled by AuthWrapper
-      return const Drawer(
-        child: Center(
-          child: Text('Loading...'),
-        ),
-      );
+      return const Drawer(child: Center(child: Text('Loading...')));
     }
-    
+
     final user = userAsyncValue.value;
     return Drawer(
       backgroundColor: Colors.transparent,
@@ -783,10 +779,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   const SizedBox(height: 24),
                   _buildQuickActions(context),
                   const SizedBox(height: 24),
-                  _buildMainMenuGrid(context),
-                  const SizedBox(height: 24),
-                  _buildUpcomingEvents(context),
-                  const SizedBox(height: 24),
+                  // _buildMainMenuGrid(context),
+                  // const SizedBox(height: 24),
+                  // _buildUpcomingEvents(context),
+                  // const SizedBox(height: 24),
                   _buildMinistryHighlights(context),
                 ],
               ),
@@ -1159,66 +1155,71 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Stack(
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFFD700),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFFFD700).withOpacity(0.4),
-                      blurRadius: 15,
-                      spreadRadius: 3,
+              Row(
+                children: [
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFFD700),
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFFFFD700).withOpacity(0.4),
+                          blurRadius: 15,
+                          spreadRadius: 3,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.record_voice_over,
-                  size: 30,
-                  color: Color(0xFF1A1A1A),
+                    child: const Icon(
+                      Icons.record_voice_over,
+                      size: 30,
+                      color: Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  const Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Welcome Message',
+                          style: TextStyle(
+                            color: Color(0xFFFFD700),
+                            fontSize: 18,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        Text(
+                          'From Rev. Julian Kyula',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Welcome to Julian Kyula Ministry Global (JKMG) - a faith-driven movement dedicated to transforming lives and nations through the power of God\'s Word, apostolic insight, and marketplace impact.',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 14,
+                  height: 1.5,
                 ),
               ),
-              const SizedBox(width: 16),
-              const Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Welcome Message',
-                      style: TextStyle(
-                        color: Color(0xFFFFD700),
-                        fontSize: 18,
-                        fontWeight: FontWeight.w800,
-                      ),
-                    ),
-                    Text(
-                      'From Rev. Julian Kyula',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          const Text(
-            'Welcome to Julian Kyula Ministry Global (JKMG) - a faith-driven movement dedicated to transforming lives and nations through the power of God\'s Word, apostolic insight, and marketplace impact.',
-            style: TextStyle(color: Colors.white, fontSize: 14, height: 1.5),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
                 child: ElevatedButton.icon(
                   onPressed: () {
                     // Play pre-recorded welcome message
@@ -1232,19 +1233,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => navigateToPage(1), // Navigate to About
-                  icon: const Icon(Icons.info_outline),
-                  label: const Text('Learn More'),
-                  style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFFFFD700),
-                    side: const BorderSide(color: Color(0xFFFFD700)),
-                  ),
-                ),
-              ),
             ],
+          ),
+          // Info button at top right corner
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: () => navigateToPage(1), // Navigate to About
+              icon: const Icon(
+                Icons.info_outline,
+                color: Color(0xFFFFD700),
+                size: 24,
+              ),
+              tooltip: 'Learn More About JKMG',
+            ),
           ),
         ],
       ),
@@ -1252,53 +1255,120 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildQuickActions(BuildContext context) {
+    final quickAccessItems = [
+      {
+        'imagePath': 'assets/images/prayer plan.png',
+        'title': 'Rhema Prayer\nPlan',
+        'subtitle': 'Daily guidance',
+        'color': const Color(0xFFFF6B6B),
+        'page': 2,
+      },
+      {
+        'imagePath': 'assets/images/bible study.png',
+        'title': 'Bible Study\nCorner',
+        'subtitle': 'Grow deeper',
+        'color': const Color(0xFF4ECDC4),
+        'page': 3,
+      },
+      {
+        'imagePath': 'assets/images/salvation corner.png',
+        'title': 'Salvation\nCorner',
+        'subtitle': 'Find Jesus',
+        'color': const Color(0xFFFFE066),
+        'page': 4,
+      },
+      {
+        'imagePath': 'assets/images/about.png',
+        'title': 'About\nJKMG',
+        'subtitle': 'Learn more',
+        'color': const Color(0xFF6C5CE7),
+        'page': 1,
+      },
+      {
+        'imagePath': 'assets/images/counseling & care.png',
+        'title': 'Counseling\n& Care',
+        'subtitle': 'Get support',
+        'color': const Color(0xFF00CEC9),
+        'page': 5,
+      },
+      {
+        'imagePath': 'assets/images/resources.png',
+        'title': 'JKMG\nResources',
+        'subtitle': 'Study materials',
+        'color': const Color(0xFF00B894),
+        'page': 6,
+      },
+      {
+        'imagePath': 'assets/images/events.png',
+        'title': 'Events &\nAnnouncements',
+        'subtitle': 'Stay updated',
+        'color': const Color(0xFFE17055),
+        'page': 7,
+      },
+      {
+        'imagePath': 'assets/images/partners.png',
+        'title': 'Partnership\n& Giving',
+        'subtitle': 'Support ministry',
+        'color': const Color(0xFFFD79A8),
+        'page': 8,
+      },
+      {
+        'imagePath': 'assets/images/commonwealth.png',
+        'title': 'Kingdom\nCommonwealth',
+        'subtitle': 'Join community',
+        'color': const Color(0xFF0984E3),
+        'page': 9,
+      },
+    ];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Access',
-          style: TextStyle(
-            color: const Color(0xFFFFD700),
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        const SizedBox(height: 16),
         Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                icon: Icons.schedule,
-                title: 'Rhema Prayer\nPlan',
-                subtitle: 'Daily guidance',
-                color: const Color(0xFFFF6B6B),
-                onTap: () => navigateToPage(2),
+            Text(
+              'Quick Access',
+              style: TextStyle(
+                color: const Color(0xFFFFD700),
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
               ),
             ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                icon: Icons.menu_book,
-                title: 'Bible Study\nCorner',
-                subtitle: 'Grow deeper',
-                color: const Color(0xFF4ECDC4),
-                onTap: () => navigateToPage(3),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildQuickActionCard(
-                context,
-                icon: Icons.favorite,
-                title: 'Salvation\nCorner',
-                subtitle: 'Find Jesus',
-                color: const Color(0xFFFFE066),
-                onTap: () => navigateToPage(4),
+            TextButton(
+              onPressed: () {
+                // Show all features
+                _scaffoldKey.currentState?.openDrawer();
+              },
+              child: const Text(
+                'View All',
+                style: TextStyle(color: Color(0xFFFFD700)),
               ),
             ),
           ],
+        ),
+        const SizedBox(height: 16),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.9,
+          ),
+          itemCount: quickAccessItems.length,
+          itemBuilder: (context, index) {
+            final item = quickAccessItems[index];
+            return _buildQuickActionImageCard(
+              context,
+              imagePath: item['imagePath'] as String,
+              title: item['title'] as String,
+              subtitle: item['subtitle'] as String,
+              color: item['color'] as Color,
+              onTap: () => navigateToPage(item['page'] as int),
+            );
+          },
         ),
       ],
     );
@@ -1396,6 +1466,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  /*
   Widget _buildUpcomingEvents(BuildContext context) {
     final allEventsAsync = ref.watch(allEventsProvider);
 
@@ -1490,6 +1561,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
+  */
 
   Widget _buildMinistryHighlights(BuildContext context) {
     return Column(
@@ -1628,6 +1700,77 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               textAlign: TextAlign.center,
             ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuickActionImageCard(
+    BuildContext context, {
+    required String imagePath,
+    required String title,
+    required String subtitle,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [color.withOpacity(0.15), color.withOpacity(0.05)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: color.withOpacity(0.2)),
+          boxShadow: [
+            BoxShadow(
+              color: color.withOpacity(0.1),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 4),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(16),
+                child: Image.asset(
+                  imagePath,
+                  fit: BoxFit.fill,
+                  errorBuilder: (context, error, stackTrace) {
+                    return Container(
+                      decoration: BoxDecoration(
+                        color: color.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Icon(
+                          Icons.image_not_supported,
+                          color: color,
+                          size: 32,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -2734,7 +2877,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
       // Call logout API
       await ref.read(logoutProvider.future);
-      
+
       // Clear user session from provider
       await ref.read(userSessionProvider.notifier).clearUserSession();
 
