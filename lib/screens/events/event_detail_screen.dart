@@ -248,18 +248,29 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen>
         return Container(
           height: 400,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [
-                _getEventColor(event.type.value),
-                _getEventColor(event.type.value).withOpacity(0.8),
-                AppTheme.richBlack.withOpacity(0.3),
-              ],
+            image: DecorationImage(
+              image: AssetImage(_getEventPlaceholderImage(event.type.value)),
+              fit: BoxFit.fill,
             ),
           ),
           child: Stack(
             children: [
+              // Gradient overlay for better text readability
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withOpacity(0.3),
+                        Colors.black.withOpacity(0.6),
+                        AppTheme.richBlack.withOpacity(0.8),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
               // Background Pattern
               Positioned.fill(
                 child: CustomPaint(painter: _EventDetailPatternPainter()),
@@ -645,6 +656,21 @@ class _EventDetailScreenState extends ConsumerState<EventDetailScreen>
         return 'BUSINESS FORUM';
       default:
         return 'EVENT';
+    }
+  }
+
+  String _getEventPlaceholderImage(String eventType) {
+    switch (eventType) {
+      case 'rhema_feast':
+        return 'assets/images/RhemaFeastPlaceholder.png';
+      case 'rxp':
+        return 'assets/images/RxpPlaceholder.png';
+      case 'outreach':
+        return 'assets/images/Outreachplaceholder.png';
+      case 'business_forum':
+        return 'assets/images/BusinessForumPlaceholder.png';
+      default:
+        return 'assets/images/events.png'; // fallback to generic events image
     }
   }
 

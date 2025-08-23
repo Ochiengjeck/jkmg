@@ -148,7 +148,7 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                     children: [
                       // Description
                       const Text(
-                        'Events & Announcements',
+                        'Expression & Announcements',
                         style: TextStyle(
                           fontSize: 16,
                           color: Colors.white,

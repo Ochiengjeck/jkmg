@@ -1783,6 +1783,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
     }
   }
 
+
   void _showSearchResults(String reference) {
     showDialog(
       context: context,

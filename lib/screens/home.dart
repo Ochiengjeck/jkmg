@@ -48,7 +48,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     {'title': 'Salvation Corner', 'icon': Icons.favorite},
     {'title': 'Counseling & Care', 'icon': Icons.support},
     {'title': 'JKMG Resources', 'icon': Icons.library_books},
-    {'title': 'Events & Announcements', 'icon': Icons.event},
+    {'title': 'Expression & Announcements', 'icon': Icons.event},
     {'title': 'Partnership & Giving', 'icon': Icons.volunteer_activism},
     {'title': 'Kingdom Commonwealth', 'icon': Icons.public},
     {'title': 'Coming Soon', 'icon': Icons.hourglass_top},
@@ -324,7 +324,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                             _DrawerItem(
                               icon: Icons.event_rounded,
-                              title: 'Events & Announcements',
+                              title: 'Expression & Announcements',
                               onTap: () => navigateToPage(7),
                               isNew: true,
                             ),
@@ -1284,7 +1284,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       },
       {
         'imagePath': 'assets/images/events.png',
-        'title': 'Events &\nAnnouncements',
+        'title': 'Expression &\nAnnouncements',
         'subtitle': 'Stay updated',
         'color': const Color(0xFFE17055),
         'page': 7,
@@ -1379,7 +1379,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         'page': 6,
       },
       {
-        'title': 'Events &\nAnnouncements',
+        'title': 'Expression &\nAnnouncements',
         'icon': Icons.event,
         'color': const Color(0xFFE17055),
         'page': 7,

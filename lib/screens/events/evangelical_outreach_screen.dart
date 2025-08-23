@@ -82,7 +82,7 @@ class _EvangelicalOutreachScreenState
             const SizedBox(height: 24),
             _buildMyOutreachRegistrations(),
             const SizedBox(height: 24),
-            _buildImpactGallery(),
+            _buildImpact(),
             const SizedBox(height: 24),
             _buildTestimoniesSection(),
           ],
@@ -99,13 +99,7 @@ class _EvangelicalOutreachScreenState
           scale: _heroAnimation.value,
           child: Container(
             width: double.infinity,
-            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [AppTheme.richBlack, AppTheme.charcoalBlack],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
@@ -117,65 +111,86 @@ class _EvangelicalOutreachScreenState
             ),
             child: Column(
               children: [
+                // Clean image section without overlays
                 Container(
-                  width: 80,
-                  height: 80,
+                  width: double.infinity,
+                  height: 200,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryGold,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppTheme.primaryGold.withOpacity(0.4),
-                        blurRadius: 20,
-                        spreadRadius: 5,
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                    image: const DecorationImage(
+                      image: AssetImage(
+                        'assets/images/Outreachplaceholder.png',
+                      ),
+                      fit: BoxFit.fill,
+                    ),
+                  ),
+                ),
+                // Separate text content section with modern design
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Column(
+                    children: [
+                      // Description
+                      const Text(
+                        'JKMG Evangelical Outreach',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.3,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
+                        'Spreading the Gospel Across Nations',
+                        style: TextStyle(
+                          fontSize: 13,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w500,
+                          height: 1.4,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 12),
+                      // Feature highlights in single row
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            _buildFeatureChip('Community'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Missions'),
+                            const SizedBox(width: 8),
+                            _buildFeatureChip('Transformation'),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                  child: const Icon(
-                    Icons.share,
-                    size: 40,
-                    color: AppTheme.richBlack,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'JKMG Evangelical Outreach',
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w800,
-                    color: AppTheme.primaryGold,
-                    letterSpacing: 0.5,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                const Text(
-                  'Spreading the Gospel Across Nations',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.white70,
-                    fontWeight: FontWeight.w500,
-                    height: 1.4,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryGold.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: const Text(
-                    'Transforming Lives • Building Communities • Sharing Hope',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: AppTheme.primaryGold,
-                      fontWeight: FontWeight.w600,
-                    ),
                   ),
                 ),
               ],
@@ -183,6 +198,28 @@ class _EvangelicalOutreachScreenState
           ),
         );
       },
+    );
+  }
+
+  Widget _buildFeatureChip(String label) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppTheme.primaryGold.withOpacity(0.15),
+        borderRadius: BorderRadius.circular(15),
+        border: Border.all(
+          color: AppTheme.primaryGold.withOpacity(0.4),
+          width: 1,
+        ),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 10,
+          color: AppTheme.primaryGold,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
     );
   }
 
@@ -228,7 +265,7 @@ class _EvangelicalOutreachScreenState
     );
   }
 
-  Widget _buildImpactGallery() {
+  Widget _buildImpact() {
     return AnimatedBuilder(
       animation: _fadeAnimation,
       builder: (context, child) {
@@ -238,7 +275,7 @@ class _EvangelicalOutreachScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const SectionHeader(
-                title: 'Impact Gallery',
+                title: 'Impact',
                 subtitle: 'See God\'s work in action',
               ),
               const SizedBox(height: 16),

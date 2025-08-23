@@ -61,7 +61,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                expandedHeight: 280.0,
+                expandedHeight: 320.0,
                 floating: false,
                 pinned: true,
                 backgroundColor: AppTheme.richBlack,
@@ -74,9 +74,14 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                      border: Border.all(
+                        color: AppTheme.primaryGold.withOpacity(0.2),
+                      ),
                     ),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: TabBar(
                       controller: _tabController,
                       labelColor: Colors.black87,
@@ -119,10 +124,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                 color: AppTheme.richBlack,
                 child: _buildPreferencesTab(),
               ),
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildActivityTab(),
-              ),
+              Container(color: AppTheme.richBlack, child: _buildActivityTab()),
             ],
           ),
         ),
@@ -883,11 +885,15 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
 
     try {
       // Call the actual API to update profile
-      final updatedUser = await ref.read(updateProfileProvider({
-        'name': _nameController.text,
-        'email': _emailController.text.isEmpty ? null : _emailController.text,
-        'country': _countryController.text.isEmpty ? null : _countryController.text,
-      }).future);
+      final updatedUser = await ref.read(
+        updateProfileProvider({
+          'name': _nameController.text,
+          'email': _emailController.text.isEmpty ? null : _emailController.text,
+          'country': _countryController.text.isEmpty
+              ? null
+              : _countryController.text,
+        }).future,
+      );
 
       // Update the user session with the new data
       await ref.read(userSessionProvider.notifier).saveUserSession(updatedUser);
