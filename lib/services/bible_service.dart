@@ -87,14 +87,15 @@ class BibleService {
   }
 
   Future<BibleVerseResponse> getRandomVerse({
-    String translation = 'kjv',
     String? bookIds,
+    String translation = 'web', // Default to 'web' as it's more commonly available
   }) async {
     try {
-      // For random verse, we need to use a different endpoint format
-      String endpoint = '$baseUrl/$translation/random';
+      // Build endpoint using the correct format: /data/[translation]/random[/BOOK_IDS]
+      String endpoint = '$baseUrl/data/$translation/random';
+      
       if (bookIds != null && bookIds.isNotEmpty) {
-        endpoint = '$baseUrl/$translation/$bookIds/random';
+        endpoint += '/$bookIds';
       }
 
       final response = await http.get(
@@ -106,17 +107,49 @@ class BibleService {
         final data = jsonDecode(response.body);
         return BibleVerseResponse.fromJson(data);
       } else {
-        // If random verse fails, fall back to a known verse
-        return await getVerse('John 3:16', translation: translation);
+        throw Exception(
+          'Random verse API returned ${response.statusCode}: ${response.body}',
+        );
       }
     } catch (e) {
       // Fallback to a known verse if random fails
       try {
         return await getVerse('John 3:16', translation: translation);
       } catch (fallbackError) {
-        throw Exception('Failed to load verse: $e');
+        throw Exception('Failed to load random verse: $e. Fallback also failed: $fallbackError');
       }
     }
+  }
+
+  /// Get a random verse from the Old Testament
+  Future<BibleVerseResponse> getRandomOldTestamentVerse({
+    String translation = 'web',
+  }) async {
+    return getRandomVerse(bookIds: 'OT', translation: translation);
+  }
+
+  /// Get a random verse from the New Testament
+  Future<BibleVerseResponse> getRandomNewTestamentVerse({
+    String translation = 'web',
+  }) async {
+    return getRandomVerse(bookIds: 'NT', translation: translation);
+  }
+
+  /// Get a random verse from specific books
+  /// bookIds should be comma-separated list like "GEN,EXO,LEV" or single book like "JHN"
+  Future<BibleVerseResponse> getRandomVerseFromBooks(
+    List<String> bookIds, {
+    String translation = 'web',
+  }) async {
+    final booksString = bookIds.join(',');
+    return getRandomVerse(bookIds: booksString, translation: translation);
+  }
+
+  /// Get a random verse from the four Gospels
+  Future<BibleVerseResponse> getRandomGospelVerse({
+    String translation = 'web',
+  }) async {
+    return getRandomVerseFromBooks(['MAT', 'MRK', 'LUK', 'JHN'], translation: translation);
   }
 }
 

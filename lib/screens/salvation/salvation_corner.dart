@@ -2,9 +2,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/salvation.dart';
-import '../../provider/api_providers.dart';
+import '../../services/api_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../inbox/inbox_screen.dart';
 import '../testimonies/testimonies_screen.dart';
 import '../testimonies/submit_testimony_screen.dart';
 import '../testimonies/my_testimonies_screen.dart';
@@ -26,6 +27,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   late Timer _timer;
   int _currentPage = 0;
   final int _testimonyCount = 5; // Number of testimonies
+  final ApiService _apiService = ApiService();
 
   @override
   void initState() {
@@ -140,10 +142,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  AppTheme.charcoalBlack,
-                  AppTheme.richBlack,
-                ],
+                colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -192,6 +191,8 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                       _buildFeatureChip('Rededication'),
                       const SizedBox(width: 8),
                       _buildFeatureChip('Testimony'),
+                      const SizedBox(width: 8),
+                      _buildStatsButton(),
                     ],
                   ),
                 ),
@@ -205,10 +206,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
@@ -223,6 +221,38 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
           fontSize: 10,
           color: AppTheme.primaryGold,
           fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStatsButton() {
+    return GestureDetector(
+      onTap: _showSalvationStats,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        decoration: BoxDecoration(
+          color: AppTheme.successGreen.withOpacity(0.15),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: AppTheme.successGreen.withOpacity(0.4),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.analytics, size: 12, color: AppTheme.successGreen),
+            const SizedBox(width: 4),
+            Text(
+              'Stats',
+              style: TextStyle(
+                fontSize: 10,
+                color: AppTheme.successGreen,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -303,9 +333,8 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   Widget _buildGiveLifeToChristForm(BuildContext context) {
     final formKey = GlobalKey<FormState>();
     final TextEditingController nameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController reasonController = TextEditingController();
+    final TextEditingController ageController = TextEditingController();
+    String selectedGender = 'male';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,10 +371,10 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: emailController,
+                DropdownButtonFormField<String>(
+                  value: selectedGender,
                   decoration: InputDecoration(
-                    labelText: 'Email Address',
+                    labelText: 'Gender',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -355,21 +384,28 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                       borderSide: const BorderSide(color: AppTheme.primaryGold),
                     ),
                   ),
+                  items: [
+                    DropdownMenuItem(value: 'male', child: Text('Male')),
+                    DropdownMenuItem(value: 'female', child: Text('Female')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedGender = value;
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email address';
+                      return 'Please select your gender';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: phoneController,
+                  controller: ageController,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Phone Number',
+                    labelText: 'Age',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -381,29 +417,11 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your phone number';
+                      return 'Please enter your age';
                     }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: reasonController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    labelText: 'Why do you want to give your life to Christ?',
-                    labelStyle: const TextStyle(color: AppTheme.primaryGold),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.primaryGold),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please share your reason';
+                    final age = int.tryParse(value);
+                    if (age == null || age < 1 || age > 120) {
+                      return 'Please enter a valid age';
                     }
                     return null;
                   },
@@ -415,27 +433,25 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         try {
-                          await ref.read(
-                            recordSalvationDecisionProvider({
-                              'type': 'give_life_to_christ',
-                              'name': nameController.text,
-                              'email': emailController.text,
-                              'phone': phoneController.text,
-                              'reason': reasonController.text,
-                            }).future,
+                          final response = await _apiService.submitLifeToChrist(
+                            age: int.parse(ageController.text),
+                            gender: selectedGender,
                           );
 
                           if (mounted) {
+                            final hasInstantPrayer =
+                                response['salvation_decision']?['prayer'] !=
+                                null;
                             _showSuccessMessage(
                               context,
-                              'Your decision has been recorded! Please check your notifications for an automated audio prayer from Rev Julian Kyula.',
+                              'Your decision has been recorded! ${hasInstantPrayer ? 'Please check your inbox for an automated audio prayer from Rev Julian Kyula.' : 'An audio prayer from Rev Julian Kyula will be available in your inbox soon.'}',
+                              hasInstantPrayer,
                             );
                           }
 
                           nameController.clear();
-                          emailController.clear();
-                          phoneController.clear();
-                          reasonController.clear();
+                          ageController.clear();
+                          selectedGender = 'male';
                         } catch (e) {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -473,9 +489,8 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   Widget _buildRededicateLifeToChristForm(BuildContext context) {
     final formKey = GlobalKey<FormState>();
     final TextEditingController nameController = TextEditingController();
-    final TextEditingController emailController = TextEditingController();
-    final TextEditingController phoneController = TextEditingController();
-    final TextEditingController reasonController = TextEditingController();
+    final TextEditingController ageController = TextEditingController();
+    String selectedGender = 'male';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -512,10 +527,10 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                   },
                 ),
                 const SizedBox(height: 16),
-                TextFormField(
-                  controller: emailController,
+                DropdownButtonFormField<String>(
+                  value: selectedGender,
                   decoration: InputDecoration(
-                    labelText: 'Email Address',
+                    labelText: 'Gender',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -525,21 +540,28 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                       borderSide: const BorderSide(color: AppTheme.primaryGold),
                     ),
                   ),
+                  items: [
+                    DropdownMenuItem(value: 'male', child: Text('Male')),
+                    DropdownMenuItem(value: 'female', child: Text('Female')),
+                  ],
+                  onChanged: (value) {
+                    if (value != null) {
+                      selectedGender = value;
+                    }
+                  },
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your email address';
-                    }
-                    if (!value.contains('@')) {
-                      return 'Please enter a valid email address';
+                      return 'Please select your gender';
                     }
                     return null;
                   },
                 ),
                 const SizedBox(height: 16),
                 TextFormField(
-                  controller: phoneController,
+                  controller: ageController,
+                  keyboardType: TextInputType.number,
                   decoration: InputDecoration(
-                    labelText: 'Phone Number',
+                    labelText: 'Age',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -551,30 +573,11 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
-                      return 'Please enter your phone number';
+                      return 'Please enter your age';
                     }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
-                  controller: reasonController,
-                  maxLines: 3,
-                  decoration: InputDecoration(
-                    labelText:
-                        'Why do you want to rededicate your life to Christ?',
-                    labelStyle: const TextStyle(color: AppTheme.primaryGold),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.primaryGold),
-                    ),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Please share your reason';
+                    final age = int.tryParse(value);
+                    if (age == null || age < 1 || age > 120) {
+                      return 'Please enter a valid age';
                     }
                     return null;
                   },
@@ -586,27 +589,26 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                     onPressed: () async {
                       if (formKey.currentState!.validate()) {
                         try {
-                          await ref.read(
-                            recordSalvationDecisionProvider({
-                              'type': 'rededicate_life_to_christ',
-                              'name': nameController.text,
-                              'email': emailController.text,
-                              'phone': phoneController.text,
-                              'reason': reasonController.text,
-                            }).future,
-                          );
+                          final response = await _apiService
+                              .resubmitLifeToChrist(
+                                age: int.parse(ageController.text),
+                                gender: selectedGender,
+                              );
 
                           if (mounted) {
+                            final hasInstantPrayer =
+                                response['salvation_decision']?['prayer'] !=
+                                null;
                             _showSuccessMessage(
                               context,
-                              'Your rededication has been recorded! Please check your notifications for an automated audio prayer from Rev Julian Kyula.',
+                              'Your rededication has been recorded! ${hasInstantPrayer ? 'Please check your inbox for an automated audio prayer from Rev Julian Kyula.' : 'An audio prayer from Rev Julian Kyula will be available in your inbox soon.'}',
+                              hasInstantPrayer,
                             );
                           }
 
                           nameController.clear();
-                          emailController.clear();
-                          phoneController.clear();
-                          reasonController.clear();
+                          ageController.clear();
+                          selectedGender = 'male';
                         } catch (e) {
                           if (mounted) {
                             ScaffoldMessenger.of(context).showSnackBar(
@@ -657,11 +659,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
             children: [
               Row(
                 children: [
-                  Icon(
-                    Icons.favorite,
-                    color: AppTheme.primaryGold,
-                    size: 24,
-                  ),
+                  Icon(Icons.favorite, color: AppTheme.primaryGold, size: 24),
                   const SizedBox(width: 12),
                   const Expanded(
                     child: Text(
@@ -782,15 +780,13 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 decoration: BoxDecoration(
                   color: AppTheme.primaryGold.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info,
-                      color: AppTheme.primaryGold,
-                      size: 20,
-                    ),
+                    Icon(Icons.info, color: AppTheme.primaryGold, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -832,11 +828,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              icon,
-              color: color,
-              size: 24,
-            ),
+            Icon(icon, color: color, size: 24),
             const SizedBox(height: 4),
             Text(
               title,
@@ -883,7 +875,10 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 },
                 borderRadius: BorderRadius.circular(12),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
                   decoration: BoxDecoration(
                     color: AppTheme.primaryGold.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(12),
@@ -920,7 +915,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
 
               // Show only first 5 testimonies for the carousel
               final displayTestimonies = testimonies.take(5).toList();
-              
+
               return SizedBox(
                 height: 220,
                 child: PageView.builder(
@@ -974,7 +969,9 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                                   Expanded(
                                     child: Text(
                                       testimony.displayTitle,
-                                      style: Theme.of(context).textTheme.titleMedium
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
                                           ?.copyWith(
                                             color: AppTheme.primaryGold,
                                             fontWeight: FontWeight.w600,
@@ -1004,12 +1001,15 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                               ),
                               const SizedBox(height: 12),
                               Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Expanded(
                                     child: Text(
                                       '- ${testimony.displayUserName}',
-                                      style: Theme.of(context).textTheme.bodySmall
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodySmall
                                           ?.copyWith(
                                             color: AppTheme.primaryGold,
                                             fontStyle: FontStyle.italic,
@@ -1032,7 +1032,8 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                                           shape: BoxShape.circle,
                                           color: dotIndex == index
                                               ? AppTheme.primaryGold
-                                              : AppTheme.primaryGold.withOpacity(0.3),
+                                              : AppTheme.primaryGold
+                                                    .withOpacity(0.3),
                                         ),
                                       ),
                                     ),
@@ -1061,10 +1062,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
       height: 220,
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            Colors.grey.withOpacity(0.1),
-            Colors.grey.withOpacity(0.05),
-          ],
+          colors: [Colors.grey.withOpacity(0.1), Colors.grey.withOpacity(0.05)],
         ),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.withOpacity(0.3)),
@@ -1072,11 +1070,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.favorite_border,
-            size: 48,
-            color: Colors.grey.shade400,
-          ),
+          Icon(Icons.favorite_border, size: 48, color: Colors.grey.shade400),
           const SizedBox(height: 12),
           Text(
             'No Testimonies Yet',
@@ -1088,9 +1082,9 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
           const SizedBox(height: 8),
           Text(
             'Be the first to share your testimony!',
-            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-              color: Colors.grey.shade500,
-            ),
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: Colors.grey.shade500),
           ),
         ],
       ),
@@ -1118,7 +1112,11 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
     );
   }
 
-  void _showSuccessMessage(BuildContext context, String message) {
+  void _showSuccessMessage(
+    BuildContext context,
+    String message, [
+    bool hasPrayer = false,
+  ]) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -1139,7 +1137,45 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
               ),
             ],
           ),
-          content: Text(message, style: Theme.of(context).textTheme.bodyMedium),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(message, style: Theme.of(context).textTheme.bodyMedium),
+              if (hasPrayer || !hasPrayer) ...[
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppTheme.primaryGold.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(Icons.inbox, color: AppTheme.primaryGold, size: 20),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          hasPrayer
+                              ? 'Check your inbox now for your prayer!'
+                              : 'Watch your inbox for the prayer notification.',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: AppTheme.primaryGold,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -1151,14 +1187,189 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
               child: Text(
                 'OK',
                 style: TextStyle(
-                  color: AppTheme.primaryGold,
+                  color: Colors.grey.shade600,
                   fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  selectedSalvationType = null;
+                });
+                // Navigate to inbox
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const InboxScreen()),
+                );
+              },
+              icon: Icon(Icons.inbox, size: 16, color: AppTheme.richBlack),
+              label: Text(
+                'Go to Inbox',
+                style: TextStyle(
+                  color: AppTheme.richBlack,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),
           ],
         );
       },
+    );
+  }
+
+  void _showSalvationStats() async {
+    try {
+      final stats = await _apiService.getSalvationStats();
+
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successGreen.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Icon(
+                    Icons.analytics,
+                    color: AppTheme.successGreen,
+                    size: 20,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                const Text(
+                  'Salvation Statistics',
+                  style: TextStyle(
+                    color: AppTheme.primaryGold,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            content: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _buildStatRow(
+                    'Total Salvation Decisions',
+                    stats['total_salvation']?.toString() ?? '0',
+                    Icons.favorite,
+                    Colors.red,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatRow(
+                    'Life Dedications',
+                    stats['salvation_count']?.toString() ?? '0',
+                    Icons.volunteer_activism,
+                    AppTheme.primaryGold,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatRow(
+                    'Life Re-dedications',
+                    stats['rededication_count']?.toString() ?? '0',
+                    Icons.refresh,
+                    AppTheme.successGreen,
+                  ),
+                  const SizedBox(height: 12),
+                  _buildStatRow(
+                    'Testimonies Shared',
+                    stats['testimony_count']?.toString() ?? '0',
+                    Icons.message,
+                    Colors.blue,
+                  ),
+                  if (stats['recent_activity'] != null) ...[
+                    const SizedBox(height: 16),
+                    const Divider(),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Recent Activity',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.primaryGold,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      stats['recent_activity'],
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Close',
+                  style: TextStyle(color: AppTheme.primaryGold),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to load statistics: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildStatRow(String label, String value, IconData icon, Color color) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3), width: 1),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: color, size: 20),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: Colors.grey.shade700,
+              ),
+            ),
+          ),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 

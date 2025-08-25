@@ -963,6 +963,69 @@ class ApiService {
       throw Exception('Failed to get feedback stats: ${response.body}');
     }
   }
+
+  // New Salvation endpoints
+  Future<Map<String, dynamic>> submitLifeToChrist({
+    required int age,
+    required String gender,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/salvation/submit-life'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'age': age,
+        'gender': gender,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      
+      // If there's a prayer URL, we could optionally create a local notification
+      // For now, just return the data as the backend should handle notifications
+      return data;
+    } else {
+      throw Exception('Failed to submit life to Christ: ${response.body}');
+    }
+  }
+
+  Future<Map<String, dynamic>> resubmitLifeToChrist({
+    required int age,
+    required String gender,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/salvation/resubmit-life'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'age': age,
+        'gender': gender,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      final data = jsonDecode(response.body);
+      
+      // If there's a prayer URL, we could optionally create a local notification
+      // For now, just return the data as the backend should handle notifications
+      return data;
+    } else {
+      throw Exception('Failed to rededicate life to Christ: ${response.body}');
+    }
+  }
+
+  // Get salvation statistics
+  Future<Map<String, dynamic>> getSalvationStats() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/salvation/stats'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get salvation stats: ${response.body}');
+    }
+  }
 }
 
 // Generic Paginated Response class

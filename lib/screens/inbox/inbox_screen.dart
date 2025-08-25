@@ -13,7 +13,7 @@ class InboxScreen extends StatefulWidget {
   State<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen> {
+class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
   String _selectedFilter = 'all';
   final List<String> _filterOptions = ['all', 'unread', 'read'];
   final ApiService _apiService = ApiService();
@@ -26,7 +26,22 @@ class _InboxScreenState extends State<InboxScreen> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _loadData();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // Refresh data when app comes back into focus
+      _loadData();
+    }
   }
 
   Future<void> _loadData() async {
@@ -676,17 +691,21 @@ class _InboxScreenState extends State<InboxScreen> {
                           width: 1,
                         ),
                       ),
-                      child: const Row(
+                      child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            Icons.headphones,
+                            prayer['prayer'] != null && prayer['prayer'].toString().isNotEmpty 
+                              ? Icons.headphones 
+                              : Icons.hourglass_empty,
                             size: 16,
                             color: AppTheme.primaryGold,
                           ),
                           SizedBox(width: 6),
                           Text(
-                            'Tap to listen',
+                            prayer['prayer'] != null && prayer['prayer'].toString().isNotEmpty
+                              ? 'Tap to listen'
+                              : 'Prayer coming soon',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.primaryGold,
@@ -1168,19 +1187,14 @@ class _InboxScreenState extends State<InboxScreen> {
   }
 
   void _onPrayerTapped(Map<String, dynamic> prayer) {
-    final audioUrl = prayer['audio_url'];
-    final title = prayer['title'] ?? 'Prayer';
-    final message = prayer['message'] ?? '';
+    final audioUrl = prayer['prayer'];
+    final title = prayer['title'] ?? 'Prayer Audio from Rev Julian Kyula';
+    final message = prayer['message'] ?? 'A special prayer message for you';
 
-    if (audioUrl != null) {
+    if (audioUrl != null && audioUrl.isNotEmpty) {
       _showPrayerAudioDialog(title, message, audioUrl);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No audio available for this prayer'),
-          backgroundColor: Colors.orange,
-        ),
-      );
+      _showPrayerMessageDialog(title, message);
     }
   }
 
@@ -1430,14 +1444,121 @@ class _InboxScreenState extends State<InboxScreen> {
     );
   }
 
+  void _showPrayerMessageDialog(String title, String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.favorite,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  message,
+                  style: const TextStyle(fontSize: 16, height: 1.4),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.orange.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.info,
+                      color: Colors.orange,
+                      size: 20,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Audio prayer will be available soon.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Colors.orange.shade700,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            ElevatedButton(
+              onPressed: () => Navigator.pop(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+              ),
+              child: const Text('Close'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _showNotificationPrayerDialog(
     NotificationModel.Notification notification,
   ) {
-    _showPrayerAudioDialog(
-      'Prayer Audio Available',
-      notification.body,
-      '', // We would need to extract audio URL from notification data
-    );
+    // Try to extract prayer URL from notification data
+    final notificationData = notification.data;
+    final prayerUrl = notificationData?['prayer_url'] ?? notificationData?['prayer'];
+    
+    if (prayerUrl != null && prayerUrl.isNotEmpty) {
+      _showPrayerAudioDialog(
+        'Prayer Audio Available',
+        notification.body,
+        prayerUrl,
+      );
+    } else {
+      _showPrayerMessageDialog('Prayer Message', notification.body);
+    }
   }
 
   void _showDeeperPrayerDialog(NotificationModel.Notification notification) {

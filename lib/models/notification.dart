@@ -10,6 +10,7 @@ class Notification {
   final String? readAt;
   final bool isRead;
   final String createdAt;
+  final Map<String, dynamic>? data;
 
   // Display getters with fallbacks
   String get displayTitle => title.isEmpty ? 'Notification' : title;
@@ -66,6 +67,7 @@ class Notification {
     this.readAt,
     required this.isRead,
     required this.createdAt,
+    this.data,
   });
 
   // Default constructor for fallback scenarios
@@ -80,6 +82,7 @@ class Notification {
       readAt: null,
       isRead: false,
       createdAt: now,
+      data: null,
     );
   }
 
@@ -97,6 +100,7 @@ class Notification {
       readAt: json['read_at'] as String?,
       isRead: json['is_read'] as bool? ?? false,
       createdAt: json['created_at'] as String? ?? DateTime.now().toIso8601String(),
+      data: json['data'] as Map<String, dynamic>?,
     );
   }
 
@@ -110,6 +114,7 @@ class Notification {
       'read_at': readAt,
       'is_read': isRead,
       'created_at': createdAt,
+      'data': data,
     };
   }
 
@@ -122,6 +127,7 @@ class Notification {
     String? readAt,
     bool? isRead,
     String? createdAt,
+    Map<String, dynamic>? data,
   }) {
     return Notification(
       id: id ?? this.id,
@@ -132,6 +138,7 @@ class Notification {
       readAt: readAt ?? this.readAt,
       isRead: isRead ?? this.isRead,
       createdAt: createdAt ?? this.createdAt,
+      data: data ?? this.data,
     );
   }
 
