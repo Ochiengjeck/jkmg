@@ -22,6 +22,7 @@ class ApiService {
   String? _token;
 
   ApiService() {
+    print('🌐 ApiService initialized with baseUrl: $baseUrl');
     _loadTokenFromStorage();
   }
 
@@ -43,6 +44,9 @@ class ApiService {
     };
     if (includeAuth && _token != null) {
       headers['Authorization'] = 'Bearer $_token';
+      print('🔑 Using auth token: ${_token!.substring(0, 20)}...');
+    } else {
+      print('⚠️ No auth token available for request');
     }
     return headers;
   }
@@ -969,23 +973,37 @@ class ApiService {
     required int age,
     required String gender,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/salvation/submit-life'),
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'age': age,
-        'gender': gender,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
+    try {
+      print('🌐 Making API call to: $baseUrl/salvation/submit-life');
+      final headers = await _getHeaders();
+      print('📤 Request headers: $headers');
+      print('📤 Request body: ${jsonEncode({'age': age, 'gender': gender})}');
       
-      // If there's a prayer URL, we could optionally create a local notification
-      // For now, just return the data as the backend should handle notifications
-      return data;
-    } else {
-      throw Exception('Failed to submit life to Christ: ${response.body}');
+      final response = await http.post(
+        Uri.parse('$baseUrl/salvation/submit-life'),
+        headers: headers,
+        body: jsonEncode({
+          'age': age,
+          'gender': gender,
+        }),
+      ).timeout(Duration(seconds: 30));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response headers: ${response.headers}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ API call successful, parsed data: $data');
+        return data;
+      } else {
+        print('❌ API call failed with status ${response.statusCode}');
+        await _handleAuthenticationError(response);
+        throw Exception('Failed to submit life to Christ: Status ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('💥 Exception during API call: $e');
+      rethrow;
     }
   }
 
@@ -993,23 +1011,37 @@ class ApiService {
     required int age,
     required String gender,
   }) async {
-    final response = await http.post(
-      Uri.parse('$baseUrl/salvation/resubmit-life'),
-      headers: await _getHeaders(),
-      body: jsonEncode({
-        'age': age,
-        'gender': gender,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      final data = jsonDecode(response.body);
+    try {
+      print('🌐 Making API call to: $baseUrl/salvation/submit-life (rededication)');
+      final headers = await _getHeaders();
+      print('📤 Request headers: $headers');
+      print('📤 Request body: ${jsonEncode({'age': age, 'gender': gender})}');
       
-      // If there's a prayer URL, we could optionally create a local notification
-      // For now, just return the data as the backend should handle notifications
-      return data;
-    } else {
-      throw Exception('Failed to rededicate life to Christ: ${response.body}');
+      final response = await http.post(
+        Uri.parse('$baseUrl/salvation/submit-life'), // Using same endpoint as per specification
+        headers: headers,
+        body: jsonEncode({
+          'age': age,
+          'gender': gender,
+        }),
+      ).timeout(Duration(seconds: 30));
+
+      print('📥 Response status: ${response.statusCode}');
+      print('📥 Response headers: ${response.headers}');
+      print('📥 Response body: ${response.body}');
+
+      if (response.statusCode == 201 || response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        print('✅ API call successful, parsed data: $data');
+        return data;
+      } else {
+        print('❌ API call failed with status ${response.statusCode}');
+        await _handleAuthenticationError(response);
+        throw Exception('Failed to rededicate life to Christ: Status ${response.statusCode} - ${response.body}');
+      }
+    } catch (e) {
+      print('💥 Exception during rededication API call: $e');
+      rethrow;
     }
   }
 

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../models/salvation.dart';
+import 'package:audioplayers/audioplayers.dart';
 import '../../services/api_service.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
@@ -28,6 +29,12 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   int _currentPage = 0;
   final int _testimonyCount = 5; // Number of testimonies
   final ApiService _apiService = ApiService();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  bool _isPlaying = false;
+  Duration _currentPosition = Duration.zero;
+  Duration _totalDuration = Duration.zero;
+  bool _isSubmittingLifeDecision = false;
+  bool _isSubmittingRededication = false;
 
   @override
   void initState() {
@@ -40,6 +47,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   void dispose() {
     _timer.cancel();
     _pageController.dispose();
+    _audioPlayer.dispose();
     super.dispose();
   }
 
@@ -430,35 +438,80 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
+                    onPressed: _isSubmittingLifeDecision ? null : () async {
                       if (formKey.currentState!.validate()) {
+                        setState(() {
+                          _isSubmittingLifeDecision = true;
+                        });
+                        
                         try {
+                          print('🚀 Making API call to submitLifeToChrist...');
+                          print('📤 Form data: name=${nameController.text}, age=${ageController.text}, gender=$selectedGender');
+                          print('📤 API Request data: age=${ageController.text}, gender=$selectedGender (Note: API only accepts age and gender)');
+                          
                           final response = await _apiService.submitLifeToChrist(
                             age: int.parse(ageController.text),
                             gender: selectedGender,
                           );
 
+                          print('✅ API Response received:');
+                          print('📥 Response: $response');
+
                           if (mounted) {
-                            final hasInstantPrayer =
-                                response['salvation_decision']?['prayer'] !=
-                                null;
-                            _showSuccessMessage(
-                              context,
-                              'Your decision has been recorded! ${hasInstantPrayer ? 'Please check your inbox for an automated audio prayer from Rev Julian Kyula.' : 'An audio prayer from Rev Julian Kyula will be available in your inbox soon.'}',
-                              hasInstantPrayer,
-                            );
+                            setState(() {
+                              _isSubmittingLifeDecision = false;
+                            });
+                            print('🔍 Parsing salvation_decision from response...');
+                            
+                            final salvationDecisionData = response['salvation_decision'];
+                            print('📋 Salvation decision data: $salvationDecisionData');
+                            
+                            if (salvationDecisionData != null) {
+                              final salvationDecision = SalvationDecisionResponse.fromJson(salvationDecisionData);
+                              print('✨ Parsed salvation decision: ${salvationDecision.toJson()}');
+                              print('🙏 Prayer data: ${salvationDecision.prayer?.toJson()}');
+                              
+                              if (salvationDecision.prayer != null) {
+                                print('🎵 Showing prayer dialog with audio: ${salvationDecision.prayer!.audioPath}');
+                                _showPrayerDialog(context, salvationDecision.prayer!);
+                              } else {
+                                print('⚠️ No prayer data found, showing success message');
+                                _showSuccessMessage(
+                                  context,
+                                  'Your decision has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                  false,
+                                );
+                              }
+                            } else {
+                              print('❌ No salvation_decision found in response');
+                              _showSuccessMessage(
+                                context,
+                                'Your decision has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                false,
+                              );
+                            }
                           }
 
                           nameController.clear();
                           ageController.clear();
                           selectedGender = 'male';
                         } catch (e) {
+                          print('❌ Error during API call: $e');
                           if (mounted) {
+                            setState(() {
+                              _isSubmittingLifeDecision = false;
+                            });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 5),
+                              ),
                             );
                           }
                         }
+                      } else {
+                        print('❌ Form validation failed');
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -469,13 +522,35 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Submit Decision',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isSubmittingLifeDecision
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.richBlack),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Submitting...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            'Submit Decision',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -586,33 +661,76 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
+                    onPressed: _isSubmittingRededication ? null : () async {
                       if (formKey.currentState!.validate()) {
+                        setState(() {
+                          _isSubmittingRededication = true;
+                        });
+                        
                         try {
+                          print('🚀 Making API call to resubmitLifeToChrist...');
+                          print('📤 Form data: name=${nameController.text}, age=${ageController.text}, gender=$selectedGender');
+                          print('📤 API Request data: age=${ageController.text}, gender=$selectedGender (Note: API only accepts age and gender)');
+                          
                           final response = await _apiService
                               .resubmitLifeToChrist(
                                 age: int.parse(ageController.text),
                                 gender: selectedGender,
                               );
 
+                          print('✅ API Response received:');
+                          print('📥 Response: $response');
+
                           if (mounted) {
-                            final hasInstantPrayer =
-                                response['salvation_decision']?['prayer'] !=
-                                null;
-                            _showSuccessMessage(
-                              context,
-                              'Your rededication has been recorded! ${hasInstantPrayer ? 'Please check your inbox for an automated audio prayer from Rev Julian Kyula.' : 'An audio prayer from Rev Julian Kyula will be available in your inbox soon.'}',
-                              hasInstantPrayer,
-                            );
+                            setState(() {
+                              _isSubmittingRededication = false;
+                            });
+                            print('🔍 Parsing salvation_decision from response...');
+                            
+                            final salvationDecisionData = response['salvation_decision'];
+                            print('📋 Salvation decision data: $salvationDecisionData');
+                            
+                            if (salvationDecisionData != null) {
+                              final salvationDecision = SalvationDecisionResponse.fromJson(salvationDecisionData);
+                              print('✨ Parsed salvation decision: ${salvationDecision.toJson()}');
+                              print('🙏 Prayer data: ${salvationDecision.prayer?.toJson()}');
+                              
+                              if (salvationDecision.prayer != null) {
+                                print('🎵 Showing prayer dialog with audio: ${salvationDecision.prayer!.audioPath}');
+                                _showPrayerDialog(context, salvationDecision.prayer!);
+                              } else {
+                                print('⚠️ No prayer data found, showing success message');
+                                _showSuccessMessage(
+                                  context,
+                                  'Your rededication has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                  false,
+                                );
+                              }
+                            } else {
+                              print('❌ No salvation_decision found in response');
+                              _showSuccessMessage(
+                                context,
+                                'Your rededication has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                false,
+                              );
+                            }
                           }
 
                           nameController.clear();
                           ageController.clear();
                           selectedGender = 'male';
                         } catch (e) {
+                          print('❌ Error during rededication API call: $e');
                           if (mounted) {
+                            setState(() {
+                              _isSubmittingRededication = false;
+                            });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 5),
+                              ),
                             );
                           }
                         }
@@ -626,13 +744,35 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Submit Rededication',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isSubmittingRededication
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.richBlack),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Submitting...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            'Submit Rededication',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -1224,6 +1364,377 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
         );
       },
     );
+  }
+
+  void _showPrayerDialog(BuildContext context, SalvationPrayer prayer) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return Dialog(
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                  maxWidth: MediaQuery.of(context).size.width * 0.9,
+                ),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                    width: 2,
+                  ),
+                ),
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Success Icon and Header
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGold.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: AppTheme.primaryGold.withOpacity(0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.celebration,
+                          color: AppTheme.primaryGold,
+                          size: 48,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      
+                      // Success Message
+                      ShaderMask(
+                        shaderCallback: (bounds) => AppTheme.primaryGoldGradient.createShader(bounds),
+                        child: Text(
+                          'Praise the Lord!',
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Your decision has been recorded successfully',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Colors.white.withOpacity(0.8),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Prayer Section
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGold.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: AppTheme.primaryGold.withOpacity(0.3),
+                            width: 1,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  Icons.auto_awesome,
+                                  color: AppTheme.primaryGold,
+                                  size: 24,
+                                ),
+                                const SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    prayer.title,
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.primaryGold,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 16),
+                            Container(
+                              height: 180,
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.black.withOpacity(0.3),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: Colors.white.withOpacity(0.1),
+                                  width: 1,
+                                ),
+                              ),
+                              child: SingleChildScrollView(
+                                child: Text(
+                                  prayer.message,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    height: 1.5,
+                                    color: Colors.white.withOpacity(0.9),
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      
+                      // Audio Player Section
+                      if (prayer.audioPath.isNotEmpty) ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.successGreen.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: AppTheme.successGreen.withOpacity(0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Column(
+                            children: [
+                              Row(
+                                children: [
+                                  Icon(
+                                    Icons.headphones,
+                                    color: AppTheme.successGreen,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Expanded(
+                                    child: Text(
+                                      'Listen to Rev Julian Kyula',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.successGreen,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: AppTheme.successGreen.withOpacity(0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: IconButton(
+                                      onPressed: () => _togglePlayPause(prayer.audioPath, setDialogState),
+                                      icon: Icon(
+                                        _isPlaying ? Icons.pause : Icons.play_arrow,
+                                        color: AppTheme.successGreen,
+                                        size: 32,
+                                      ),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        LinearProgressIndicator(
+                                          value: _totalDuration.inSeconds > 0
+                                              ? _currentPosition.inSeconds / _totalDuration.inSeconds
+                                              : 0.0,
+                                          backgroundColor: Colors.white.withOpacity(0.2),
+                                          valueColor: AlwaysStoppedAnimation<Color>(AppTheme.successGreen),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Row(
+                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                          children: [
+                                            Text(
+                                              _formatDuration(_currentPosition),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white.withOpacity(0.6),
+                                              ),
+                                            ),
+                                            Text(
+                                              _formatDuration(_totalDuration),
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.white.withOpacity(0.6),
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                      ],
+                      
+                      // Action Buttons
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                _audioPlayer.stop();
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  selectedSalvationType = null;
+                                });
+                              },
+                              icon: Icon(Icons.close, size: 18, color: Colors.white.withOpacity(0.7)),
+                              label: Text(
+                                'Close',
+                                style: TextStyle(
+                                  color: Colors.white.withOpacity(0.7),
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(color: Colors.white.withOpacity(0.3)),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: ElevatedButton.icon(
+                              onPressed: () {
+                                _audioPlayer.stop();
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  selectedSalvationType = null;
+                                });
+                                // Navigate to inbox
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(builder: (context) => const InboxScreen()),
+                                );
+                              },
+                              icon: Icon(Icons.inbox, size: 18, color: AppTheme.richBlack),
+                              label: Text(
+                                'Go to Inbox',
+                                style: TextStyle(
+                                  color: AppTheme.richBlack,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryGold,
+                                foregroundColor: AppTheme.richBlack,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: const EdgeInsets.symmetric(vertical: 12),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _togglePlayPause(String audioUrl, StateSetter setDialogState) async {
+    try {
+      if (_isPlaying) {
+        await _audioPlayer.pause();
+        setDialogState(() {
+          _isPlaying = false;
+        });
+      } else {
+        await _audioPlayer.play(UrlSource(audioUrl));
+        
+        // Listen to player state changes
+        _audioPlayer.onPlayerStateChanged.listen((PlayerState state) {
+          if (mounted) {
+            setDialogState(() {
+              _isPlaying = state == PlayerState.playing;
+            });
+          }
+        });
+        
+        // Listen to position changes
+        _audioPlayer.onPositionChanged.listen((Duration position) {
+          if (mounted) {
+            setDialogState(() {
+              _currentPosition = position;
+            });
+          }
+        });
+        
+        // Listen to duration changes
+        _audioPlayer.onDurationChanged.listen((Duration? duration) {
+          if (mounted && duration != null) {
+            setDialogState(() {
+              _totalDuration = duration;
+            });
+          }
+        });
+        
+        setDialogState(() {
+          _isPlaying = true;
+        });
+      }
+    } catch (e) {
+      print('Error playing audio: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error playing audio')),
+        );
+      }
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return '$twoDigitMinutes:$twoDigitSeconds';
   }
 
   void _showSalvationStats() async {
