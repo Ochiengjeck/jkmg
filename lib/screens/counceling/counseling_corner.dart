@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:flutter/services.dart';
 import '../../models/counseling.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
@@ -757,14 +759,39 @@ class _CounselingCornerScreenState
     );
   }
 
-  void _joinTelegramGroup() {
-    // TODO: Implement Telegram group joining functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Telegram group integration coming soon!'),
-        backgroundColor: AppTheme.primaryGold,
-      ),
-    );
+  Future<void> _joinTelegramGroup() async {
+    const telegramUrl = 'https://t.me/+MKtAJc-jorlkZTQ0';
+    
+    try {
+      final Uri uri = Uri.parse(telegramUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        // Copy to clipboard as fallback
+        await Clipboard.setData(const ClipboardData(text: telegramUrl));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Telegram link copied to clipboard. Open Telegram to join the group.'),
+              backgroundColor: AppTheme.primaryGold,
+              duration: Duration(seconds: 4),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      // Copy to clipboard as fallback
+      await Clipboard.setData(const ClipboardData(text: telegramUrl));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Telegram link copied to clipboard. Open Telegram to join the group.'),
+            backgroundColor: AppTheme.primaryGold,
+            duration: Duration(seconds: 4),
+          ),
+        );
+      }
+    }
   }
 
   void _launchAIAssistant() {
@@ -787,21 +814,48 @@ class _CounselingCornerScreenState
             const Text('Emergency Help'),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'If you are in crisis or having thoughts of self-harm, please reach out immediately:',
               style: TextStyle(fontWeight: FontWeight.w600),
             ),
-            SizedBox(height: 16),
-            Text('• Call JKM Prayer Line'),
-            Text('• Connect with live counselor'),
-            Text('• Scripture + prayer support'),
-            SizedBox(height: 16),
-            Text(
-              'You are not alone. Help is available.',
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.green.shade50,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.green.shade300),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(Icons.phone, color: Colors.green.shade600, size: 16),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Emergency Help Numbers (WhatsApp)',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  _buildEmergencyButton('+254 746 737 403', '‪+254 746 737 403‬'),
+                  const SizedBox(height: 8),
+                  _buildEmergencyButton('+254 746 737 313', '‪+254 746 737 313‬'),
+                ],
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'You are not alone. Help is available 24/7.',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 color: AppTheme.primaryGold,
@@ -814,20 +868,81 @@ class _CounselingCornerScreenState
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
           ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement emergency contact functionality
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('Get Help Now'),
-          ),
         ],
       ),
     );
+  }
+
+  Widget _buildEmergencyButton(String phoneNumber, String displayNumber) {
+    return SizedBox(
+      width: double.infinity,
+      child: OutlinedButton.icon(
+        onPressed: () => _launchWhatsApp(phoneNumber),
+        icon: const Icon(Icons.chat, size: 16),
+        label: Text(
+          displayNumber,
+          style: const TextStyle(fontSize: 12),
+        ),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: Colors.green.shade700,
+          side: BorderSide(color: Colors.green.shade400),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _launchWhatsApp(String phoneNumber) async {
+    // Clean phone number (remove spaces and special characters)
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final whatsappUrl = 'https://wa.me/$cleanNumber?text=Hello, I need emergency counseling help.';
+    
+    try {
+      final Uri uri = Uri.parse(whatsappUrl);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+        Navigator.of(context).pop(); // Close the emergency dialog
+      } else {
+        // Fallback to regular phone call
+        await _launchPhoneCall(cleanNumber);
+      }
+    } catch (e) {
+      // Fallback to regular phone call
+      await _launchPhoneCall(cleanNumber);
+    }
+  }
+
+  Future<void> _launchPhoneCall(String phoneNumber) async {
+    final phoneUri = Uri(scheme: 'tel', path: phoneNumber);
+    
+    try {
+      if (await canLaunchUrl(phoneUri)) {
+        await launchUrl(phoneUri);
+        Navigator.of(context).pop(); // Close the emergency dialog
+      } else {
+        await Clipboard.setData(ClipboardData(text: phoneNumber));
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Phone number $phoneNumber copied to clipboard'),
+              backgroundColor: Colors.green,
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      await Clipboard.setData(ClipboardData(text: phoneNumber));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Phone number $phoneNumber copied to clipboard'),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    }
   }
 
   void _showFeedbackForm(BuildContext context) {

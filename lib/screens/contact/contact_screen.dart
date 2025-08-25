@@ -206,9 +206,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
         _buildContactInfoCard(
           Icons.phone,
           'Phone Number',
-          '+254 700 000 000',
+          '+254 703 349 237',
           'Call us during business hours',
-          () => _launchPhone('+254700000000'),
+          () => _launchPhone('+254703349237'),
         ),
         const SizedBox(height: 12),
         _buildContactInfoCard(
@@ -487,7 +487,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                             ),
                           ),
                           Text(
-                            'Nairobi, Kenya',
+                            'Waterfront Mall, Karen, Nairobi',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.deepGold,
@@ -508,7 +508,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Julian Kyula Ministry Global\nP.O. Box 12345-00100\nNairobi, Kenya\nEast Africa',
+                  'Julian Kyula Ministry Global\nWaterfront Mall, Karen\nNairobi, Kenya\nEast Africa\n\nPhone: +254 703 349 237',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey.shade700,
@@ -543,73 +543,180 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SectionHeader(
-          title: 'Service Locations',
-          subtitle: 'Where we worship and gather',
+          title: 'Church Assemblies (Branches)',
+          subtitle: 'RUACH Tabernacle locations across Nairobi',
         ),
         const SizedBox(height: 12),
-        _buildServiceLocationCard(
-          'Ruach Assemblies (Purpose Centre Church)',
-          'Sunday Services: 9:00 AM & 11:00 AM',
-          'Location: Nairobi, Kenya',
+        _buildBranchLocationCard(
+          'RUACH Tabernacle',
+          'Next to Shell Windsor Northern Bypass Rd.',
+          'Nairobi Outer, Kenya',
+          '+254 757 155 471',
           Icons.church,
         ),
         const SizedBox(height: 12),
-        _buildServiceLocationCard(
-          'Rhema Experience (RXP)',
-          'Wednesday Service: 5:00 PM',
-          'Location: All Saints Cathedral, Nairobi',
-          Icons.event,
+        _buildBranchLocationCard(
+          'RUACH West',
+          'Movenpick Hotel and Residences, Mkungu Close',
+          'Nairobi, Kenya',
+          '+254 110 007 736',
+          Icons.location_city,
+        ),
+        const SizedBox(height: 12),
+        _buildBranchLocationCard(
+          'RUACH South',
+          'WaterFront Mall, Karen',
+          'Nairobi, Kenya',
+          '+254 716 341 739',
+          Icons.shopping_cart_outlined,
+        ),
+        const SizedBox(height: 12),
+        _buildBranchLocationCard(
+          'RUACH East',
+          'Immediate Entrance after Ideal Ceramics Main Gate, ICD RD, Off Mombasa Road',
+          'Nairobi, Kenya',
+          '+254 797 438 919',
+          Icons.business,
+        ),
+        const SizedBox(height: 12),
+        _buildBranchLocationCard(
+          'RUACH Rivers',
+          'Havilah Ranch, Ruaka',
+          'Moi Nairobi Area, Kenya',
+          '+254 797 404 865',
+          Icons.nature,
         ),
       ],
     );
   }
 
-  Widget _buildServiceLocationCard(
+  Widget _buildBranchLocationCard(
     String title,
-    String schedule,
-    String location,
+    String address,
+    String city,
+    String phone,
     IconData icon,
   ) {
     return CustomCard(
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.deepGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppTheme.deepGold, size: 22),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepGold,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      city,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: Colors.grey.shade600,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: AppTheme.deepGold.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
+              color: Colors.grey.withOpacity(0.05),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: Colors.grey.withOpacity(0.1)),
             ),
-            child: Icon(icon, color: AppTheme.deepGold, size: 20),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on,
+                      size: 16,
+                      color: AppTheme.primaryGold,
+                    ),
+                    const SizedBox(width: 8),
+                    const Text(
+                      'Address:',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.deepGold,
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 4),
-                Text(
-                  schedule,
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.deepGold,
-                  ),
-                ),
-                Text(
-                  location,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
+                Padding(
+                  padding: const EdgeInsets.only(left: 24),
+                  child: Text(
+                    address,
+                    style: TextStyle(
+                      fontSize: 11,
+                      color: Colors.grey.shade700,
+                      height: 1.3,
+                    ),
                   ),
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _launchPhone(phone.replaceAll(' ', '')),
+                  icon: const Icon(Icons.phone, size: 16),
+                  label: Text(
+                    phone,
+                    style: const TextStyle(fontSize: 11),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.successGreen,
+                    side: BorderSide(color: AppTheme.successGreen.withOpacity(0.5)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => _openBranchMap(address, city),
+                  icon: const Icon(Icons.map, size: 16),
+                  label: const Text(
+                    'Directions',
+                    style: TextStyle(fontSize: 11),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.primaryGold,
+                    side: BorderSide(color: AppTheme.primaryGold.withOpacity(0.5)),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -915,7 +1022,12 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
   }
 
   void _openMap() {
-    _launchUrl('https://maps.google.com/?q=Nairobi,Kenya');
+    _launchUrl('https://maps.google.com/?q=Waterfront+Mall,+Karen,+Nairobi,+Kenya');
+  }
+
+  void _openBranchMap(String address, String city) {
+    final query = Uri.encodeComponent('$address, $city');
+    _launchUrl('https://maps.google.com/?q=$query');
   }
 
   void _signupNewsletter() {

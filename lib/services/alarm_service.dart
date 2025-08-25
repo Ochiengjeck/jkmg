@@ -19,36 +19,34 @@ class AlarmService {
       'deeper_prayer_alarms_enabled';
 
   static final FlutterLocalNotificationsPlugin _notifications =
-  FlutterLocalNotificationsPlugin();
+      FlutterLocalNotificationsPlugin();
   static final AudioPlayer _audioPlayer = AudioPlayer();
 
   static Future<void> initialize() async {
     // Android init
     const AndroidInitializationSettings initializationSettingsAndroid =
-    AndroidInitializationSettings('@mipmap/launcher_icon');
+        AndroidInitializationSettings('@mipmap/launcher_icon');
 
     // iOS init
     const DarwinInitializationSettings initializationSettingsIOS =
-    DarwinInitializationSettings(
-      requestAlertPermission: true,
-      requestBadgePermission: true,
-      requestSoundPermission: true,
-      requestCriticalPermission: true,
-    );
+        DarwinInitializationSettings(
+          requestAlertPermission: true,
+          requestBadgePermission: true,
+          requestSoundPermission: true,
+          requestCriticalPermission: true,
+        );
 
     // Linux init
     const LinuxInitializationSettings initializationSettingsLinux =
-    LinuxInitializationSettings(
-      defaultActionName: 'Open notification',
-    );
+        LinuxInitializationSettings(defaultActionName: 'Open notification');
 
     // Combine all
     const InitializationSettings initializationSettings =
-    InitializationSettings(
-      android: initializationSettingsAndroid,
-      iOS: initializationSettingsIOS,
-      linux: initializationSettingsLinux, // ✅ added
-    );
+        InitializationSettings(
+          android: initializationSettingsAndroid,
+          iOS: initializationSettingsIOS,
+          linux: initializationSettingsLinux, // ✅ added
+        );
 
     await _notifications.initialize(initializationSettings);
 
@@ -56,18 +54,20 @@ class AlarmService {
     if (Platform.isAndroid) {
       await _notifications
           .resolvePlatformSpecificImplementation<
-          AndroidFlutterLocalNotificationsPlugin>()
+            AndroidFlutterLocalNotificationsPlugin
+          >()
           ?.requestNotificationsPermission();
     } else if (Platform.isIOS) {
       await _notifications
           .resolvePlatformSpecificImplementation<
-          IOSFlutterLocalNotificationsPlugin>()
+            IOSFlutterLocalNotificationsPlugin
+          >()
           ?.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-        critical: true,
-      );
+            alert: true,
+            badge: true,
+            sound: true,
+            critical: true,
+          );
     }
   }
 
@@ -138,16 +138,19 @@ class AlarmService {
     final now = DateTime.now();
 
     final morningTime = DateTime(now.year, now.month, now.day, 6, 0);
-    final nextMorning =
-    morningTime.isBefore(now) ? morningTime.add(const Duration(days: 1)) : morningTime;
+    final nextMorning = morningTime.isBefore(now)
+        ? morningTime.add(const Duration(days: 1))
+        : morningTime;
 
     final noonTime = DateTime(now.year, now.month, now.day, 12, 0);
-    final nextNoon =
-    noonTime.isBefore(now) ? noonTime.add(const Duration(days: 1)) : noonTime;
+    final nextNoon = noonTime.isBefore(now)
+        ? noonTime.add(const Duration(days: 1))
+        : noonTime;
 
     final eveningTime = DateTime(now.year, now.month, now.day, 18, 0);
-    final nextEvening =
-    eveningTime.isBefore(now) ? eveningTime.add(const Duration(days: 1)) : eveningTime;
+    final nextEvening = eveningTime.isBefore(now)
+        ? eveningTime.add(const Duration(days: 1))
+        : eveningTime;
 
     await AndroidAlarmManager.oneShotAt(
       nextMorning,
@@ -182,8 +185,9 @@ class AlarmService {
 
     final now = DateTime.now();
     final midnightTime = DateTime(now.year, now.month, now.day, 0, 0);
-    final nextMidnight =
-    midnightTime.isBefore(now) ? midnightTime.add(const Duration(days: 1)) : midnightTime;
+    final nextMidnight = midnightTime.isBefore(now)
+        ? midnightTime.add(const Duration(days: 1))
+        : midnightTime;
 
     await AndroidAlarmManager.oneShotAt(
       nextMidnight,
@@ -224,10 +228,10 @@ class AlarmService {
   }
 
   static Future<void> _scheduleDesktopNotification(
-      int id,
-      String prayerType,
-      int hour,
-      ) async {
+    int id,
+    String prayerType,
+    int hour,
+  ) async {
     final now = DateTime.now();
     var scheduledDate = DateTime(now.year, now.month, now.day, hour, 0);
 
@@ -236,20 +240,20 @@ class AlarmService {
     }
 
     const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-    DarwinNotificationDetails(
-      presentAlert: true,
-      presentBadge: true,
-      presentSound: true,
-      sound: 'cellphone-ringing-6475.mp3',
-      interruptionLevel: InterruptionLevel.critical,
-    );
+        DarwinNotificationDetails(
+          presentAlert: true,
+          presentBadge: true,
+          presentSound: true,
+          sound: 'cellphone-ringing-6475.mp3',
+          interruptionLevel: InterruptionLevel.critical,
+        );
 
     const LinuxNotificationDetails linuxPlatformChannelSpecifics =
-    LinuxNotificationDetails(
-      actions: <LinuxNotificationAction>[
-        LinuxNotificationAction(key: 'open', label: 'Open')
-      ],
-    );
+        LinuxNotificationDetails(
+          actions: <LinuxNotificationAction>[
+            LinuxNotificationAction(key: 'open', label: 'Open'),
+          ],
+        );
 
     const NotificationDetails platformChannelSpecifics = NotificationDetails(
       iOS: iOSPlatformChannelSpecifics,
@@ -258,13 +262,13 @@ class AlarmService {
 
     await _notifications.zonedSchedule(
       id,
-      'Prayer Time!',
+      'Prayer Time! ',
       'It\'s time for $prayerType. Join Rev. Julian in this sacred moment.',
       tz.TZDateTime.from(scheduledDate, tz.local),
       platformChannelSpecifics,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
       uiLocalNotificationDateInterpretation:
-      UILocalNotificationDateInterpretation.absoluteTime,
+          UILocalNotificationDateInterpretation.absoluteTime,
       matchDateTimeComponents: DateTimeComponents.time,
     );
   }
@@ -294,22 +298,23 @@ class AlarmService {
   static Future<void> _showPrayerNotification(String title, String body) async {
     if (Platform.isAndroid) {
       final AndroidNotificationDetails androidPlatformChannelSpecifics =
-      AndroidNotificationDetails(
-        'prayer_alarm_channel',
-        'Prayer Alarms',
-        channelDescription: 'Notifications for prayer times',
-        importance: Importance.max,
-        priority: Priority.high,
-        sound: RawResourceAndroidNotificationSound(
-          'cellphone_ringing_6475',
-        ),
-        playSound: true,
-        enableVibration: true,
-        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-        fullScreenIntent: true,
-        category: AndroidNotificationCategory.alarm,
-        visibility: NotificationVisibility.public,
-      );
+          AndroidNotificationDetails(
+            'prayer_alarm_channel',
+            'Prayer Alarms',
+            channelDescription: 'Notifications for prayer times',
+            importance: Importance.max,
+            priority: Priority.high,
+            icon: '@mipmap/launcher_icon',
+            sound: RawResourceAndroidNotificationSound(
+              'cellphone_ringing_6475',
+            ),
+            playSound: true,
+            enableVibration: true,
+            vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+            fullScreenIntent: true,
+            category: AndroidNotificationCategory.alarm,
+            visibility: NotificationVisibility.public,
+          );
 
       final NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
@@ -318,20 +323,20 @@ class AlarmService {
       await _notifications.show(0, title, body, platformChannelSpecifics);
     } else {
       const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-      DarwinNotificationDetails(
-        presentAlert: true,
-        presentBadge: true,
-        presentSound: true,
-        sound: 'cellphone-ringing-6475.mp3',
-        interruptionLevel: InterruptionLevel.critical,
-      );
+          DarwinNotificationDetails(
+            presentAlert: true,
+            presentBadge: true,
+            presentSound: true,
+            sound: 'cellphone-ringing-6475.mp3',
+            interruptionLevel: InterruptionLevel.critical,
+          );
 
       const LinuxNotificationDetails linuxPlatformChannelSpecifics =
-      LinuxNotificationDetails(
-        actions: <LinuxNotificationAction>[
-          LinuxNotificationAction(key: 'open', label: 'Open')
-        ],
-      );
+          LinuxNotificationDetails(
+            actions: <LinuxNotificationAction>[
+              LinuxNotificationAction(key: 'open', label: 'Open'),
+            ],
+          );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         iOS: iOSPlatformChannelSpecifics,
@@ -359,7 +364,7 @@ class AlarmService {
   static Future<void> triggerPrayerAlarm(String prayerType) async {
     await _playAlarmSound();
     await _showPrayerNotification(
-      'Prayer Time! 🕌',
+      'Prayer Time!',
       'It\'s time for $prayerType. Join Rev. Julian in this sacred moment.',
     );
   }
