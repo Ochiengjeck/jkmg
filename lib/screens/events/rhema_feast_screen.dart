@@ -122,7 +122,7 @@ class _RhemaFeastScreenState extends ConsumerState<RhemaFeastScreen>
                       width: 1,
                     ),
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/rhema_feast.png'),
+                      image: AssetImage('assets/images/RhemaFeastPlaceholder.png'),
                       fit: BoxFit.fill,
                     ),
                   ),

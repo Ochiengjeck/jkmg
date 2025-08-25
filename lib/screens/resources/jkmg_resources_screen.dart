@@ -38,7 +38,7 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 3, vsync: this);
   }
 
   @override
@@ -56,7 +56,7 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
           headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
             return [
               SliverAppBar(
-                expandedHeight: 360.0,
+                expandedHeight: 445.0,
                 floating: false,
                 pinned: true,
                 backgroundColor: AppTheme.richBlack,
@@ -89,10 +89,6 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
           body: TabBarView(
             controller: _tabController,
             children: [
-              Container(
-                color: AppTheme.richBlack,
-                child: ResourcesTabContent(type: null),
-              ),
               Container(
                 color: AppTheme.richBlack,
                 child: ResourcesTabContent(type: 'ebook'),
@@ -203,7 +199,6 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
                       const SizedBox(width: 8),
                       _buildFeatureChip('Sermons'),
                       const SizedBox(width: 8),
-                      _buildFeatureChip('Study Materials'),
                     ],
                   ),
                 ),
@@ -262,19 +257,6 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: const [
-                Icon(Icons.library_books, size: 14),
-                SizedBox(height: 2),
-                Text('All', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 80,
-          child: Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
                 Icon(Icons.menu_book, size: 14),
                 SizedBox(height: 2),
                 Text('E-Books', textAlign: TextAlign.center),
@@ -324,81 +306,8 @@ class ResourcesTabContent extends ConsumerWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAboutSection(),
-          const SizedBox(height: 24),
-          _buildResourceList(ref),
-          const SizedBox(height: 24),
-          _buildImpactMetrics(),
-          const SizedBox(height: 24),
-          _buildAccessSection(),
-        ],
+        children: [_buildResourceList(ref)],
       ),
-    );
-  }
-
-  Widget _buildAboutSection() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(
-          title: 'About Digital Resources',
-          subtitle: 'Your gateway to kingdom knowledge and spiritual growth',
-        ),
-        const SizedBox(height: 12),
-        Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            color: AppTheme.accentGold.withOpacity(0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildAboutPoint(
-                'Our Mission',
-                'Empowering believers with accessible, high-quality digital content for spiritual growth and Kingdom advancement',
-              ),
-              const SizedBox(height: 12),
-              _buildAboutPoint(
-                'What We Offer',
-                'A comprehensive library of e-books, audiobooks, sermons, and study materials designed to deepen your faith journey',
-              ),
-              const SizedBox(height: 12),
-              _buildAboutPoint(
-                'Quality Assurance',
-                'All content is carefully curated and reviewed to ensure biblical accuracy and practical application',
-              ),
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildAboutPoint(String title, String description) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          title,
-          style: const TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w700,
-            color: AppTheme.deepGold,
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          description,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey.shade700,
-            height: 1.4,
-          ),
-        ),
-      ],
     );
   }
 
@@ -409,9 +318,7 @@ class ResourcesTabContent extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(
-          title: type == null
-              ? 'All Resources'
-              : '${_getTypeName(type!)} Resources',
+          title: '${_getTypeName(type!)} Resources',
           subtitle: 'Browse our curated collection',
         ),
         const SizedBox(height: 12),
@@ -492,226 +399,6 @@ class ResourcesTabContent extends ConsumerWidget {
               foregroundColor: AppTheme.richBlack,
             ),
             child: const Text('Retry'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildImpactMetrics() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(
-          title: 'Our Impact',
-          subtitle: 'Transforming lives through digital resources',
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                '2,500+',
-                'Resources\nAvailable',
-                Icons.library_books,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard(
-                '50K+',
-                'Downloads\nCompleted',
-                Icons.download,
-              ),
-            ),
-          ],
-        ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildMetricCard(
-                '25+',
-                'Languages\nSupported',
-                Icons.translate,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: _buildMetricCard('4.8★', 'Average\nRating', Icons.star),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildMetricCard(String number, String label, IconData icon) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            AppTheme.primaryGold.withOpacity(0.1),
-            AppTheme.accentGold.withOpacity(0.05),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.deepGold, size: 28),
-          const SizedBox(height: 8),
-          Text(
-            number,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w800,
-              color: AppTheme.deepGold,
-            ),
-          ),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 10,
-              color: Colors.grey.shade600,
-              fontWeight: FontWeight.w500,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccessSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.charcoalBlack,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.1),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.download,
-                  color: AppTheme.primaryGold,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'Access Digital Resources',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Download, stream, or read online. All resources are available across multiple formats for your convenience. Access premium content with your JKMG membership.',
-            style: TextStyle(fontSize: 12, color: Colors.white70, height: 1.4),
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: _buildAccessOption(
-                  'Download',
-                  Icons.download,
-                  'Offline access',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildAccessOption(
-                  'Stream',
-                  Icons.play_arrow,
-                  'Online streaming',
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildAccessOption(
-                  'Read',
-                  Icons.menu_book,
-                  'Digital reading',
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                // Navigate to member login or registration
-              },
-              icon: const Icon(Icons.person_add),
-              label: const Text('Join JKMG for Premium Access'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppTheme.primaryGold,
-                foregroundColor: AppTheme.richBlack,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAccessOption(String title, IconData icon, String subtitle) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.softBlack,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
-      ),
-      child: Column(
-        children: [
-          Icon(icon, color: AppTheme.primaryGold, size: 20),
-          const SizedBox(height: 6),
-          Text(
-            title,
-            style: const TextStyle(
-              fontSize: 11,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-          Text(
-            subtitle,
-            style: TextStyle(fontSize: 9, color: Colors.grey.shade400),
-            textAlign: TextAlign.center,
           ),
         ],
       ),

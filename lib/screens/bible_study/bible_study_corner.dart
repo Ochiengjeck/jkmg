@@ -89,13 +89,10 @@ class _BibleStudyCornerScreenState
                 const SizedBox(height: 32),
                 _buildIntroductionSection(context),
                 const SizedBox(height: 24),
-                _buildTodaysStudySection(context, todayStudyAsync),
-                const SizedBox(height: 24),
                 _buildHolyBibleSection(context),
                 const SizedBox(height: 24),
                 _buildStudyTemplateSection(context),
                 const SizedBox(height: 24),
-                // _buildPastStudiesSection(context, studiesAsync),
               ],
             ),
           ),
@@ -362,19 +359,25 @@ class _BibleStudyCornerScreenState
       children: [
         const SectionHeader(
           title: 'Bible Study Template',
-          subtitle: 'Structured format for personal and group Bible study',
+          subtitle: 'Weekly study template format for posting daily materials',
         ),
         const SizedBox(height: 12),
-        _buildStudyTemplate(context),
+        _buildWeeklyStudyTemplate(context),
       ],
     );
   }
 
-  Widget _buildStudyTemplate(BuildContext context) {
+  Widget _buildWeeklyStudyTemplate(BuildContext context) {
+    // Get the upcoming Monday to start the week template
+    final now = DateTime.now();
+    final daysUntilMonday = DateTime.monday - now.weekday;
+    final nextMonday = now.add(Duration(days: daysUntilMonday == 0 ? 7 : daysUntilMonday));
+    
     return CustomCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Header
           Row(
             children: [
               Container(
@@ -384,7 +387,7 @@ class _BibleStudyCornerScreenState
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.assignment,
+                  Icons.calendar_today,
                   color: AppTheme.primaryGold,
                   size: 20,
                 ),
@@ -392,7 +395,7 @@ class _BibleStudyCornerScreenState
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
-                  'Study Template Format',
+                  'Weekly Study Template Format',
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
@@ -403,33 +406,143 @@ class _BibleStudyCornerScreenState
             ],
           ),
           const SizedBox(height: 16),
-          _buildTemplateItem(
-            'Memory Verse',
-            'Scripture verse for memorization and meditation',
+          
+          // Template Instructions
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryGold.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+            ),
+            child: Text(
+              'Post weekly study materials using this template format. Each day should include the study topic, scripture reference, and discussion points.',
+              style: TextStyle(
+                fontSize: 13,
+                color: Colors.grey.shade700,
+                height: 1.4,
+              ),
+            ),
           ),
-          const SizedBox(height: 12),
-          _buildTemplateItem(
-            'Topic of the Day',
-            'Main theme for today\'s Bible study',
-          ),
-          const SizedBox(height: 12),
-          _buildTemplateItem(
-            'Scripture of the Day',
-            'Bible verse or passage for study',
-          ),
-          const SizedBox(height: 12),
-          _buildTemplateItem(
-            'Devotional Summary',
-            '2-3 paragraph devotional explanation',
-          ),
-          const SizedBox(height: 12),
-          _buildTemplateItem(
-            'Group Discussion Questions',
-            '2-3 reflective questions for group study',
-          ),
+          const SizedBox(height: 16),
+          
+          // Weekly Template
+          ...List.generate(7, (index) {
+            final dayDate = nextMonday.add(Duration(days: index));
+            final dayName = _getDayName(dayDate.weekday);
+            
+            return Column(
+              children: [
+                _buildDailyTemplate(dayName, dayDate),
+                if (index < 6) const SizedBox(height: 12),
+              ],
+            );
+          }),
         ],
       ),
     );
+  }
+
+  Widget _buildDailyTemplate(String dayName, DateTime date) {
+    final formattedDate = '${date.day}/${date.month}/${date.year}';
+    
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppTheme.accentGold.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Day Header
+          Row(
+            children: [
+              Container(
+                width: 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$dayName ($formattedDate) Study Template',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepGold,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          
+          // Template Structure
+          _buildTemplateField('Topic:', 'Daily study theme/subject'),
+          const SizedBox(height: 8),
+          _buildTemplateField('Scripture:', 'Bible passage reference'),
+          const SizedBox(height: 8),
+          _buildTemplateField('Key Verse:', 'Memory verse for the day'),
+          const SizedBox(height: 8),
+          _buildTemplateField('Devotional:', 'Study content and explanation'),
+          const SizedBox(height: 8),
+          _buildTemplateField('Discussion:', 'Questions for reflection/group study'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTemplateField(String label, String placeholder) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          width: 70,
+          child: Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w600,
+              color: AppTheme.primaryGold,
+            ),
+          ),
+        ),
+        Expanded(
+          child: Text(
+            placeholder,
+            style: TextStyle(
+              fontSize: 11,
+              color: Colors.grey.shade600,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _getDayName(int weekday) {
+    switch (weekday) {
+      case DateTime.monday:
+        return 'Monday';
+      case DateTime.tuesday:
+        return 'Tuesday';
+      case DateTime.wednesday:
+        return 'Wednesday';
+      case DateTime.thursday:
+        return 'Thursday';
+      case DateTime.friday:
+        return 'Friday';
+      case DateTime.saturday:
+        return 'Saturday';
+      case DateTime.sunday:
+        return 'Sunday';
+      default:
+        return 'Unknown';
+    }
   }
 
   Widget _buildTemplateItem(String title, String description) {
