@@ -33,6 +33,8 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
   bool _isPlaying = false;
   Duration _currentPosition = Duration.zero;
   Duration _totalDuration = Duration.zero;
+  bool _isSubmittingLifeDecision = false;
+  bool _isSubmittingRededication = false;
 
   @override
   void initState() {
@@ -436,22 +438,52 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
+                    onPressed: _isSubmittingLifeDecision ? null : () async {
                       if (formKey.currentState!.validate()) {
+                        setState(() {
+                          _isSubmittingLifeDecision = true;
+                        });
+                        
                         try {
+                          print('🚀 Making API call to submitLifeToChrist...');
+                          print('📤 Form data: name=${nameController.text}, age=${ageController.text}, gender=$selectedGender');
+                          print('📤 API Request data: age=${ageController.text}, gender=$selectedGender (Note: API only accepts age and gender)');
+                          
                           final response = await _apiService.submitLifeToChrist(
                             age: int.parse(ageController.text),
                             gender: selectedGender,
                           );
 
+                          print('✅ API Response received:');
+                          print('📥 Response: $response');
+
                           if (mounted) {
-                            final salvationDecision = SalvationDecisionResponse.fromJson(
-                              response['salvation_decision'],
-                            );
+                            setState(() {
+                              _isSubmittingLifeDecision = false;
+                            });
+                            print('🔍 Parsing salvation_decision from response...');
                             
-                            if (salvationDecision.prayer != null) {
-                              _showPrayerDialog(context, salvationDecision.prayer!);
+                            final salvationDecisionData = response['salvation_decision'];
+                            print('📋 Salvation decision data: $salvationDecisionData');
+                            
+                            if (salvationDecisionData != null) {
+                              final salvationDecision = SalvationDecisionResponse.fromJson(salvationDecisionData);
+                              print('✨ Parsed salvation decision: ${salvationDecision.toJson()}');
+                              print('🙏 Prayer data: ${salvationDecision.prayer?.toJson()}');
+                              
+                              if (salvationDecision.prayer != null) {
+                                print('🎵 Showing prayer dialog with audio: ${salvationDecision.prayer!.audioPath}');
+                                _showPrayerDialog(context, salvationDecision.prayer!);
+                              } else {
+                                print('⚠️ No prayer data found, showing success message');
+                                _showSuccessMessage(
+                                  context,
+                                  'Your decision has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                  false,
+                                );
+                              }
                             } else {
+                              print('❌ No salvation_decision found in response');
                               _showSuccessMessage(
                                 context,
                                 'Your decision has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
@@ -464,12 +496,22 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                           ageController.clear();
                           selectedGender = 'male';
                         } catch (e) {
+                          print('❌ Error during API call: $e');
                           if (mounted) {
+                            setState(() {
+                              _isSubmittingLifeDecision = false;
+                            });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 5),
+                              ),
                             );
                           }
                         }
+                      } else {
+                        print('❌ Form validation failed');
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -480,13 +522,35 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Submit Decision',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isSubmittingLifeDecision
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.richBlack),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Submitting...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            'Submit Decision',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
@@ -597,23 +661,53 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () async {
+                    onPressed: _isSubmittingRededication ? null : () async {
                       if (formKey.currentState!.validate()) {
+                        setState(() {
+                          _isSubmittingRededication = true;
+                        });
+                        
                         try {
+                          print('🚀 Making API call to resubmitLifeToChrist...');
+                          print('📤 Form data: name=${nameController.text}, age=${ageController.text}, gender=$selectedGender');
+                          print('📤 API Request data: age=${ageController.text}, gender=$selectedGender (Note: API only accepts age and gender)');
+                          
                           final response = await _apiService
                               .resubmitLifeToChrist(
                                 age: int.parse(ageController.text),
                                 gender: selectedGender,
                               );
 
+                          print('✅ API Response received:');
+                          print('📥 Response: $response');
+
                           if (mounted) {
-                            final salvationDecision = SalvationDecisionResponse.fromJson(
-                              response['salvation_decision'],
-                            );
+                            setState(() {
+                              _isSubmittingRededication = false;
+                            });
+                            print('🔍 Parsing salvation_decision from response...');
                             
-                            if (salvationDecision.prayer != null) {
-                              _showPrayerDialog(context, salvationDecision.prayer!);
+                            final salvationDecisionData = response['salvation_decision'];
+                            print('📋 Salvation decision data: $salvationDecisionData');
+                            
+                            if (salvationDecisionData != null) {
+                              final salvationDecision = SalvationDecisionResponse.fromJson(salvationDecisionData);
+                              print('✨ Parsed salvation decision: ${salvationDecision.toJson()}');
+                              print('🙏 Prayer data: ${salvationDecision.prayer?.toJson()}');
+                              
+                              if (salvationDecision.prayer != null) {
+                                print('🎵 Showing prayer dialog with audio: ${salvationDecision.prayer!.audioPath}');
+                                _showPrayerDialog(context, salvationDecision.prayer!);
+                              } else {
+                                print('⚠️ No prayer data found, showing success message');
+                                _showSuccessMessage(
+                                  context,
+                                  'Your rededication has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
+                                  false,
+                                );
+                              }
                             } else {
+                              print('❌ No salvation_decision found in response');
                               _showSuccessMessage(
                                 context,
                                 'Your rededication has been recorded! An audio prayer from Rev Julian Kyula will be available in your inbox soon.',
@@ -626,9 +720,17 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                           ageController.clear();
                           selectedGender = 'male';
                         } catch (e) {
+                          print('❌ Error during rededication API call: $e');
                           if (mounted) {
+                            setState(() {
+                              _isSubmittingRededication = false;
+                            });
                             ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Error: $e')),
+                              SnackBar(
+                                content: Text('Error: $e'),
+                                backgroundColor: Colors.red,
+                                duration: Duration(seconds: 5),
+                              ),
                             );
                           }
                         }
@@ -642,13 +744,35 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text(
-                      'Submit Rededication',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    child: _isSubmittingRededication
+                        ? Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(AppTheme.richBlack),
+                                ),
+                              ),
+                              SizedBox(width: 12),
+                              Text(
+                                'Submitting...',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Text(
+                            'Submit Rededication',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
                   ),
                 ),
               ],
