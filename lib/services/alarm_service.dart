@@ -19,48 +19,55 @@ class AlarmService {
       'deeper_prayer_alarms_enabled';
 
   static final FlutterLocalNotificationsPlugin _notifications =
-      FlutterLocalNotificationsPlugin();
+  FlutterLocalNotificationsPlugin();
   static final AudioPlayer _audioPlayer = AudioPlayer();
 
   static Future<void> initialize() async {
-    // Initialize notifications for both platforms
+    // Android init
     const AndroidInitializationSettings initializationSettingsAndroid =
-        AndroidInitializationSettings('@mipmap/launcher_icon');
+    AndroidInitializationSettings('@mipmap/launcher_icon');
 
+    // iOS init
     const DarwinInitializationSettings initializationSettingsIOS =
-        DarwinInitializationSettings(
-          requestAlertPermission: true,
-          requestBadgePermission: true,
-          requestSoundPermission: true,
-          requestCriticalPermission: true,
-        );
+    DarwinInitializationSettings(
+      requestAlertPermission: true,
+      requestBadgePermission: true,
+      requestSoundPermission: true,
+      requestCriticalPermission: true,
+    );
 
+    // Linux init
+    const LinuxInitializationSettings initializationSettingsLinux =
+    LinuxInitializationSettings(
+      defaultActionName: 'Open notification',
+    );
+
+    // Combine all
     const InitializationSettings initializationSettings =
-        InitializationSettings(
-          android: initializationSettingsAndroid,
-          iOS: initializationSettingsIOS,
-        );
+    InitializationSettings(
+      android: initializationSettingsAndroid,
+      iOS: initializationSettingsIOS,
+      linux: initializationSettingsLinux, // ✅ added
+    );
 
     await _notifications.initialize(initializationSettings);
 
-    // Request notification permissions
+    // Permissions
     if (Platform.isAndroid) {
       await _notifications
           .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >()
+          AndroidFlutterLocalNotificationsPlugin>()
           ?.requestNotificationsPermission();
     } else if (Platform.isIOS) {
       await _notifications
           .resolvePlatformSpecificImplementation<
-            IOSFlutterLocalNotificationsPlugin
-          >()
+          IOSFlutterLocalNotificationsPlugin>()
           ?.requestPermissions(
-            alert: true,
-            badge: true,
-            sound: true,
-            critical: true,
-          );
+        alert: true,
+        badge: true,
+        sound: true,
+        critical: true,
+      );
     }
   }
 
@@ -73,16 +80,16 @@ class AlarmService {
     if (prayerAlarmsEnabled) {
       if (Platform.isAndroid) {
         await _scheduleAndroidAlarms();
-      } else if (Platform.isIOS) {
-        await _scheduleIOSAlarms();
+      } else if (Platform.isIOS || Platform.isLinux) {
+        await _scheduleDesktopAlarms(); // ✅ iOS + Linux use same path
       }
     }
 
     if (deeperPrayerAlarmsEnabled) {
       if (Platform.isAndroid) {
         await _scheduleAndroidDeeperPrayerAlarm();
-      } else if (Platform.isIOS) {
-        await _scheduleIOSDeeperPrayerAlarm();
+      } else if (Platform.isIOS || Platform.isLinux) {
+        await _scheduleDesktopDeeperPrayerAlarm();
       }
     }
   }
@@ -122,33 +129,26 @@ class AlarmService {
     return prefs.getBool(_deeperPrayerAlarmsEnabledKey) ?? true;
   }
 
+  // ---------------------- ANDROID ----------------------
   static Future<void> _scheduleAndroidAlarms() async {
-    // Cancel any existing regular prayer alarms
     await AndroidAlarmManager.cancel(morningAlarmId);
     await AndroidAlarmManager.cancel(noonAlarmId);
     await AndroidAlarmManager.cancel(eveningAlarmId);
 
     final now = DateTime.now();
 
-    // Schedule morning prayer (6 AM)
     final morningTime = DateTime(now.year, now.month, now.day, 6, 0);
-    final nextMorning = morningTime.isBefore(now)
-        ? morningTime.add(const Duration(days: 1))
-        : morningTime;
+    final nextMorning =
+    morningTime.isBefore(now) ? morningTime.add(const Duration(days: 1)) : morningTime;
 
-    // Schedule noon prayer (12 PM)
     final noonTime = DateTime(now.year, now.month, now.day, 12, 0);
-    final nextNoon = noonTime.isBefore(now)
-        ? noonTime.add(const Duration(days: 1))
-        : noonTime;
+    final nextNoon =
+    noonTime.isBefore(now) ? noonTime.add(const Duration(days: 1)) : noonTime;
 
-    // Schedule evening prayer (6 PM)
     final eveningTime = DateTime(now.year, now.month, now.day, 18, 0);
-    final nextEvening = eveningTime.isBefore(now)
-        ? eveningTime.add(const Duration(days: 1))
-        : eveningTime;
+    final nextEvening =
+    eveningTime.isBefore(now) ? eveningTime.add(const Duration(days: 1)) : eveningTime;
 
-    // Schedule the alarms
     await AndroidAlarmManager.oneShotAt(
       nextMorning,
       morningAlarmId,
@@ -177,37 +177,13 @@ class AlarmService {
     );
   }
 
-  static Future<void> _scheduleIOSAlarms() async {
-    // Cancel existing notifications
-    await _notifications.cancelAll();
-
-    final now = DateTime.now();
-    final prayerTimes = [
-      {'hour': 6, 'label': 'Morning Prayer', 'id': morningAlarmId},
-      {'hour': 12, 'label': 'Noon Prayer', 'id': noonAlarmId},
-      {'hour': 18, 'label': 'Evening Prayer', 'id': eveningAlarmId},
-    ];
-
-    for (var prayer in prayerTimes) {
-      await _scheduleIOSNotification(
-        prayer['id'] as int,
-        prayer['label'] as String,
-        prayer['hour'] as int,
-      );
-    }
-  }
-
   static Future<void> _scheduleAndroidDeeperPrayerAlarm() async {
-    // Cancel any existing deeper prayer alarm
     await AndroidAlarmManager.cancel(deeperPrayerAlarmId);
 
     final now = DateTime.now();
-
-    // Schedule deeper prayer (12:00 AM - Midnight)
     final midnightTime = DateTime(now.year, now.month, now.day, 0, 0);
-    final nextMidnight = midnightTime.isBefore(now)
-        ? midnightTime.add(const Duration(days: 1))
-        : midnightTime;
+    final nextMidnight =
+    midnightTime.isBefore(now) ? midnightTime.add(const Duration(days: 1)) : midnightTime;
 
     await AndroidAlarmManager.oneShotAt(
       nextMidnight,
@@ -219,20 +195,87 @@ class AlarmService {
     );
   }
 
-  static Future<void> _scheduleIOSDeeperPrayerAlarm() async {
-    await _scheduleIOSNotification(
+  // ---------------------- iOS + Linux ----------------------
+  static Future<void> _scheduleDesktopAlarms() async {
+    await _notifications.cancelAll();
+
+    final now = DateTime.now();
+    final prayerTimes = [
+      {'hour': 6, 'label': 'Morning Prayer', 'id': morningAlarmId},
+      {'hour': 12, 'label': 'Noon Prayer', 'id': noonAlarmId},
+      {'hour': 18, 'label': 'Evening Prayer', 'id': eveningAlarmId},
+    ];
+
+    for (var prayer in prayerTimes) {
+      await _scheduleDesktopNotification(
+        prayer['id'] as int,
+        prayer['label'] as String,
+        prayer['hour'] as int,
+      );
+    }
+  }
+
+  static Future<void> _scheduleDesktopDeeperPrayerAlarm() async {
+    await _scheduleDesktopNotification(
       deeperPrayerAlarmId,
       'Deeper Prayer',
       0, // Midnight
     );
   }
 
+  static Future<void> _scheduleDesktopNotification(
+      int id,
+      String prayerType,
+      int hour,
+      ) async {
+    final now = DateTime.now();
+    var scheduledDate = DateTime(now.year, now.month, now.day, hour, 0);
+
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+
+    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
+    DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+      sound: 'cellphone-ringing-6475.mp3',
+      interruptionLevel: InterruptionLevel.critical,
+    );
+
+    const LinuxNotificationDetails linuxPlatformChannelSpecifics =
+    LinuxNotificationDetails(
+      actions: <LinuxNotificationAction>[
+        LinuxNotificationAction(key: 'open', label: 'Open')
+      ],
+    );
+
+    const NotificationDetails platformChannelSpecifics = NotificationDetails(
+      iOS: iOSPlatformChannelSpecifics,
+      linux: linuxPlatformChannelSpecifics,
+    );
+
+    await _notifications.zonedSchedule(
+      id,
+      'Prayer Time!',
+      'It\'s time for $prayerType. Join Rev. Julian in this sacred moment.',
+      tz.TZDateTime.from(scheduledDate, tz.local),
+      platformChannelSpecifics,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation:
+      UILocalNotificationDateInterpretation.absoluteTime,
+      matchDateTimeComponents: DateTimeComponents.time,
+    );
+  }
+
+  // ---------------------- Cancel ----------------------
   static Future<void> _cancelRegularPrayerAlarms() async {
     if (Platform.isAndroid) {
       await AndroidAlarmManager.cancel(morningAlarmId);
       await AndroidAlarmManager.cancel(noonAlarmId);
       await AndroidAlarmManager.cancel(eveningAlarmId);
-    } else if (Platform.isIOS) {
+    } else {
       await _notifications.cancel(morningAlarmId);
       await _notifications.cancel(noonAlarmId);
       await _notifications.cancel(eveningAlarmId);
@@ -242,87 +285,57 @@ class AlarmService {
   static Future<void> _cancelDeeperPrayerAlarms() async {
     if (Platform.isAndroid) {
       await AndroidAlarmManager.cancel(deeperPrayerAlarmId);
-    } else if (Platform.isIOS) {
+    } else {
       await _notifications.cancel(deeperPrayerAlarmId);
     }
   }
 
-  static Future<void> _scheduleIOSNotification(
-    int id,
-    String prayerType,
-    int hour,
-  ) async {
-    final now = DateTime.now();
-    var scheduledDate = DateTime(now.year, now.month, now.day, hour, 0);
-
-    // If the time has passed today, schedule for tomorrow
-    if (scheduledDate.isBefore(now)) {
-      scheduledDate = scheduledDate.add(const Duration(days: 1));
-    }
-
-    const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-        DarwinNotificationDetails(
-          presentAlert: true,
-          presentBadge: true,
-          presentSound: true,
-          sound: 'cellphone-ringing-6475.mp3',
-          interruptionLevel: InterruptionLevel.critical,
-        );
-
-    const NotificationDetails platformChannelSpecifics = NotificationDetails(
-      iOS: iOSPlatformChannelSpecifics,
-    );
-
-    await _notifications.zonedSchedule(
-      id,
-      'Prayer Time! ',
-      'It\'s time for $prayerType. Join Rev. Julian in this sacred moment.',
-      tz.TZDateTime.from(scheduledDate, tz.local),
-      platformChannelSpecifics,
-      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
-      matchDateTimeComponents: DateTimeComponents.time,
-    );
-  }
-
+  // ---------------------- Show immediate ----------------------
   static Future<void> _showPrayerNotification(String title, String body) async {
     if (Platform.isAndroid) {
       final AndroidNotificationDetails androidPlatformChannelSpecifics =
-          AndroidNotificationDetails(
-            'prayer_alarm_channel',
-            'Prayer Alarms',
-            channelDescription: 'Notifications for prayer times',
-            importance: Importance.max,
-            priority: Priority.high,
-            sound: RawResourceAndroidNotificationSound(
-              'cellphone_ringing_6475',
-            ),
-            playSound: true,
-            enableVibration: true,
-            vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-            fullScreenIntent: true,
-            category: AndroidNotificationCategory.alarm,
-            visibility: NotificationVisibility.public,
-          );
+      AndroidNotificationDetails(
+        'prayer_alarm_channel',
+        'Prayer Alarms',
+        channelDescription: 'Notifications for prayer times',
+        importance: Importance.max,
+        priority: Priority.high,
+        sound: RawResourceAndroidNotificationSound(
+          'cellphone_ringing_6475',
+        ),
+        playSound: true,
+        enableVibration: true,
+        vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+        fullScreenIntent: true,
+        category: AndroidNotificationCategory.alarm,
+        visibility: NotificationVisibility.public,
+      );
 
       final NotificationDetails platformChannelSpecifics = NotificationDetails(
         android: androidPlatformChannelSpecifics,
       );
 
       await _notifications.show(0, title, body, platformChannelSpecifics);
-    } else if (Platform.isIOS) {
+    } else {
       const DarwinNotificationDetails iOSPlatformChannelSpecifics =
-          DarwinNotificationDetails(
-            presentAlert: true,
-            presentBadge: true,
-            presentSound: true,
-            sound: 'cellphone-ringing-6475.mp3',
-            interruptionLevel: InterruptionLevel.critical,
-          );
+      DarwinNotificationDetails(
+        presentAlert: true,
+        presentBadge: true,
+        presentSound: true,
+        sound: 'cellphone-ringing-6475.mp3',
+        interruptionLevel: InterruptionLevel.critical,
+      );
+
+      const LinuxNotificationDetails linuxPlatformChannelSpecifics =
+      LinuxNotificationDetails(
+        actions: <LinuxNotificationAction>[
+          LinuxNotificationAction(key: 'open', label: 'Open')
+        ],
+      );
 
       const NotificationDetails platformChannelSpecifics = NotificationDetails(
         iOS: iOSPlatformChannelSpecifics,
+        linux: linuxPlatformChannelSpecifics,
       );
 
       await _notifications.show(0, title, body, platformChannelSpecifics);
@@ -336,7 +349,6 @@ class AlarmService {
         mode: PlayerMode.mediaPlayer,
       );
 
-      // Play for 30 seconds then stop
       await Future.delayed(const Duration(seconds: 30));
       await _audioPlayer.stop();
     } catch (e) {
@@ -358,7 +370,7 @@ class AlarmService {
       await AndroidAlarmManager.cancel(noonAlarmId);
       await AndroidAlarmManager.cancel(eveningAlarmId);
       await AndroidAlarmManager.cancel(deeperPrayerAlarmId);
-    } else if (Platform.isIOS) {
+    } else {
       await _notifications.cancelAll();
     }
   }
@@ -377,21 +389,17 @@ class AlarmService {
       }
     }
 
-    // If no more prayers today, return tomorrow's 6 AM
     final tomorrow = now.add(const Duration(days: 1));
     return '${DateTime(tomorrow.year, tomorrow.month, tomorrow.day, 6, 0).hour.toString().padLeft(2, '0')}:00';
   }
 }
 
-// Top-level callback functions for alarm manager
+// ---------------------- Top-level callbacks ----------------------
 @pragma('vm:entry-point')
 void morningPrayerAlarm() async {
   await AlarmService.triggerPrayerAlarm('Morning Prayer');
-  // Reschedule for next day
   await AndroidAlarmManager.oneShotAt(
-    DateTime.now()
-        .add(const Duration(days: 1))
-        .copyWith(hour: 6, minute: 0, second: 0),
+    DateTime.now().add(const Duration(days: 1)).copyWith(hour: 6, minute: 0),
     AlarmService.morningAlarmId,
     morningPrayerAlarm,
     exact: true,
@@ -403,11 +411,8 @@ void morningPrayerAlarm() async {
 @pragma('vm:entry-point')
 void noonPrayerAlarm() async {
   await AlarmService.triggerPrayerAlarm('Noon Prayer');
-  // Reschedule for next day
   await AndroidAlarmManager.oneShotAt(
-    DateTime.now()
-        .add(const Duration(days: 1))
-        .copyWith(hour: 12, minute: 0, second: 0),
+    DateTime.now().add(const Duration(days: 1)).copyWith(hour: 12, minute: 0),
     AlarmService.noonAlarmId,
     noonPrayerAlarm,
     exact: true,
@@ -419,11 +424,8 @@ void noonPrayerAlarm() async {
 @pragma('vm:entry-point')
 void eveningPrayerAlarm() async {
   await AlarmService.triggerPrayerAlarm('Evening Prayer');
-  // Reschedule for next day
   await AndroidAlarmManager.oneShotAt(
-    DateTime.now()
-        .add(const Duration(days: 1))
-        .copyWith(hour: 18, minute: 0, second: 0),
+    DateTime.now().add(const Duration(days: 1)).copyWith(hour: 18, minute: 0),
     AlarmService.eveningAlarmId,
     eveningPrayerAlarm,
     exact: true,
@@ -435,11 +437,8 @@ void eveningPrayerAlarm() async {
 @pragma('vm:entry-point')
 void deeperPrayerAlarm() async {
   await AlarmService.triggerPrayerAlarm('Deeper Prayer - Midnight Session');
-  // Reschedule for next day
   await AndroidAlarmManager.oneShotAt(
-    DateTime.now()
-        .add(const Duration(days: 1))
-        .copyWith(hour: 0, minute: 0, second: 0),
+    DateTime.now().add(const Duration(days: 1)).copyWith(hour: 0, minute: 0),
     AlarmService.deeperPrayerAlarmId,
     deeperPrayerAlarm,
     exact: true,
