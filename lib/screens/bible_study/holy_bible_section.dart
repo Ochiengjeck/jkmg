@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:developer' as developer;
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../provider/providers.dart';
@@ -45,6 +46,10 @@ class _HolyBibleSectionState extends ConsumerState<HolyBibleSection> {
         translation: selectedTranslation,
       );
 
+      developer.log('📱 HolyBibleSection: Received verse: ${verse.reference}');
+      developer.log('📱 HolyBibleSection: Verse text: "${verse.text}"');
+      developer.log('📱 HolyBibleSection: Translation: ${verse.translationName}');
+
       if (mounted) {
         setState(() {
           _currentVerse = verse;
@@ -52,6 +57,7 @@ class _HolyBibleSectionState extends ConsumerState<HolyBibleSection> {
         });
       }
     } catch (e) {
+      developer.log('💥 HolyBibleSection: Error loading random verse: $e');
       if (mounted) {
         setState(() {
           _verseError = e.toString();
@@ -300,9 +306,12 @@ class _HolyBibleSectionState extends ConsumerState<HolyBibleSection> {
                       const SizedBox(height: 12),
                       Text(
                         _currentVerse!.text.trim(),
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        style: TextStyle(
+                          fontSize: 16,
                           height: 1.6,
                           fontStyle: FontStyle.italic,
+                          color: Colors.grey.shade800, // Ensure good contrast
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ],

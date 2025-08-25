@@ -87,7 +87,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
             const SizedBox(height: 24),
             _buildNetworkingSection(),
             const SizedBox(height: 24),
-            _buildJoinSection(),
+            // _buildJoinSection(),
           ],
         ),
       ),
@@ -128,7 +128,9 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                       width: 1,
                     ),
                     image: const DecorationImage(
-                      image: AssetImage('assets/images/BusinessForumPlaceholder.png'),
+                      image: AssetImage(
+                        'assets/images/BusinessForumPlaceholder.png',
+                      ),
                       fit: BoxFit.fill,
                     ),
                   ),
@@ -832,7 +834,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
     final nextMonth = DateTime(now.year, now.month + 1, 1);
     final daysInMonth = nextMonth.subtract(const Duration(days: 1)).day;
     final firstDayOfMonth = currentMonth.weekday;
-    
+
     // Create a map of events by date for quick lookup
     Map<int, List<Event>> eventsByDay = {};
     for (var event in businessEvents) {
@@ -867,7 +869,10 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                   onPressed: () {
                     // TODO: Previous month navigation
                   },
-                  icon: const Icon(Icons.chevron_left, color: AppTheme.primaryGold),
+                  icon: const Icon(
+                    Icons.chevron_left,
+                    color: AppTheme.primaryGold,
+                  ),
                 ),
                 Text(
                   DateFormat('MMMM y').format(currentMonth),
@@ -881,15 +886,20 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                   onPressed: () {
                     // TODO: Next month navigation
                   },
-                  icon: const Icon(Icons.chevron_right, color: AppTheme.primaryGold),
+                  icon: const Icon(
+                    Icons.chevron_right,
+                    color: AppTheme.primaryGold,
+                  ),
                 ),
               ],
             ),
           ),
-          
+
           // Days of week header
           Row(
-            children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day) {
+            children: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((
+              day,
+            ) {
               return Expanded(
                 child: Container(
                   padding: const EdgeInsets.symmetric(vertical: 8),
@@ -906,9 +916,9 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
               );
             }).toList(),
           ),
-          
+
           const SizedBox(height: 8),
-          
+
           // Calendar Grid
           Container(
             height: 300,
@@ -920,25 +930,33 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
               itemCount: 42, // 6 weeks * 7 days
               itemBuilder: (context, index) {
                 final dayNumber = index - (firstDayOfMonth - 2);
-                final isCurrentMonth = dayNumber >= 1 && dayNumber <= daysInMonth;
+                final isCurrentMonth =
+                    dayNumber >= 1 && dayNumber <= daysInMonth;
                 final isToday = isCurrentMonth && dayNumber == now.day;
-                final hasEvents = isCurrentMonth && eventsByDay.containsKey(dayNumber);
-                final dayEvents = hasEvents ? eventsByDay[dayNumber]! : <Event>[];
-                
+                final hasEvents =
+                    isCurrentMonth && eventsByDay.containsKey(dayNumber);
+                final dayEvents = hasEvents
+                    ? eventsByDay[dayNumber]!
+                    : <Event>[];
+
                 return GestureDetector(
-                  onTap: hasEvents ? () => _showDayEvents(context, dayNumber, dayEvents) : null,
+                  onTap: hasEvents
+                      ? () => _showDayEvents(context, dayNumber, dayEvents)
+                      : null,
                   child: Container(
                     margin: const EdgeInsets.all(2),
                     decoration: BoxDecoration(
-                      color: isToday 
-                        ? AppTheme.primaryGold
-                        : hasEvents 
+                      color: isToday
+                          ? AppTheme.primaryGold
+                          : hasEvents
                           ? AppTheme.primaryGold.withOpacity(0.3)
                           : Colors.transparent,
                       borderRadius: BorderRadius.circular(8),
                       border: hasEvents && !isToday
-                        ? Border.all(color: AppTheme.primaryGold.withOpacity(0.5))
-                        : null,
+                          ? Border.all(
+                              color: AppTheme.primaryGold.withOpacity(0.5),
+                            )
+                          : null,
                     ),
                     child: Stack(
                       children: [
@@ -947,10 +965,12 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                             isCurrentMonth ? dayNumber.toString() : '',
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: hasEvents || isToday ? FontWeight.bold : FontWeight.normal,
+                              fontWeight: hasEvents || isToday
+                                  ? FontWeight.bold
+                                  : FontWeight.normal,
                               color: isToday
-                                ? AppTheme.richBlack
-                                : isCurrentMonth
+                                  ? AppTheme.richBlack
+                                  : isCurrentMonth
                                   ? Colors.white
                                   : Colors.white.withOpacity(0.3),
                             ),
@@ -964,7 +984,9 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                               width: 8,
                               height: 8,
                               decoration: BoxDecoration(
-                                color: isToday ? AppTheme.richBlack : AppTheme.primaryGold,
+                                color: isToday
+                                    ? AppTheme.richBlack
+                                    : AppTheme.primaryGold,
                                 shape: BoxShape.circle,
                               ),
                             ),
@@ -976,16 +998,19 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
               },
             ),
           ),
-          
+
           const SizedBox(height: 16),
-          
+
           // Legend
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               _buildLegendItem(AppTheme.primaryGold, 'Today'),
               const SizedBox(width: 16),
-              _buildLegendItem(AppTheme.primaryGold.withOpacity(0.3), 'Has Events'),
+              _buildLegendItem(
+                AppTheme.primaryGold.withOpacity(0.3),
+                'Has Events',
+              ),
             ],
           ),
         ],
@@ -1008,10 +1033,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
         const SizedBox(width: 4),
         Text(
           label,
-          style: TextStyle(
-            fontSize: 11,
-            color: Colors.white.withOpacity(0.7),
-          ),
+          style: TextStyle(fontSize: 11, color: Colors.white.withOpacity(0.7)),
         ),
       ],
     );
@@ -1039,25 +1061,29 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
               ),
             ),
             const SizedBox(height: 16),
-            ...events.map((event) => Container(
-              margin: const EdgeInsets.only(bottom: 12),
-              child: EventCard(
-                event: event,
-                onTap: () async {
-                  Navigator.pop(context); // Close bottom sheet
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => EventDetailScreen(event: event),
+            ...events
+                .map(
+                  (event) => Container(
+                    margin: const EdgeInsets.only(bottom: 12),
+                    child: EventCard(
+                      event: event,
+                      onTap: () async {
+                        Navigator.pop(context); // Close bottom sheet
+                        await Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => EventDetailScreen(event: event),
+                          ),
+                        );
+                        if (mounted) {
+                          ref.invalidate(allEventsProvider);
+                          ref.invalidate(myRegistrationsProvider);
+                        }
+                      },
                     ),
-                  );
-                  if (mounted) {
-                    ref.invalidate(allEventsProvider);
-                    ref.invalidate(myRegistrationsProvider);
-                  }
-                },
-              ),
-            )).toList(),
+                  ),
+                )
+                .toList(),
           ],
         ),
       ),
