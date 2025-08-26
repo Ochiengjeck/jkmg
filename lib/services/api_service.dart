@@ -735,6 +735,71 @@ class ApiService {
     }
   }
 
+  // Get available counsellors for AI counselling
+  Future<Map<String, dynamic>> getAvailableCounsellors() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/ai-counselling/available-counsellors'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get available counsellors: ${response.body}');
+    }
+  }
+
+  // Start AI counselling chat
+  Future<Map<String, dynamic>> startCounsellingChat({
+    required String counsellorId,
+    required String message,
+    String? conversationId,
+  }) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/ai-counselling/chat'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'counsellor_id': counsellorId,
+        'message': message,
+        if (conversationId != null) 'conversation_id': conversationId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to send message: ${response.body}');
+    }
+  }
+
+  // Get user conversations
+  Future<Map<String, dynamic>> getUserConversations() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/ai-counselling/conversations'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get conversations: ${response.body}');
+    }
+  }
+
+  // Get conversation messages
+  Future<Map<String, dynamic>> getConversationMessages(String conversationId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/ai-counselling/conversations/$conversationId/messages'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Failed to get conversation messages: ${response.body}');
+    }
+  }
+
   // Salvation
   Future<SalvationDecision> recordSalvationDecision({
     required String type,

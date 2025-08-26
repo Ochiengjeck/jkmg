@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../models/counseling.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import 'ai_counseling_screen.dart';
+import 'healing_session_screen.dart';
 // import 'book_counseling.dart';
 // import 'counseling_list.dart';
 
@@ -276,7 +278,7 @@ class _CounselingCornerScreenState
                     children: [
                       _buildFeatureChip('Professional Care'),
                       const SizedBox(width: 8),
-                      _buildFeatureChip('AI Healing'),
+                      _buildFeatureChip('Digital Healing'),
                       const SizedBox(width: 8),
                       _buildFeatureChip('Emergency Support'),
                     ],
@@ -460,7 +462,7 @@ class _CounselingCornerScreenState
               const SizedBox(width: 12),
               const Expanded(
                 child: Text(
-                  'Self-Guided Healing',
+                  'Start Healing Session',
                   style: TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
@@ -472,7 +474,7 @@ class _CounselingCornerScreenState
           ),
           const SizedBox(height: 12),
           Text(
-            'This section is designed to provide answers to your pressing questions, supported by relevant Bible verses. Powered by our custom AI agent, it offers clarity, guidance, and spiritual direction tailored to your needs.',
+            'Begin your journey toward emotional and spiritual wholeness. This guided healing session provides personalized answers to your pressing questions, supported by relevant Bible verses and thoughtful guidance tailored to your needs.',
             style: TextStyle(
               fontSize: 12,
               color: Colors.grey.shade700,
@@ -483,9 +485,9 @@ class _CounselingCornerScreenState
           SizedBox(
             width: double.infinity,
             child: ElevatedButton.icon(
-              onPressed: () => _launchAIAssistant(),
-              icon: const Icon(Icons.psychology, size: 16),
-              label: const Text('Start AI Healing Session'),
+              onPressed: () => _startHealingSession(),
+              icon: const Icon(Icons.favorite, size: 16),
+              label: const Text('Start Healing Session'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryGold,
                 foregroundColor: AppTheme.richBlack,
@@ -757,21 +759,34 @@ class _CounselingCornerScreenState
     );
   }
 
-  void _joinTelegramGroup() {
-    // TODO: Implement Telegram group joining functionality
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Telegram group integration coming soon!'),
-        backgroundColor: AppTheme.primaryGold,
-      ),
-    );
+  void _joinTelegramGroup() async {
+    const telegramUrl = 'https://t.me/+MKtAJc-jorlkZTQ0';
+    
+    try {
+      final Uri url = Uri.parse(telegramUrl);
+      if (!await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+      )) {
+        throw Exception('Could not launch Telegram group');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error opening Telegram: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    }
   }
 
-  void _launchAIAssistant() {
+  void _startHealingSession() {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AICounselingScreen(),
+        builder: (context) => const HealingSessionScreen(),
       ),
     );
   }
@@ -780,27 +795,85 @@ class _CounselingCornerScreenState
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
+        backgroundColor: AppTheme.charcoalBlack,
         title: Row(
           children: [
             Icon(Icons.emergency, color: Colors.red.shade600),
             const SizedBox(width: 8),
-            const Text('Emergency Help'),
+            const Text(
+              'Emergency Help',
+              style: TextStyle(color: Colors.white),
+            ),
           ],
         ),
-        content: const Column(
+        content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
+            const Text(
               'If you are in crisis or having thoughts of self-harm, please reach out immediately:',
-              style: TextStyle(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+              ),
             ),
-            SizedBox(height: 16),
-            Text('• Call JKM Prayer Line'),
-            Text('• Connect with live counselor'),
-            Text('• Scripture + prayer support'),
-            SizedBox(height: 16),
-            Text(
+            const SizedBox(height: 16),
+            const Text(
+              'Emergency Helpline:',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.primaryGold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _makePhoneCall('+254746737403'),
+                    icon: const Icon(Icons.phone, size: 18),
+                    label: const Text('+254 746 737 403'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ElevatedButton.icon(
+                    onPressed: () => _makePhoneCall('+254746737313'),
+                    icon: const Icon(Icons.phone, size: 18),
+                    label: const Text('+254 746 737 313'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.green.shade600,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Available services:',
+              style: TextStyle(
+                color: Colors.white70,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 4),
+            const Text('• Live counselor support', style: TextStyle(color: Colors.white70)),
+            const Text('• Scripture + prayer guidance', style: TextStyle(color: Colors.white70)),
+            const Text('• Crisis intervention', style: TextStyle(color: Colors.white70)),
+            const SizedBox(height: 16),
+            const Text(
               'You are not alone. Help is available.',
               style: TextStyle(
                 fontWeight: FontWeight.w600,
@@ -812,22 +885,35 @@ class _CounselingCornerScreenState
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Close'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              // TODO: Implement emergency contact functionality
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade600,
-              foregroundColor: Colors.white,
+            child: const Text(
+              'Close',
+              style: TextStyle(color: AppTheme.primaryGold),
             ),
-            child: const Text('Get Help Now'),
           ),
         ],
       ),
     );
+  }
+
+  Future<void> _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    try {
+      if (!await launchUrl(launchUri)) {
+        throw Exception('Could not launch phone dialer');
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error making phone call: $e'),
+            backgroundColor: Colors.red.shade600,
+          ),
+        );
+      }
+    }
   }
 
   void _showFeedbackForm(BuildContext context) {
