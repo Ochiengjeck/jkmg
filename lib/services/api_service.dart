@@ -1012,13 +1012,13 @@ class ApiService {
     required String gender,
   }) async {
     try {
-      print('🌐 Making API call to: $baseUrl/salvation/submit-life (rededication)');
+      print('🌐 Making API call to: $baseUrl/salvation/resubmit-life (rededication)');
       final headers = await _getHeaders();
       print('📤 Request headers: $headers');
       print('📤 Request body: ${jsonEncode({'age': age, 'gender': gender})}');
       
       final response = await http.post(
-        Uri.parse('$baseUrl/salvation/submit-life'), // Using same endpoint as per specification
+        Uri.parse('$baseUrl/salvation/resubmit-life'),
         headers: headers,
         body: jsonEncode({
           'age': age,
