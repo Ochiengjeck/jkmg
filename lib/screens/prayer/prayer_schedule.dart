@@ -6,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart';
 import 'dart:async';
 import '../../services/alarm_service.dart';
 import '../../services/prayer_service.dart';
+import '../../widgets/alarm_settings_dialog.dart';
 import '../inbox/inbox_screen.dart';
 
 class PrayerSchedule extends StatefulWidget {
@@ -906,6 +907,20 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                     color: AppTheme.primaryGold,
                   ),
                 ),
+              ),
+              IconButton(
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const AlarmSettingsDialog(),
+                  );
+                },
+                icon: const Icon(
+                  Icons.tune,
+                  color: AppTheme.primaryGold,
+                  size: 20,
+                ),
+                tooltip: 'Advanced Settings',
               ),
             ],
           ),

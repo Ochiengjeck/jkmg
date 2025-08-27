@@ -111,7 +111,8 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: ShaderMask(
-          shaderCallback: (bounds) => AppTheme.primaryGoldGradient.createShader(bounds),
+          shaderCallback: (bounds) =>
+              AppTheme.primaryGoldGradient.createShader(bounds),
           child: const Text(
             'Inbox',
             style: TextStyle(
@@ -135,7 +136,11 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
             ),
           ),
           child: IconButton(
-            icon: const Icon(Icons.arrow_back_ios, color: AppTheme.primaryGold, size: 20),
+            icon: const Icon(
+              Icons.arrow_back_ios,
+              color: AppTheme.primaryGold,
+              size: 20,
+            ),
             onPressed: () => Navigator.pop(context),
           ),
         ),
@@ -151,7 +156,11 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
               ),
             ),
             child: IconButton(
-              icon: const Icon(Icons.mark_email_read_outlined, color: AppTheme.primaryGold, size: 20),
+              icon: const Icon(
+                Icons.mark_email_read_outlined,
+                color: AppTheme.primaryGold,
+                size: 20,
+              ),
               onPressed: () => _markAllAsRead(),
             ),
           ),
@@ -253,10 +262,7 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
             decoration: BoxDecoration(
               color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
-              border: Border.all(
-                color: color.withOpacity(0.3),
-                width: 1,
-              ),
+              border: Border.all(color: color.withOpacity(0.3), width: 1),
             ),
             child: Icon(icon, color: color, size: 20),
           ),
@@ -304,7 +310,8 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
           ),
           const SizedBox(height: 24),
           ShaderMask(
-            shaderCallback: (bounds) => AppTheme.primaryGoldGradient.createShader(bounds),
+            shaderCallback: (bounds) =>
+                AppTheme.primaryGoldGradient.createShader(bounds),
             child: const Text(
               'Loading your messages...',
               style: TextStyle(
@@ -382,9 +389,7 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                         gradient: isSelected
                             ? AppTheme.primaryGoldGradient
                             : null,
-                        color: isSelected
-                            ? null
-                            : Colors.transparent,
+                        color: isSelected ? null : Colors.transparent,
                         borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: isSelected
@@ -473,21 +478,20 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
     return SliverPadding(
       padding: const EdgeInsets.all(16),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            final item = combinedItems[index];
-            return Padding(
-              padding: EdgeInsets.only(bottom: index < combinedItems.length - 1 ? 8 : 0),
-              child: AnimatedContainer(
-                duration: Duration(milliseconds: 300 + (index * 30)),
-                child: item['type'] == 'prayer'
-                    ? _buildPrayerCard(item['data'])
-                    : _buildNotificationCard(item['data']),
-              ),
-            );
-          },
-          childCount: combinedItems.length,
-        ),
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final item = combinedItems[index];
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: index < combinedItems.length - 1 ? 8 : 0,
+            ),
+            child: AnimatedContainer(
+              duration: Duration(milliseconds: 300 + (index * 30)),
+              child: item['type'] == 'prayer'
+                  ? _buildPrayerCard(item['data'])
+                  : _buildNotificationCard(item['data']),
+            ),
+          );
+        }, childCount: combinedItems.length),
       ),
     );
   }
@@ -653,7 +657,8 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: 12),
                 ],
-                if (prayer['message'] != null && prayer['message'].isNotEmpty) ...[
+                if (prayer['message'] != null &&
+                    prayer['message'].isNotEmpty) ...[
                   Container(
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
@@ -682,7 +687,10 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryGold.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(20),
@@ -695,17 +703,19 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            prayer['prayer'] != null && prayer['prayer'].toString().isNotEmpty 
-                              ? Icons.headphones 
-                              : Icons.hourglass_empty,
+                            prayer['prayer'] != null &&
+                                    prayer['prayer'].toString().isNotEmpty
+                                ? Icons.headphones
+                                : Icons.hourglass_empty,
                             size: 16,
                             color: AppTheme.primaryGold,
                           ),
                           SizedBox(width: 6),
                           Text(
-                            prayer['prayer'] != null && prayer['prayer'].toString().isNotEmpty
-                              ? 'Tap to listen'
-                              : 'Prayer coming soon',
+                            prayer['prayer'] != null &&
+                                    prayer['prayer'].toString().isNotEmpty
+                                ? 'Tap to listen'
+                                : 'Prayer coming soon',
                             style: TextStyle(
                               fontSize: 12,
                               color: AppTheme.primaryGold,
@@ -736,7 +746,9 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
 
   Widget _buildNotificationCard(NotificationModel.Notification notification) {
     final isUnread = !notification.isRead;
-    final notificationColor = _getNotificationIconColor(notification.type.value);
+    final notificationColor = _getNotificationIconColor(
+      notification.type.value,
+    );
 
     return Container(
       decoration: BoxDecoration(
@@ -793,7 +805,9 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                                 end: Alignment.bottomRight,
                               )
                             : null,
-                        color: isUnread ? null : notificationColor.withOpacity(0.2),
+                        color: isUnread
+                            ? null
+                            : notificationColor.withOpacity(0.2),
                         borderRadius: BorderRadius.circular(10),
                         boxShadow: isUnread
                             ? [
@@ -852,7 +866,9 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                               ),
                             ),
                             child: Text(
-                              _getNotificationTypeDisplay(notification.type.value),
+                              _getNotificationTypeDisplay(
+                                notification.type.value,
+                              ),
                               style: TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w700,
@@ -877,8 +893,12 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                         notification.title,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: isUnread ? FontWeight.w800 : FontWeight.w600,
-                          color: isUnread ? Colors.white : Colors.white.withOpacity(0.9),
+                          fontWeight: isUnread
+                              ? FontWeight.w800
+                              : FontWeight.w600,
+                          color: isUnread
+                              ? Colors.white
+                              : Colors.white.withOpacity(0.9),
                           letterSpacing: 0.2,
                         ),
                         maxLines: 2,
@@ -899,7 +919,10 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                       if (isUnread) ...[
                         const SizedBox(height: 12),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: notificationColor.withOpacity(0.1),
                             borderRadius: BorderRadius.circular(16),
@@ -984,14 +1007,17 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                 ),
               ),
               child: Icon(
-                _selectedFilter == 'all' ? Icons.inbox_outlined : Icons.filter_list_off,
+                _selectedFilter == 'all'
+                    ? Icons.inbox_outlined
+                    : Icons.filter_list_off,
                 size: 64,
                 color: AppTheme.primaryGold,
               ),
             ),
             const SizedBox(height: 24),
             ShaderMask(
-              shaderCallback: (bounds) => AppTheme.primaryGoldGradient.createShader(bounds),
+              shaderCallback: (bounds) =>
+                  AppTheme.primaryGoldGradient.createShader(bounds),
               child: Text(
                 _selectedFilter == 'all'
                     ? 'Your Inbox is Empty'
@@ -1041,7 +1067,10 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                     },
                     borderRadius: BorderRadius.circular(25),
                     child: const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 12,
+                      ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1114,8 +1143,10 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
 
   Future<void> _markAllAsRead() async {
     try {
-      final unreadNotifications = _notifications.where((n) => !n.isRead).toList();
-      
+      final unreadNotifications = _notifications
+          .where((n) => !n.isRead)
+          .toList();
+
       if (unreadNotifications.isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -1507,11 +1538,7 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
                 ),
                 child: Row(
                   children: [
-                    Icon(
-                      Icons.info,
-                      color: Colors.orange,
-                      size: 20,
-                    ),
+                    Icon(Icons.info, color: Colors.orange, size: 20),
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
@@ -1548,8 +1575,9 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
   ) {
     // Try to extract prayer URL from notification data
     final notificationData = notification.data;
-    final prayerUrl = notificationData?['prayer_url'] ?? notificationData?['prayer'];
-    
+    final prayerUrl =
+        notificationData?['prayer_url'] ?? notificationData?['prayer'];
+
     if (prayerUrl != null && prayerUrl.isNotEmpty) {
       _showPrayerAudioDialog(
         'Prayer Audio Available',
