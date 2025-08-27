@@ -39,7 +39,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
   Future<void> _loadFeedbackTypes() async {
     if (!mounted) return;
-    
+
     setState(() {
       _isLoading = true;
     });
@@ -47,7 +47,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
     try {
       final apiService = ApiService();
       final types = await apiService.getFeedbackTypes();
-      
+
       if (mounted) {
         setState(() {
           _feedbackTypes = types;
@@ -83,7 +83,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
 
     try {
       final apiService = ApiService();
-      
+
       final metadata = {
         'device_info': 'iPhone 14',
         'app_version': '1.0.0',
@@ -96,8 +96,8 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
         subject: _subjectController.text.trim(),
         message: _messageController.text.trim(),
         rating: _rating,
-        contactEmail: _emailController.text.trim().isNotEmpty 
-            ? _emailController.text.trim() 
+        contactEmail: _emailController.text.trim().isNotEmpty
+            ? _emailController.text.trim()
             : null,
         metadata: metadata,
       );
@@ -129,9 +129,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         title: Row(
           children: [
             Container(
@@ -167,9 +165,7 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
   @override
   Widget build(BuildContext context) {
     return Dialog(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(24),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       child: Container(
         constraints: BoxConstraints(
           maxHeight: MediaQuery.of(context).size.height * 0.8,
@@ -198,14 +194,9 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryGold,
-            AppTheme.darkGold,
-          ],
+          colors: [AppTheme.primaryGold, AppTheme.darkGold],
         ),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(24),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
       ),
       child: Row(
         children: [
@@ -301,16 +292,14 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       children: [
         Text(
           'Feedback Type *',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Container(
           decoration: BoxDecoration(
-            border: Border.all(
-              color: AppTheme.primaryGold.withOpacity(0.3),
-            ),
+            border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
             borderRadius: BorderRadius.circular(12),
           ),
           child: DropdownButtonHideUnderline(
@@ -358,9 +347,9 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       children: [
         Text(
           'Subject *',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         TextFormField(
@@ -393,9 +382,9 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       children: [
         Text(
           'Message *',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         TextFormField(
@@ -430,17 +419,14 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       children: [
         Text(
           'Rating (Optional)',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Text(
           'How would you rate your overall app experience?',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
         const SizedBox(height: 12),
         Row(
@@ -489,27 +475,21 @@ class _FeedbackDialogState extends ConsumerState<FeedbackDialog> {
       children: [
         Text(
           'Contact Email (Optional)',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(
+            context,
+          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         Text(
           'If you\'d like us to follow up with you',
-          style: TextStyle(
-            fontSize: 14,
-            color: Colors.grey.shade600,
-          ),
+          style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
         ),
         const SizedBox(height: 8),
         TextFormField(
           controller: _emailController,
           decoration: InputDecoration(
             hintText: 'your@email.com',
-            prefixIcon: Icon(
-              Icons.email_rounded,
-              color: AppTheme.primaryGold,
-            ),
+            prefixIcon: Icon(Icons.email_rounded, color: AppTheme.primaryGold),
           ),
           keyboardType: TextInputType.emailAddress,
           validator: (value) {

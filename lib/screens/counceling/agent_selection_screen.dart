@@ -295,6 +295,7 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
     final String specialty = counsellor['specialization'] ?? 'General Guidance';
     final String description = counsellor['personality'] ?? 'A compassionate guide ready to walk with you on your healing journey.';
     final bool isOnline = counsellor['is_online'] ?? true;
+    final String? avatarUrl = counsellor['avatar'];
     // final String id = counsellor['id'] ?? '';
 
     return Container(
@@ -324,22 +325,60 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
           children: [
             Row(
               children: [
-                Container(
-                  padding: const EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    gradient: isOnline 
-                        ? LinearGradient(
-                            colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                GestureDetector(
+                  onTap: () => _showCounsellorDetailsDialog(counsellor),
+                  child: Container(
+                    width: 58,
+                    height: 58,
+                    decoration: BoxDecoration(
+                      gradient: isOnline 
+                          ? LinearGradient(
+                              colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                            )
+                          : LinearGradient(
+                              colors: [Colors.grey.shade600, Colors.grey.shade700],
+                            ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isOnline ? AppTheme.primaryGold : Colors.grey.shade600,
+                        width: 2,
+                      ),
+                    ),
+                    child: avatarUrl != null && avatarUrl.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(27),
+                            child: Image.network(
+                              avatarUrl,
+                              width: 54,
+                              height: 54,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.psychology,
+                                  size: 28,
+                                  color: isOnline ? AppTheme.richBlack : Colors.white,
+                                );
+                              },
+                              loadingBuilder: (context, child, loadingProgress) {
+                                if (loadingProgress == null) return child;
+                                return Center(
+                                  child: SizedBox(
+                                    width: 20,
+                                    height: 20,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                      color: isOnline ? AppTheme.richBlack : Colors.white,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
                           )
-                        : LinearGradient(
-                            colors: [Colors.grey.shade600, Colors.grey.shade700],
+                        : Icon(
+                            Icons.psychology,
+                            size: 28,
+                            color: isOnline ? AppTheme.richBlack : Colors.white,
                           ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    Icons.psychology,
-                    size: 28,
-                    color: isOnline ? AppTheme.richBlack : Colors.white,
                   ),
                 ),
                 const SizedBox(width: 15),
@@ -468,6 +507,307 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
       MaterialPageRoute(
         builder: (context) => CounselingChatScreen(
           counsellor: counsellor,
+        ),
+      ),
+    );
+  }
+
+  void _showCounsellorDetailsDialog(dynamic counsellor) {
+    final String name = counsellor['name'] ?? 'Healing Counsellor';
+    final String specialty = counsellor['specialization'] ?? 'General Guidance';
+    final String description = counsellor['personality'] ?? 'A compassionate guide ready to walk with you on your healing journey.';
+    final bool isOnline = counsellor['is_online'] ?? true;
+    final String? avatarUrl = counsellor['avatar'];
+    final String? gender = counsellor['gender'];
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.charcoalBlack,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppTheme.primaryGold.withOpacity(0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with large avatar
+              Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: isOnline
+                          ? LinearGradient(
+                              colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                            )
+                          : LinearGradient(
+                              colors: [Colors.grey.shade600, Colors.grey.shade700],
+                            ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: isOnline ? AppTheme.primaryGold : Colors.grey.shade600,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: isOnline 
+                              ? AppTheme.primaryGold.withOpacity(0.4)
+                              : Colors.grey.withOpacity(0.4),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: avatarUrl != null && avatarUrl.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(37),
+                            child: Image.network(
+                              avatarUrl,
+                              width: 74,
+                              height: 74,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Icon(
+                                  Icons.psychology,
+                                  size: 40,
+                                  color: isOnline ? AppTheme.richBlack : Colors.white,
+                                );
+                              },
+                            ),
+                          )
+                        : Icon(
+                            Icons.psychology,
+                            size: 40,
+                            color: isOnline ? AppTheme.richBlack : Colors.white,
+                          ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          name,
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: isOnline ? AppTheme.primaryGold : Colors.grey.shade400,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          specialty,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isOnline 
+                                ? Colors.green.withOpacity(0.2)
+                                : Colors.grey.withOpacity(0.2),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isOnline ? Colors.green : Colors.grey,
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8,
+                                height: 8,
+                                decoration: BoxDecoration(
+                                  color: isOnline ? Colors.green : Colors.grey,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                isOnline ? 'Available Now' : 'Currently Offline',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isOnline ? Colors.green : Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Personality description
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.psychology_outlined,
+                          color: AppTheme.primaryGold,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'About This Counsellor',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      description,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              if (gender != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        gender == 'male' ? Icons.male : Icons.female,
+                        color: Colors.blue,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        gender == 'male' ? 'Male Counsellor' : 'Female Counsellor',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // Action buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppTheme.primaryGold,
+                        side: const BorderSide(color: AppTheme.primaryGold),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Close',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    flex: 2,
+                    child: ElevatedButton(
+                      onPressed: isOnline 
+                          ? () {
+                              Navigator.of(context).pop();
+                              _selectCounsellor(counsellor);
+                            }
+                          : null,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: isOnline 
+                            ? AppTheme.primaryGold 
+                            : Colors.grey.shade600,
+                        foregroundColor: isOnline 
+                            ? AppTheme.richBlack 
+                            : Colors.grey.shade400,
+                        disabledBackgroundColor: Colors.grey.shade700,
+                        disabledForegroundColor: Colors.grey.shade500,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(
+                        isOnline ? 'Begin Conversation' : 'Currently Unavailable',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

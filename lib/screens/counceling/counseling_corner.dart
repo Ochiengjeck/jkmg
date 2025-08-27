@@ -216,9 +216,7 @@ class _CounselingCornerScreenState
                 width: 1,
               ),
               image: const DecorationImage(
-                image: AssetImage(
-                  'assets/images/counseling & care.png',
-                ),
+                image: AssetImage('assets/images/counseling & care.png'),
                 fit: BoxFit.fill,
               ),
             ),
@@ -229,10 +227,7 @@ class _CounselingCornerScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  AppTheme.charcoalBlack,
-                  AppTheme.richBlack,
-                ],
+                colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -294,10 +289,7 @@ class _CounselingCornerScreenState
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),
@@ -355,7 +347,7 @@ class _CounselingCornerScreenState
         const SizedBox(height: 16),
         _buildEmergencyHelpCard(),
         const SizedBox(height: 16),
-        _buildFeedbackCard(),
+        // _buildFeedbackCard(),
       ],
     );
   }
@@ -761,13 +753,10 @@ class _CounselingCornerScreenState
 
   void _joinTelegramGroup() async {
     const telegramUrl = 'https://t.me/+MKtAJc-jorlkZTQ0';
-    
+
     try {
       final Uri url = Uri.parse(telegramUrl);
-      if (!await launchUrl(
-        url,
-        mode: LaunchMode.externalApplication,
-      )) {
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
         throw Exception('Could not launch Telegram group');
       }
     } catch (e) {
@@ -785,9 +774,7 @@ class _CounselingCornerScreenState
   void _startHealingSession() {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const HealingSessionScreen(),
-      ),
+      MaterialPageRoute(builder: (context) => const HealingSessionScreen()),
     );
   }
 
@@ -800,10 +787,7 @@ class _CounselingCornerScreenState
           children: [
             Icon(Icons.emergency, color: Colors.red.shade600),
             const SizedBox(width: 8),
-            const Text(
-              'Emergency Help',
-              style: TextStyle(color: Colors.white),
-            ),
+            const Text('Emergency Help', style: TextStyle(color: Colors.white)),
           ],
         ),
         content: Column(
@@ -831,8 +815,8 @@ class _CounselingCornerScreenState
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _makePhoneCall('+254746737403'),
-                    icon: const Icon(Icons.phone, size: 18),
+                    onPressed: () => _openWhatsApp('+254746737403'),
+                    icon: const Icon(Icons.chat, size: 18),
                     label: const Text('+254 746 737 403'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
@@ -848,8 +832,8 @@ class _CounselingCornerScreenState
               children: [
                 Expanded(
                   child: ElevatedButton.icon(
-                    onPressed: () => _makePhoneCall('+254746737313'),
-                    icon: const Icon(Icons.phone, size: 18),
+                    onPressed: () => _openWhatsApp('+254746737313'),
+                    icon: const Icon(Icons.chat, size: 18),
                     label: const Text('+254 746 737 313'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green.shade600,
@@ -869,9 +853,18 @@ class _CounselingCornerScreenState
               ),
             ),
             const SizedBox(height: 4),
-            const Text('• Live counselor support', style: TextStyle(color: Colors.white70)),
-            const Text('• Scripture + prayer guidance', style: TextStyle(color: Colors.white70)),
-            const Text('• Crisis intervention', style: TextStyle(color: Colors.white70)),
+            const Text(
+              '• Live counselor support',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const Text(
+              '• Scripture + prayer guidance',
+              style: TextStyle(color: Colors.white70),
+            ),
+            const Text(
+              '• Crisis intervention',
+              style: TextStyle(color: Colors.white70),
+            ),
             const SizedBox(height: 16),
             const Text(
               'You are not alone. Help is available.',
@@ -895,20 +888,25 @@ class _CounselingCornerScreenState
     );
   }
 
-  Future<void> _makePhoneCall(String phoneNumber) async {
-    final Uri launchUri = Uri(
-      scheme: 'tel',
-      path: phoneNumber,
+  Future<void> _openWhatsApp(String phoneNumber) async {
+    // Remove any spaces or special characters from phone number
+    final cleanNumber = phoneNumber.replaceAll(RegExp(r'[^\d+]'), '');
+    final message = Uri.encodeComponent(
+      'Hello, my name is [Your Name] from JKMG and I need help',
     );
+
+    final whatsappUrl = 'https://wa.me/$cleanNumber?text=$message';
+
     try {
-      if (!await launchUrl(launchUri)) {
-        throw Exception('Could not launch phone dialer');
+      final Uri url = Uri.parse(whatsappUrl);
+      if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
+        throw Exception('Could not launch WhatsApp');
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error making phone call: $e'),
+            content: Text('Error opening WhatsApp: $e'),
             backgroundColor: Colors.red.shade600,
           ),
         );

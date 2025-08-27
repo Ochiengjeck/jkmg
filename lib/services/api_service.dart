@@ -726,6 +726,39 @@ class ApiService {
     }
   }
 
+  Future<Donation> updatePayment({
+    required String donationId,
+    String? receiptNumber,
+    String? paymentDate,
+    String? paymentChannel,
+    String? paymentReference,
+    String? notes,
+  }) async {
+    final body = <String, dynamic>{
+      'donation_id': donationId,
+    };
+
+    // Only include fields that are provided
+    if (receiptNumber != null) body['receipt_number'] = receiptNumber;
+    if (paymentDate != null) body['payment_date'] = paymentDate;
+    if (paymentChannel != null) body['payment_channel'] = paymentChannel;
+    if (paymentReference != null) body['payment_reference'] = paymentReference;
+    if (notes != null) body['notes'] = notes;
+
+    final response = await http.post(
+      Uri.parse('$baseUrl/donations/update-payment'),
+      headers: await _getHeaders(),
+      body: jsonEncode(body),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return Donation.fromJson(data['donation']);
+    } else {
+      throw Exception('Failed to update payment: ${response.body}');
+    }
+  }
+
   // Counseling
   Future<CounselingSession> bookCounselingSession({
     required String topic,

@@ -374,18 +374,56 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
         ),
         title: Row(
           children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryGold, AppTheme.deepGold],
+            GestureDetector(
+              onTap: () => _showCounsellorDetailsDialog(),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primaryGold,
+                    width: 1,
+                  ),
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.psychology,
-                size: 20,
-                color: AppTheme.richBlack,
+                child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(17),
+                        child: Image.network(
+                          widget.counsellor['avatar'],
+                          width: 34,
+                          height: 34,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.psychology,
+                              size: 20,
+                              color: AppTheme.richBlack,
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: SizedBox(
+                                width: 14,
+                                height: 14,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  color: AppTheme.richBlack,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : const Icon(
+                        Icons.psychology,
+                        size: 20,
+                        color: AppTheme.richBlack,
+                      ),
               ),
             ),
             const SizedBox(width: 12),
@@ -581,19 +619,56 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
             message.isFromUser ? MainAxisAlignment.end : MainAxisAlignment.start,
         children: [
           if (!message.isFromUser) ...[
-            Container(
-              width: 30,
-              height: 30,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppTheme.primaryGold, AppTheme.deepGold],
+            GestureDetector(
+              onTap: () => _showCounsellorDetailsDialog(),
+              child: Container(
+                width: 30,
+                height: 30,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                  ),
+                  shape: BoxShape.circle,
+                  border: Border.all(
+                    color: AppTheme.primaryGold,
+                    width: 1,
+                  ),
                 ),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.psychology,
-                size: 16,
-                color: AppTheme.richBlack,
+                child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(14),
+                        child: Image.network(
+                          widget.counsellor['avatar'],
+                          width: 28,
+                          height: 28,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(
+                              Icons.psychology,
+                              size: 16,
+                              color: AppTheme.richBlack,
+                            );
+                          },
+                          loadingBuilder: (context, child, loadingProgress) {
+                            if (loadingProgress == null) return child;
+                            return const Center(
+                              child: SizedBox(
+                                width: 12,
+                                height: 12,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 1.5,
+                                  color: AppTheme.richBlack,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      )
+                    : const Icon(
+                        Icons.psychology,
+                        size: 16,
+                        color: AppTheme.richBlack,
+                      ),
               ),
             ),
             const SizedBox(width: 8),
@@ -822,6 +897,241 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
     }
   }
 
+  void _showCounsellorDetailsDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        backgroundColor: Colors.transparent,
+        child: Container(
+          margin: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            color: AppTheme.charcoalBlack,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: AppTheme.primaryGold.withOpacity(0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.5),
+                blurRadius: 20,
+                offset: const Offset(0, 10),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              // Header with large avatar
+              Row(
+                children: [
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [AppTheme.primaryGold, AppTheme.deepGold],
+                      ),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: AppTheme.primaryGold,
+                        width: 3,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppTheme.primaryGold.withOpacity(0.4),
+                          blurRadius: 15,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(37),
+                            child: Image.network(
+                              widget.counsellor['avatar'],
+                              width: 74,
+                              height: 74,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(
+                                  Icons.psychology,
+                                  size: 40,
+                                  color: AppTheme.richBlack,
+                                );
+                              },
+                            ),
+                          )
+                        : const Icon(
+                            Icons.psychology,
+                            size: 40,
+                            color: AppTheme.richBlack,
+                          ),
+                  ),
+                  const SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          widget.counsellor['name'] ?? 'Healing Guide',
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          widget.counsellor['specialization'] ?? 'General Guidance',
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Colors.white70,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Container(
+                              width: 8,
+                              height: 8,
+                              decoration: BoxDecoration(
+                                color: widget.counsellor['is_online'] ?? true ? Colors.green : Colors.grey,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              widget.counsellor['is_online'] ?? true ? 'Online • Available' : 'Offline',
+                              style: TextStyle(
+                                color: widget.counsellor['is_online'] ?? true ? Colors.green : Colors.grey,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: 24),
+              
+              // Personality description
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.psychology_outlined,
+                          color: AppTheme.primaryGold,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        const Text(
+                          'About This Counsellor',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      widget.counsellor['personality'] ?? 'A compassionate guide ready to support you on your healing journey.',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.white,
+                        height: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              
+              if (widget.counsellor['gender'] != null) ...[
+                const SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: Colors.blue.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: Colors.blue.withOpacity(0.3),
+                      width: 1,
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(
+                        widget.counsellor['gender'] == 'male' ? Icons.male : Icons.female,
+                        color: Colors.blue,
+                        size: 18,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.counsellor['gender'] == 'male' ? 'Male Counsellor' : 'Female Counsellor',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.white,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              
+              const SizedBox(height: 24),
+              
+              // Close button
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGold,
+                    foregroundColor: AppTheme.richBlack,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue Conversation',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showCounsellorInfo() {
     showDialog(
       context: context,
@@ -830,18 +1140,53 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
         title: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              width: 36,
+              height: 36,
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [AppTheme.primaryGold, AppTheme.deepGold],
                 ),
                 shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppTheme.primaryGold,
+                  width: 1,
+                ),
               ),
-              child: const Icon(
-                Icons.psychology,
-                size: 20,
-                color: AppTheme.richBlack,
-              ),
+              child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(17),
+                      child: Image.network(
+                        widget.counsellor['avatar'],
+                        width: 34,
+                        height: 34,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
+                            Icons.psychology,
+                            size: 20,
+                            color: AppTheme.richBlack,
+                          );
+                        },
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: AppTheme.richBlack,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  : const Icon(
+                      Icons.psychology,
+                      size: 20,
+                      color: AppTheme.richBlack,
+                    ),
             ),
             const SizedBox(width: 12),
             Expanded(

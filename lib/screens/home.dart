@@ -33,6 +33,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey<SalvationCornerScreenWrapperState> _salvationCornerKey = GlobalKey<SalvationCornerScreenWrapperState>();
   // Notification count will be managed by provider
   int _currentPage = 0;
   late PageController pageController;
@@ -138,19 +139,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
       child: FloatingActionButton.extended(
-        onPressed: _showFeedbackDialog,
+        onPressed: _navigateToTestimony,
         backgroundColor: Colors.transparent,
         elevation: 0,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(16),
         ),
         icon: const Icon(
-          Icons.feedback_outlined,
+          Icons.campaign_outlined,
           color: Colors.white,
           size: 20,
         ),
         label: const Text(
-          'Feedback',
+          'Testify',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w600,
@@ -161,11 +162,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
-  void _showFeedbackDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => const FeedbackDialog(),
-    );
+  void _navigateToTestimony() {
+    // Navigate to Salvation Corner (index 4) and set testimony as selected
+    navigateToPage(4);
+    // Close drawer if it's open
+    if (_scaffoldKey.currentState?.isDrawerOpen == true) {
+      Navigator.pop(context);
+    }
+    // Small delay to allow page transition, then trigger testimony selection
+    Future.delayed(const Duration(milliseconds: 300), () {
+      // This will be handled by the SalvationCornerScreen to auto-select testimony
+      _triggerTestimonySelection();
+    });
+  }
+  
+  void _triggerTestimonySelection() {
+    // Trigger testimony selection on the SalvationCornerScreen
+    _salvationCornerKey.currentState?.selectTestimony();
   }
 
   @override
@@ -187,7 +200,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           AboutScreen(),
           PrayerPlanScreen(),
           BibleStudyCornerScreen(),
-          SalvationCornerScreen(),
+          SalvationCornerScreenWrapper(key: _salvationCornerKey),
           CounselingCornerScreen(),
           JKMGResourcesScreen(),
           EventListScreen(),
@@ -2999,4 +3012,27 @@ class _HeroPatternPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(CustomPainter oldDelegate) => false;
+}
+
+// Wrapper to handle testimony selection from FAB
+class SalvationCornerScreenWrapper extends StatefulWidget {
+  const SalvationCornerScreenWrapper({super.key});
+
+  @override
+  State<SalvationCornerScreenWrapper> createState() => SalvationCornerScreenWrapperState();
+}
+
+class SalvationCornerScreenWrapperState extends State<SalvationCornerScreenWrapper> {
+  SalvationType? _initialSelection;
+
+  void selectTestimony() {
+    setState(() {
+      _initialSelection = SalvationType.testimony;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SalvationCornerScreen(initialSelection: _initialSelection);
+  }
 }

@@ -4,7 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../models/models.dart';
+import '../../models/donation.dart';
 import '../../services/preference_service.dart';
+import '../../services/api_service.dart';
 
 class PartnershipGivingScreen extends ConsumerStatefulWidget {
   const PartnershipGivingScreen({super.key});
@@ -824,6 +826,8 @@ class _GivingFormScreenState extends State<GivingFormScreen>
   String _selectedCurrency = 'KES';
   bool _isSubmitting = false;
   int _currentStep = 0;
+  Donation? _currentDonation;
+  Map<String, dynamic>? _donationNextSteps;
 
   final Map<String, Map<String, String>> _paymentMethods = {
     'mpesa': {
@@ -1121,11 +1125,42 @@ class _GivingFormScreenState extends State<GivingFormScreen>
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () {
+                          onPressed: _isSubmitting ? null : () async {
                             if (_formKey.currentState!.validate()) {
-                              setState(
-                                () => _currentStep = 1,
-                              ); // Skip directly to instructions
+                              setState(() => _isSubmitting = true);
+                              
+                              try {
+                                final apiService = ApiService();
+                                final amount = double.parse(_amountController.text);
+                                final purpose = widget.givingType.toLowerCase() == 'instant' 
+                                    ? 'General donation' 
+                                    : '${widget.givingType} donation';
+                                
+                                final donation = await apiService.createDonation(
+                                  amount: amount,
+                                  method: _selectedPaymentMethod,
+                                  purpose: purpose,
+                                );
+
+                                if (mounted) {
+                                  setState(() {
+                                    _currentDonation = donation;
+                                    _isSubmitting = false;
+                                    _currentStep = 1; // Skip directly to instructions
+                                  });
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  setState(() => _isSubmitting = false);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text('Error creating donation: $e'),
+                                      backgroundColor: Colors.red,
+                                      behavior: SnackBarBehavior.floating,
+                                    ),
+                                  );
+                                }
+                              }
                             }
                           },
                           style: ElevatedButton.styleFrom(
@@ -1133,10 +1168,26 @@ class _GivingFormScreenState extends State<GivingFormScreen>
                             foregroundColor: AppTheme.richBlack,
                             padding: const EdgeInsets.symmetric(vertical: 16),
                           ),
-                          child: Text(
-                            'Proceed with ${_paymentMethods[_selectedPaymentMethod]!['title']}',
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
+                          child: _isSubmitting
+                              ? const Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    SizedBox(
+                                      width: 16,
+                                      height: 16,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: AppTheme.richBlack,
+                                      ),
+                                    ),
+                                    SizedBox(width: 8),
+                                    Text('Processing...')
+                                  ],
+                                )
+                              : Text(
+                                  'Proceed with ${_paymentMethods[_selectedPaymentMethod]!['title']}',
+                                  style: const TextStyle(fontWeight: FontWeight.w600),
+                                ),
                         ),
                       ),
                     ],
@@ -1380,6 +1431,18 @@ class _GivingFormScreenState extends State<GivingFormScreen>
                   'Purpose: ${widget.givingType.toUpperCase()} Giving',
                   style: const TextStyle(fontSize: 14, color: Colors.white),
                 ),
+                // Show donation reference from API if available
+                if (_currentDonation != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Reference: ${_currentDonation!.displayPaymentRef}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppTheme.primaryGold,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ],
             ),
           ),
@@ -1404,6 +1467,16 @@ class _GivingFormScreenState extends State<GivingFormScreen>
                   ),
                 ),
                 const SizedBox(height: 12),
+                // Using static hardcoded instructions (API instructions are incorrect for now)
+                // TODO: Uncomment below when API instructions are corrected
+                // Text(
+                //   _donationNextSteps?['instructions']?.join('\n') ?? methodData['instructions']!,
+                //   style: const TextStyle(
+                //     fontSize: 14,
+                //     color: Colors.white,
+                //     height: 1.5,
+                //   ),
+                // ),
                 Text(
                   methodData['instructions']!,
                   style: const TextStyle(
@@ -1742,16 +1815,54 @@ class _GivingFormScreenState extends State<GivingFormScreen>
     }
   }
 
-  void _nextStep() {
+  void _nextStep() async {
     if (_currentStep == 0 && !_formKey.currentState!.validate()) {
       return;
     }
 
-    setState(() {
-      if (_currentStep < 2) {
-        _currentStep++;
+    // If moving from step 0 to 1, create the donation
+    if (_currentStep == 0) {
+      setState(() => _isSubmitting = true);
+      
+      try {
+        final apiService = ApiService();
+        final amount = double.parse(_amountController.text);
+        final purpose = widget.givingType.toLowerCase() == 'instant' 
+            ? 'General donation' 
+            : '${widget.givingType} donation';
+        
+        final donation = await apiService.createDonation(
+          amount: amount,
+          method: _selectedPaymentMethod,
+          purpose: purpose,
+        );
+
+        if (mounted) {
+          setState(() {
+            _currentDonation = donation;
+            _isSubmitting = false;
+            _currentStep++;
+          });
+        }
+      } catch (e) {
+        if (mounted) {
+          setState(() => _isSubmitting = false);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Error creating donation: $e'),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+            ),
+          );
+        }
       }
-    });
+    } else {
+      setState(() {
+        if (_currentStep < 2) {
+          _currentStep++;
+        }
+      });
+    }
   }
 
   void _previousStep() {
@@ -1763,15 +1874,41 @@ class _GivingFormScreenState extends State<GivingFormScreen>
   }
 
   Future<void> _submitPayment() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate() || _currentDonation == null) return;
 
     setState(() => _isSubmitting = true);
 
     try {
-      // Simulate API call
-      await Future.delayed(const Duration(seconds: 2));
+      final apiService = ApiService();
+      
+      // Prepare payment date (current date in ISO format)
+      final paymentDate = DateTime.now().toUtc().toIso8601String();
+      
+      // Get payment channel based on selected method
+      final paymentChannel = _getPaymentChannelName(_selectedPaymentMethod);
+      
+      // Call the update payment endpoint
+      final updatedDonation = await apiService.updatePayment(
+        donationId: _currentDonation!.id,
+        receiptNumber: _transactionIdController.text.trim().isNotEmpty 
+            ? _transactionIdController.text.trim() 
+            : null,
+        paymentDate: paymentDate,
+        paymentChannel: paymentChannel,
+        paymentReference: _transactionIdController.text.trim().isNotEmpty 
+            ? _transactionIdController.text.trim() 
+            : null,
+        notes: _notesController.text.trim().isNotEmpty 
+            ? _notesController.text.trim() 
+            : null,
+      );
 
-      // Save locally for now
+      // Update local donation data
+      setState(() {
+        _currentDonation = updatedDonation;
+      });
+
+      // Save locally as backup
       final prefs = await PreferenceService.getInstance();
       await prefs.setString('last_donation', DateTime.now().toIso8601String());
 
@@ -1784,11 +1921,27 @@ class _GivingFormScreenState extends State<GivingFormScreen>
           SnackBar(
             content: Text('Error processing payment: $e'),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } finally {
       if (mounted) setState(() => _isSubmitting = false);
+    }
+  }
+
+  String _getPaymentChannelName(String method) {
+    switch (method) {
+      case 'mpesa':
+        return 'M-Pesa';
+      case 'sendwave':
+        return 'SendWave';
+      case 'bank_kes':
+        return 'Bank Transfer (KES)';
+      case 'bank_usd':
+        return 'Bank Transfer (USD)';
+      default:
+        return 'Other';
     }
   }
 
@@ -1817,11 +1970,47 @@ class _GivingFormScreenState extends State<GivingFormScreen>
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Thank you for your generous giving! We\'ll verify your payment and send you a confirmation.',
+            Text(
+              _currentDonation != null
+                  ? 'Thank you for your generous giving of ${_currentDonation!.formattedAmount}! We\'ll verify your payment and send you a confirmation.'
+                  : 'Thank you for your generous giving! We\'ll verify your payment and send you a confirmation.',
               textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
+              style: const TextStyle(color: Colors.grey),
             ),
+            if (_currentDonation != null) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Donation Reference',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade400,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _currentDonation!.displayPaymentRef,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppTheme.primaryGold,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
             const SizedBox(height: 24),
             SizedBox(
               width: double.infinity,

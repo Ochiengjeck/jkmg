@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/feedback_dialog.dart';
 import '../../services/preference_service.dart';
 
 class ContactScreen extends ConsumerStatefulWidget {
@@ -15,26 +16,7 @@ class ContactScreen extends ConsumerStatefulWidget {
 
 class _ContactScreenState extends ConsumerState<ContactScreen>
     with SingleTickerProviderStateMixin {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _emailController = TextEditingController();
-  final _phoneController = TextEditingController();
-  final _subjectController = TextEditingController();
-  final _messageController = TextEditingController();
-
   late TabController _tabController;
-  String _inquiryType = 'General';
-  bool _isSubmitting = false;
-
-  final List<String> _inquiryTypes = [
-    'General',
-    'Prayer Request',
-    'Testimony',
-    'Technical Support',
-    'Partnership',
-    'Event Information',
-    'Speaking Request',
-  ];
 
   @override
   void initState() {
@@ -45,11 +27,6 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
   @override
   void dispose() {
     _tabController.dispose();
-    _nameController.dispose();
-    _emailController.dispose();
-    _phoneController.dispose();
-    _subjectController.dispose();
-    _messageController.dispose();
     super.dispose();
   }
 
@@ -75,9 +52,14 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(25),
-                      border: Border.all(color: AppTheme.primaryGold.withOpacity(0.2)),
+                      border: Border.all(
+                        color: AppTheme.primaryGold.withOpacity(0.2),
+                      ),
                     ),
-                    margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    margin: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     child: TabBar(
                       controller: _tabController,
                       labelColor: Colors.black87,
@@ -112,18 +94,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
           body: TabBarView(
             controller: _tabController,
             children: [
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildContactTab(),
-              ),
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildLocationTab(),
-              ),
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildSocialTab(),
-              ),
+              Container(color: AppTheme.richBlack, child: _buildContactTab()),
+              Container(color: AppTheme.richBlack, child: _buildLocationTab()),
+              Container(color: AppTheme.richBlack, child: _buildSocialTab()),
             ],
           ),
         ),
@@ -162,10 +135,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
           const SizedBox(height: 8),
           const Text(
             'We\'d Love to Hear from You',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.white70,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.white70),
           ),
         ],
       ),
@@ -180,7 +150,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
         children: [
           _buildContactInfo(),
           const SizedBox(height: 24),
-          _buildContactForm(),
+          _buildFeedbackSection(),
         ],
       ),
     );
@@ -265,10 +235,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                 const SizedBox(height: 2),
                 Text(
                   secondary,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -285,167 +252,94 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
     );
   }
 
-  Widget _buildContactForm() {
-    return Form(
-      key: _formKey,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(
-            title: 'Send us a Message',
-            subtitle: 'Fill out the form below and we\'ll get back to you',
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: TextFormField(
-                          controller: _nameController,
-                          decoration: const InputDecoration(
-                            labelText: 'Full Name *',
-                            prefixIcon: Icon(Icons.person, color: AppTheme.deepGold),
+  Widget _buildFeedbackSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(
+          title: 'Share Your Feedback',
+          subtitle: 'Help us improve your experience with JKMG',
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryGold.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: const Icon(
+                        Icons.feedback_outlined,
+                        color: AppTheme.deepGold,
+                        size: 32,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'We Value Your Input',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: AppTheme.deepGold,
+                            ),
                           ),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return 'Please enter your name';
-                            }
-                            return null;
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: const InputDecoration(
-                      labelText: 'Email Address *',
-                      prefixIcon: Icon(Icons.email, color: AppTheme.deepGold),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your email';
-                      }
-                      if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                        return 'Please enter a valid email';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _phoneController,
-                    decoration: const InputDecoration(
-                      labelText: 'Phone Number (Optional)',
-                      prefixIcon: Icon(Icons.phone, color: AppTheme.deepGold),
-                    ),
-                    keyboardType: TextInputType.phone,
-                  ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _inquiryType,
-                    decoration: const InputDecoration(
-                      labelText: 'Inquiry Type *',
-                      prefixIcon: Icon(Icons.category, color: AppTheme.deepGold),
-                    ),
-                    items: _inquiryTypes.map((type) {
-                      return DropdownMenuItem(
-                        value: type,
-                        child: Text(type),
-                      );
-                    }).toList(),
-                    onChanged: (value) {
-                      setState(() {
-                        _inquiryType = value!;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _subjectController,
-                    decoration: const InputDecoration(
-                      labelText: 'Subject *',
-                      prefixIcon: Icon(Icons.subject, color: AppTheme.deepGold),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter a subject';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _messageController,
-                    decoration: const InputDecoration(
-                      labelText: 'Message *',
-                      prefixIcon: Icon(Icons.message, color: AppTheme.deepGold),
-                      alignLabelWithHint: true,
-                    ),
-                    maxLines: 5,
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Please enter your message';
-                      }
-                      if (value.length < 10) {
-                        return 'Message must be at least 10 characters';
-                      }
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: ElevatedButton.icon(
-                      onPressed: _isSubmitting ? null : _submitForm,
-                      icon: _isSubmitting 
-                          ? const SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                color: AppTheme.richBlack,
-                              ),
-                            )
-                          : const Icon(Icons.send),
-                      label: Text(_isSubmitting ? 'Sending...' : 'Send Message'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.primaryGold,
-                        foregroundColor: AppTheme.richBlack,
+                          SizedBox(height: 4),
+                          Text(
+                            'Share your thoughts, suggestions, and experiences with our comprehensive feedback system.',
+                            style: TextStyle(fontSize: 13, height: 1.4),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    '* Required fields',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    'We typically respond within 48 hours during business days.',
-                    style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey.shade600,
-                      fontStyle: FontStyle.italic,
-                    ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              const SizedBox(height: 20),
+              SizedBox(
+                width: double.infinity,
+                height: 48,
+                child: ElevatedButton.icon(
+                  onPressed: () => _showFeedbackDialog(),
+                  icon: const Icon(Icons.rate_review),
+                  label: const Text('Share Your Feedback'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGold,
+                    foregroundColor: AppTheme.richBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(
+                  'Your feedback helps us improve the JKMG experience for everyone.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: Colors.grey.shade600,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -472,7 +366,11 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                         color: AppTheme.primaryGold.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.location_city, color: AppTheme.deepGold, size: 24),
+                      child: const Icon(
+                        Icons.location_city,
+                        color: AppTheme.deepGold,
+                        size: 24,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     const Expanded(
@@ -501,10 +399,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                 const SizedBox(height: 16),
                 const Text(
                   'Address Details:',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Text(
@@ -689,14 +584,16 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                 child: OutlinedButton.icon(
                   onPressed: () => _launchPhone(phone.replaceAll(' ', '')),
                   icon: const Icon(Icons.phone, size: 16),
-                  label: Text(
-                    phone,
-                    style: const TextStyle(fontSize: 11),
-                  ),
+                  label: Text(phone, style: const TextStyle(fontSize: 11)),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.successGreen,
-                    side: BorderSide(color: AppTheme.successGreen.withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    side: BorderSide(
+                      color: AppTheme.successGreen.withOpacity(0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ),
@@ -711,8 +608,13 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                   ),
                   style: OutlinedButton.styleFrom(
                     foregroundColor: AppTheme.primaryGold,
-                    side: BorderSide(color: AppTheme.primaryGold.withOpacity(0.5)),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    side: BorderSide(
+                      color: AppTheme.primaryGold.withOpacity(0.5),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
                   ),
                 ),
               ),
@@ -748,7 +650,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
             Icons.music_video,
             Colors.black,
             '@juliankyulaofficial',
-            () => _launchUrl('https://www.tiktok.com/@juliankyulaofficial?_t=ZM-8yrsij1pj66&_r=1'),
+            () => _launchUrl(
+              'https://www.tiktok.com/@juliankyulaofficial?_t=ZM-8yrsij1pj66&_r=1',
+            ),
           ),
           _buildSocialMediaCard(
             'Instagram',
@@ -756,7 +660,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
             Icons.camera_alt,
             Colors.purple,
             '@jkyula',
-            () => _launchUrl('https://www.instagram.com/jkyula?igsh=bXA4YnEzeXh6ZGxs'),
+            () => _launchUrl(
+              'https://www.instagram.com/jkyula?igsh=bXA4YnEzeXh6ZGxs',
+            ),
           ),
           const SizedBox(height: 24),
           _buildNewsletterSignup(),
@@ -801,10 +707,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
                 const SizedBox(height: 4),
                 Text(
                   description,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -818,11 +721,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
               ],
             ),
           ),
-          const Icon(
-            Icons.open_in_new,
-            color: AppTheme.deepGold,
-            size: 16,
-          ),
+          const Icon(Icons.open_in_new, color: AppTheme.deepGold, size: 16),
         ],
       ),
     );
@@ -833,7 +732,10 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppTheme.primaryGold.withOpacity(0.1), AppTheme.accentGold.withOpacity(0.05)],
+          colors: [
+            AppTheme.primaryGold.withOpacity(0.1),
+            AppTheme.accentGold.withOpacity(0.05),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -860,10 +762,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
           const SizedBox(height: 8),
           const Text(
             'Stay updated with our latest teachings, events, and ministry news.',
-            style: TextStyle(
-              fontSize: 12,
-              height: 1.4,
-            ),
+            style: TextStyle(fontSize: 12, height: 1.4),
           ),
           const SizedBox(height: 16),
           SizedBox(
@@ -878,53 +777,8 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
     );
   }
 
-  Future<void> _submitForm() async {
-    if (_formKey.currentState!.validate()) {
-      setState(() => _isSubmitting = true);
-      
-      try {
-        // Simulate form submission
-        await Future.delayed(const Duration(seconds: 2));
-        
-        // Save form data locally for now
-        final prefs = await PreferenceService.getInstance();
-        await prefs.setString('last_contact_submission', DateTime.now().toIso8601String());
-        
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Thank you! Your message has been sent successfully.'),
-              backgroundColor: AppTheme.successGreen,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-          _resetForm();
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Error sending message: ${e.toString()}'),
-              backgroundColor: AppTheme.errorRed,
-              behavior: SnackBarBehavior.floating,
-            ),
-          );
-        }
-      } finally {
-        if (mounted) setState(() => _isSubmitting = false);
-      }
-    }
-  }
-
-  void _resetForm() {
-    _nameController.clear();
-    _emailController.clear();
-    _phoneController.clear();
-    _subjectController.clear();
-    _messageController.clear();
-    setState(() {
-      _inquiryType = 'General';
-    });
+  void _showFeedbackDialog() {
+    showDialog(context: context, builder: (context) => const FeedbackDialog());
   }
 
   Future<void> _launchEmail(String email) async {
@@ -933,7 +787,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
       path: email,
       query: 'subject=JKMG App Inquiry',
     );
-    
+
     try {
       if (await canLaunchUrl(emailUri)) {
         await launchUrl(emailUri);
@@ -964,7 +818,7 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
 
   Future<void> _launchPhone(String phone) async {
     final Uri phoneUri = Uri(scheme: 'tel', path: phone);
-    
+
     try {
       if (await canLaunchUrl(phoneUri)) {
         await launchUrl(phoneUri);
@@ -1022,7 +876,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
   }
 
   void _openMap() {
-    _launchUrl('https://maps.google.com/?q=Waterfront+Mall,+Karen,+Nairobi,+Kenya');
+    _launchUrl(
+      'https://maps.google.com/?q=Waterfront+Mall,+Karen,+Nairobi,+Kenya',
+    );
   }
 
   void _openBranchMap(String address, String city) {
@@ -1035,7 +891,9 @@ class _ContactScreenState extends ConsumerState<ContactScreen>
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Newsletter Signup'),
-        content: const Text('Newsletter signup feature will be available soon. Thank you for your interest!'),
+        content: const Text(
+          'Newsletter signup feature will be available soon. Thank you for your interest!',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

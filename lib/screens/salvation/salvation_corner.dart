@@ -14,7 +14,9 @@ import '../testimonies/my_testimonies_screen.dart';
 enum SalvationType { giveLifeToChrist, rededicateLifeToChrist, testimony }
 
 class SalvationCornerScreen extends ConsumerStatefulWidget {
-  const SalvationCornerScreen({super.key});
+  final SalvationType? initialSelection;
+  
+  const SalvationCornerScreen({super.key, this.initialSelection});
 
   @override
   ConsumerState<SalvationCornerScreen> createState() =>
@@ -41,6 +43,11 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
     super.initState();
     _pageController = PageController();
     _startAutoSlide();
+    
+    // Set initial selection if provided (for FAB navigation)
+    if (widget.initialSelection != null) {
+      selectedSalvationType = widget.initialSelection;
+    }
   }
 
   @override
