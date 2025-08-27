@@ -19,6 +19,7 @@ import 'profile/profile_screen.dart';
 import 'settings/settings_screen.dart';
 import 'help/help_support_screen.dart';
 import 'inbox/inbox_screen.dart';
+import '../widgets/feedback_dialog.dart';
 
 import 'resources/jkmg_resources_screen.dart';
 import 'salvation/salvation_corner.dart';
@@ -109,6 +110,64 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildFeedbackFAB() {
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFFFFD700),
+            const Color(0xFFDAA520),
+            const Color(0xFFB8860B),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withOpacity(0.4),
+            blurRadius: 12,
+            spreadRadius: 2,
+            offset: const Offset(0, 4),
+          ),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.2),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: FloatingActionButton.extended(
+        onPressed: _showFeedbackDialog,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        icon: const Icon(
+          Icons.feedback_outlined,
+          color: Colors.white,
+          size: 20,
+        ),
+        label: const Text(
+          'Feedback',
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 14,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showFeedbackDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => const FeedbackDialog(),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,6 +200,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           HelpSupportScreen(),
         ],
       ),
+      floatingActionButton: _buildFeedbackFAB(),
     );
   }
 
