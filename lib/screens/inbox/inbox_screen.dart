@@ -1,19 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../../models/notification.dart' as NotificationModel;
 import '../../services/api_service.dart';
 import '../../services/prayer_service.dart';
+import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 
-class InboxScreen extends StatefulWidget {
+class InboxScreen extends ConsumerStatefulWidget {
   const InboxScreen({super.key});
 
   @override
-  State<InboxScreen> createState() => _InboxScreenState();
+  ConsumerState<InboxScreen> createState() => _InboxScreenState();
 }
 
-class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
+class _InboxScreenState extends ConsumerState<InboxScreen> with WidgetsBindingObserver {
   String _selectedFilter = 'all';
   final List<String> _filterOptions = ['all', 'unread', 'read'];
   final ApiService _apiService = ApiService();
@@ -66,15 +68,10 @@ class _InboxScreenState extends State<InboxScreen> with WidgetsBindingObserver {
 
   Future<void> _loadNotifications() async {
     try {
-      // Don't pass status parameter when 'all' is selected, or pass empty string
-      final response = _selectedFilter == 'all'
-          ? await _apiService.getNotifications(perPage: 50)
-          : await _apiService.getNotifications(
-              status: _selectedFilter,
-              perPage: 50,
-            );
+      // Use the consolidated provider instead of making direct API calls
+      final notifications = await ref.read(filteredNotificationsProvider(_selectedFilter).future);
       setState(() {
-        _notifications = response.data;
+        _notifications = notifications;
       });
     } catch (e) {
       print('Error loading notifications: $e');

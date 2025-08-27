@@ -543,17 +543,55 @@ final markNotificationAsReadProvider =
       return apiService.markNotificationAsRead(notificationId);
     });
 
-// Separate provider for home screen unread count (avoids conflicts)
-final unreadNotificationsCountProvider = FutureProvider<int>((ref) async {
-  print('🟠 PROVIDER: unreadNotificationsCountProvider called');
+// Consolidated notifications provider that caches all notifications for efficiency
+final allNotificationsProvider = FutureProvider<PaginatedResponse<Notification>>((ref) async {
+  print('🟠 PROVIDER: allNotificationsProvider called');
   final apiService = ref.read(apiServiceProvider);
   try {
-    final result = await apiService.getNotifications(
-      status: 'unread',
-      perPage: 1, // We only need the count, not the actual data
-    );
-    print('🟠 PROVIDER: Got unread count: ${result.meta?['unread_count'] ?? 0}');
-    return result.meta?['unread_count'] ?? 0;
+    final result = await apiService.getNotifications(perPage: 50);
+    print('🟢 PROVIDER: Successfully loaded ${result.data.length} notifications');
+    return result;
+  } catch (e) {
+    print('🔴 PROVIDER: Error in allNotificationsProvider: $e');
+    
+    // If it's an authentication error, don't throw - return empty response
+    if (e.toString().contains('Unauthenticated') || 
+        e.toString().contains('401')) {
+      print('🔴 PROVIDER: Authentication error - returning empty notifications');
+      return PaginatedResponse<Notification>(data: [], links: {}, meta: {});
+    }
+    
+    rethrow;
+  }
+});
+
+// Provider for filtered notifications based on status
+final filteredNotificationsProvider = FutureProvider.family<List<Notification>, String>((ref, filter) async {
+  print('🟠 PROVIDER: filteredNotificationsProvider called with filter: $filter');
+  final allNotifications = await ref.watch(allNotificationsProvider.future);
+  
+  if (filter == 'all') {
+    return allNotifications.data;
+  } else if (filter == 'unread') {
+    return allNotifications.data.where((notification) => !notification.isRead).toList();
+  } else if (filter == 'read') {
+    return allNotifications.data.where((notification) => notification.isRead).toList();
+  }
+  
+  return allNotifications.data;
+});
+
+// Provider for unread notifications count - uses cached notifications data
+final unreadNotificationsCountProvider = FutureProvider<int>((ref) async {
+  print('🟠 PROVIDER: unreadNotificationsCountProvider called');
+  try {
+    // Use the cached notifications data instead of making another API call
+    final notificationsResult = await ref.watch(allNotificationsProvider.future);
+    
+    // Count unread notifications from the cached data
+    final unreadCount = notificationsResult.data.where((notification) => !notification.isRead).length;
+    print('🟠 PROVIDER: Calculated unread count from cached data: $unreadCount');
+    return unreadCount;
   } catch (e) {
     print('🔴 PROVIDER: Error in unreadNotificationsCountProvider: $e');
     
