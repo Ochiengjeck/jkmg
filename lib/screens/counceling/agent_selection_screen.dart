@@ -295,7 +295,7 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
     final String specialty = counsellor['specialization'] ?? 'General Guidance';
     final String description = counsellor['personality'] ?? 'A compassionate guide ready to walk with you on your healing journey.';
     final bool isOnline = counsellor['is_online'] ?? true;
-    final String id = counsellor['id'] ?? '';
+    // final String id = counsellor['id'] ?? '';
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),

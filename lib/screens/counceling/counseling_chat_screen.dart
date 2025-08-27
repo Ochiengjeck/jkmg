@@ -4,6 +4,7 @@ import 'dart:async';
 import '../../utils/app_theme.dart';
 import '../../provider/api_providers.dart';
 import '../../services/preference_service.dart';
+import '../../services/chat_database_service.dart';
 
 class CounselingChatScreen extends ConsumerStatefulWidget {
   final dynamic counsellor;
@@ -59,9 +60,12 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
       final prefs = await PreferenceService.getInstance();
       final cachedConversationId = prefs.getString(_cachedConversationKey!);
       
-      if (cachedConversationId != null) {
+      if (cachedConversationId != null && _isValidConversationId(cachedConversationId)) {
         _conversationId = cachedConversationId;
-        await _loadConversationMessages();
+        await _loadLocalMessages();
+      } else if (cachedConversationId != null) {
+        // Clear invalid cached conversation ID
+        await prefs.remove(_cachedConversationKey!);
       }
       
       setState(() {
@@ -76,16 +80,21 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
     }
   }
 
-  Future<void> _loadConversationMessages() async {
+  Future<void> _loadLocalMessages() async {
     if (_conversationId == null) return;
 
     try {
-      final apiService = ref.read(apiServiceProvider);
-      final response = await apiService.getConversationMessages(_conversationId!);
+      final dbMessages = await ChatDatabaseService.getMessages(_conversationId!);
       
-      final messages = (response['messages'] as List?)
-          ?.map((msg) => ChatMessage.fromJson(msg))
-          .toList() ?? [];
+      final messages = dbMessages.map((dbMsg) {
+        final messageData = ChatDatabaseService.messageFromDatabase(dbMsg);
+        return ChatMessage(
+          id: messageData['id'],
+          text: messageData['message'],
+          isFromUser: messageData['is_from_user'],
+          timestamp: messageData['timestamp'],
+        );
+      }).toList();
       
       setState(() {
         _messages = messages;
@@ -93,7 +102,7 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
       
       _scrollToBottom();
     } catch (e) {
-      print('Error loading conversation messages: $e');
+      print('Error loading local messages: $e');
     }
   }
 
@@ -107,57 +116,177 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
       timestamp: DateTime.now(),
     );
 
+    // Conversation ID will be provided by the API stream if it doesn't exist
+    // For now, create a temporary ID to save the user message
+    String tempConversationId = _conversationId ?? 'temp_${DateTime.now().millisecondsSinceEpoch}';
+
     setState(() {
       _messages.add(userMessage);
       _isLoading = true;
       _isTyping = true;
     });
 
+    // Save user message to database (will be updated with real conversation ID later if needed)
+    await ChatDatabaseService.saveMessage(
+      messageId: userMessage.id,
+      conversationId: tempConversationId,
+      message: userMessage.text,
+      isFromUser: true,
+      timestamp: userMessage.timestamp,
+    );
+
     _messageController.clear();
     _scrollToBottom();
     _startTypingAnimation();
 
+    final apiService = ref.read(apiServiceProvider);
+    
+    // Create a placeholder bot message that we'll update as we receive the stream
+    final botMessage = ChatMessage(
+      id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
+      text: '',
+      isFromUser: false,
+      timestamp: DateTime.now(),
+    );
+
+    setState(() {
+      _messages.add(botMessage);
+      _isTyping = false;
+    });
+    _stopTypingAnimation();
+
+    String fullResponse = '';
+    bool hasReceivedResponse = false;
+    
     try {
-      final apiService = ref.read(apiServiceProvider);
-      final response = await apiService.startCounsellingChat(
+      print('🚀 Starting to listen to stream...');
+      
+      // Use await for loop for processing stream data
+      await for (final streamData in apiService.startCounsellingChatStream(
         counsellorId: widget.counsellor['id'],
         message: text.trim(),
-        conversationId: _conversationId,
-      );
+        conversationId: _conversationId?.startsWith('temp_') == true ? null : _conversationId,
+      ).timeout(const Duration(seconds: 60))) {
+        print('🔄 Stream data received in UI: $streamData');
+        
+        // Handle different types of stream data
+        final type = streamData['type'] ?? 'content';
+        
+        if (type == 'metadata') {
+          // Handle conversation metadata
+          if (streamData['conversation_id'] != null && _conversationId == null) {
+            _conversationId = streamData['conversation_id'].toString();
+            final prefs = await PreferenceService.getInstance();
+            await prefs.setString(_cachedConversationKey!, _conversationId!);
+            
+            // Create conversation record in database
+            await ChatDatabaseService.createOrUpdateConversation(
+              conversationId: _conversationId!,
+              counsellorId: widget.counsellor['id'],
+              counsellorName: widget.counsellor['name'] ?? 'Healing Guide',
+              counsellorSpecialization: widget.counsellor['specialization'],
+              counsellorAvatar: widget.counsellor['avatar'],
+            );
+            
+            print('✅ Conversation created with ID: $_conversationId');
+          }
+        } else if (type == 'content') {
+          // Handle content chunks
+          final content = streamData['content'] ?? '';
+          fullResponse += content;
+          hasReceivedResponse = true;
+          
+          print('📝 Updated response: "$fullResponse"');
+          
+          // Update the bot message with the accumulated response
+          final updatedBotMessage = ChatMessage(
+            id: botMessage.id,
+            text: fullResponse,
+            isFromUser: false,
+            timestamp: botMessage.timestamp,
+          );
 
-      // Cache conversation ID for future use
-      if (_conversationId == null && response['conversation_id'] != null) {
-        _conversationId = response['conversation_id'];
-        final prefs = await PreferenceService.getInstance();
-        await prefs.setString(_cachedConversationKey!, _conversationId!);
+          if (mounted) {
+            setState(() {
+              _messages[_messages.length - 1] = updatedBotMessage;
+            });
+            
+            _scrollToBottom();
+          }
+        } else if (type == 'complete') {
+          // Handle completion - don't add this to the chat UI, just handle cleanup
+          print('✅ Stream completed: ${streamData['message']}');
+          
+          // Save the complete bot message to database
+          if (fullResponse.isNotEmpty && _conversationId != null) {
+            await ChatDatabaseService.saveMessage(
+              messageId: botMessage.id,
+              conversationId: _conversationId!,
+              message: fullResponse,
+              isFromUser: false,
+              timestamp: botMessage.timestamp,
+            );
+            
+            // If we started with a temp conversation ID, update the user message too
+            if (tempConversationId.startsWith('temp_') && _conversationId != tempConversationId) {
+              await ChatDatabaseService.saveMessage(
+                messageId: userMessage.id,
+                conversationId: _conversationId!,
+                message: userMessage.text,
+                isFromUser: true,
+                timestamp: userMessage.timestamp,
+              );
+            }
+          }
+          
+          if (mounted) {
+            setState(() {
+              _isLoading = false;
+            });
+          }
+          
+          break; // Exit the loop when complete
+        }
       }
-
-      // Simulate typing delay for better UX
-      await Future.delayed(const Duration(milliseconds: 1000));
-
-      final botMessage = ChatMessage(
-        id: (DateTime.now().millisecondsSinceEpoch + 1).toString(),
-        text: response['message'] ?? 'I understand your concern. Let me help you with that.',
-        isFromUser: false,
-        timestamp: DateTime.now(),
-      );
-
-      setState(() {
-        _messages.add(botMessage);
-        _isLoading = false;
-        _isTyping = false;
-      });
-
-      _stopTypingAnimation();
-      _scrollToBottom();
+      
+      print('✅ Stream processing completed');
 
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _isTyping = false;
-      });
-      _stopTypingAnimation();
-      _showError('Failed to send message: $e');
+      print('💥 Error in _sendMessage: $e');
+      
+      // Show error message in chat if we haven't received any content
+      if (mounted && !hasReceivedResponse) {
+        final errorMessage = ChatMessage(
+          id: botMessage.id,
+          text: 'Sorry, I\'m having trouble responding right now. Please try again.',
+          isFromUser: false,
+          timestamp: botMessage.timestamp,
+        );
+
+        setState(() {
+          _messages[_messages.length - 1] = errorMessage;
+          _isLoading = false;
+          _isTyping = false;
+        });
+        _stopTypingAnimation();
+      } else if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _isTyping = false;
+        });
+        _stopTypingAnimation();
+        _showError('Failed to send message: $e');
+      }
+    } finally {
+      // Ensure we always clean up the loading state
+      if (mounted) {
+        print('🧹 Cleaning up loading state...');
+        setState(() {
+          _isLoading = false;
+          _isTyping = false;
+        });
+        _stopTypingAnimation();
+      }
     }
   }
 
@@ -190,6 +319,42 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
           backgroundColor: Colors.red.shade600,
         ),
       );
+    }
+  }
+  
+  // Validate conversation ID format (should be UUID or null)
+  bool _isValidConversationId(String? id) {
+    if (id == null || id.startsWith('temp_')) {
+      return false;
+    }
+    // Check if it's a UUID format (basic validation)
+    final uuidRegex = RegExp(r'^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$');
+    return uuidRegex.hasMatch(id);
+  }
+  
+  // Debug method to test streaming directly
+  Future<void> _testStreaming() async {
+    print('🧪 Testing streaming directly...');
+    final apiService = ref.read(apiServiceProvider);
+    
+    try {
+      int eventCount = 0;
+      await for (final streamData in apiService.startCounsellingChatStream(
+        counsellorId: widget.counsellor['id'],
+        message: 'Test message',
+        conversationId: _conversationId,
+      ).timeout(const Duration(seconds: 10))) {
+        eventCount++;
+        print('🧪 Event $eventCount: $streamData');
+        
+        if (eventCount > 20) {
+          print('🛑 Stopping test after 20 events');
+          break;
+        }
+      }
+      print('🧪 Test completed with $eventCount events');
+    } catch (e) {
+      print('🧪 Test error: $e');
     }
   }
 
@@ -263,6 +428,12 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
           ],
         ),
         actions: [
+          // Debug button - remove in production
+          IconButton(
+            icon: const Icon(Icons.bug_report, color: Colors.orange),
+            onPressed: _testStreaming,
+            tooltip: 'Test Streaming',
+          ),
           IconButton(
             icon: const Icon(Icons.info_outline, color: AppTheme.primaryGold),
             onPressed: _showCounsellorInfo,
@@ -531,7 +702,7 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
               mainAxisSize: MainAxisSize.min,
               children: [
                 const Text(
-                  'Thinking',
+                  'Typing',
                   style: TextStyle(
                     color: Colors.white,
                     fontSize: 14,

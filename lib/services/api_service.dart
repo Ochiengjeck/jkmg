@@ -772,6 +772,264 @@ class ApiService {
     }
   }
 
+  // Start AI counselling chat with streaming response
+  Stream<Map<String, dynamic>> startCounsellingChatStream({
+    required String counsellorId,
+    required String message,
+    String? conversationId,
+  }) async* {
+    http.Client? client;
+    
+    try {
+      final headers = await _getHeaders();
+      client = http.Client();
+      
+      final request = http.Request('POST', Uri.parse('$baseUrl/ai-counselling/chat'));
+      request.headers.addAll(headers);
+      request.body = jsonEncode({
+        'counsellor_id': counsellorId,
+        'message': message,
+        if (conversationId != null) 'conversation_id': conversationId,
+      });
+
+      print('🌐 Making streaming request to: $baseUrl/ai-counselling/chat');
+      print('📤 Request body: ${request.body}');
+
+      final streamedResponse = await client.send(request).timeout(
+        const Duration(seconds: 30),
+        onTimeout: () => throw Exception('Request timeout'),
+      );
+      
+      print('📥 Response status: ${streamedResponse.statusCode}');
+      print('📥 Response headers: ${streamedResponse.headers}');
+      
+      if (streamedResponse.statusCode == 200) {
+        final contentType = streamedResponse.headers['content-type'] ?? '';
+        print('📋 Content-Type: $contentType');
+        
+        // Initialize stream processing variables
+        String buffer = '';
+        bool hasYieldedContent = false;
+        bool streamComplete = false;
+        
+        // Process the stream
+        await for (final chunk in streamedResponse.stream
+            .timeout(const Duration(seconds: 10))
+            .transform(utf8.decoder)) {
+          
+          if (streamComplete) break;
+          
+          print('📦 Received chunk: ${chunk.length} chars');
+          buffer += chunk;
+          
+          // Process complete lines from buffer
+          final lines = buffer.split('\n');
+          buffer = lines.removeLast(); // Keep incomplete line in buffer
+          
+          for (final line in lines) {
+            final trimmedLine = line.trim();
+            if (trimmedLine.isEmpty) continue;
+            
+            print('📝 Processing line: "$trimmedLine"');
+            
+            try {
+              // Handle Server-Sent Events format
+              if (trimmedLine.startsWith('data: ')) {
+                final data = trimmedLine.substring(6).trim();
+                print('📄 Data extracted: "$data"');
+                
+                if (data == '[DONE]') {
+                  print('✅ Stream completed with [DONE]');
+                  streamComplete = true;
+                  break;
+                }
+                
+                if (data.isNotEmpty && data != 'null') {
+                  final result = await _processStreamData(data);
+                  if (result != null) {
+                    yield result;
+                    hasYieldedContent = true;
+                  }
+                }
+              }
+              // Handle direct JSON lines
+              else if (trimmedLine.startsWith('{')) {
+                final result = await _processStreamData(trimmedLine);
+                if (result != null) {
+                  yield result;
+                  hasYieldedContent = true;
+                }
+              }
+              // Handle plain text content
+              else if (!trimmedLine.startsWith('event:') && 
+                      !trimmedLine.startsWith('id:') && 
+                      !trimmedLine.startsWith('retry:')) {
+                yield {
+                  'type': 'content',
+                  'content': trimmedLine,
+                };
+                hasYieldedContent = true;
+              }
+            } catch (e) {
+              print('⚠️ Error processing line: $e');
+              // Continue processing other lines
+            }
+          }
+        }
+        
+        // Process any remaining data in buffer
+        if (buffer.trim().isNotEmpty && !streamComplete) {
+          try {
+            final result = await _processStreamData(buffer.trim());
+            if (result != null) {
+              yield result;
+              hasYieldedContent = true;
+            }
+          } catch (e) {
+            print('⚠️ Error processing remaining buffer: $e');
+          }
+        }
+        
+        // Ensure completion signal
+        if (hasYieldedContent && !streamComplete) {
+          yield {
+            'type': 'complete',
+            'message': 'Response complete',
+          };
+        }
+        
+        // Fallback if no content was received
+        if (!hasYieldedContent) {
+          print('⚠️ No streaming content received, attempting fallback');
+          yield await _getFallbackResponse(counsellorId, message, conversationId);
+        }
+        
+      } else {
+        final responseBody = await streamedResponse.stream.bytesToString();
+        print('❌ HTTP error: ${streamedResponse.statusCode} - $responseBody');
+        
+        // Try to extract error message
+        try {
+          final errorData = jsonDecode(responseBody);
+          throw Exception(errorData['message'] ?? errorData['error'] ?? 'Request failed');
+        } catch (e) {
+          throw Exception('HTTP ${streamedResponse.statusCode}: $responseBody');
+        }
+      }
+      
+    } catch (e) {
+      print('💥 Streaming error: $e');
+      
+      // Attempt fallback
+      try {
+        print('🔄 Attempting fallback to regular API');
+        yield await _getFallbackResponse(counsellorId, message, conversationId);
+      } catch (fallbackError) {
+        print('💥 Fallback failed: $fallbackError');
+        throw Exception('Chat request failed: ${e.toString()}');
+      }
+    } finally {
+      client?.close();
+    }
+  }
+  
+  // Helper method to process stream data
+  Future<Map<String, dynamic>?> _processStreamData(String data) async {
+    try {
+      final jsonData = jsonDecode(data);
+      
+      // Handle errors
+      if (jsonData['error'] == true) {
+        print('❌ API Error: ${jsonData['message']}');
+        String errorMessage = jsonData['message'] ?? 'An error occurred';
+        
+        // Extract validation errors if present
+        if (jsonData['errors'] != null) {
+          final errors = jsonData['errors'] as Map<String, dynamic>;
+          final errorDetails = errors.values
+              .expand((error) => error is List ? error : [error])
+              .join(', ');
+          errorMessage = '$errorMessage: $errorDetails';
+        }
+        
+        throw Exception(errorMessage);
+      }
+      
+      // Handle conversation metadata
+      if (jsonData['conversation_id'] != null) {
+        print('📝 Conversation ID: ${jsonData['conversation_id']}');
+        return {
+          'type': 'metadata',
+          'conversation_id': jsonData['conversation_id'].toString(),
+          'counsellor': jsonData['counsellor'],
+        };
+      }
+      
+      // Handle completion signals FIRST (before processing message content)
+      if (jsonData['type'] == 'complete' || jsonData['done'] == true) {
+        print('✅ Stream completed via JSON signal');
+        return {
+          'type': 'complete',
+          'message': jsonData['message'] ?? 'Response complete',
+        };
+      }
+      
+      // Handle content chunks
+      if (jsonData['content'] != null) {
+        print('🔄 Yielding content: "${jsonData['content']}"');
+        return {
+          'type': 'content',
+          'content': jsonData['content'].toString(),
+        };
+      }
+      // Handle message content (but not if it's a completion message)
+      else if (jsonData['message'] != null && jsonData['type'] != 'complete') {
+        return {
+          'type': 'content',
+          'content': jsonData['message'].toString(),
+        };
+      }
+      // Handle delta content (for OpenAI-style streaming)
+      else if (jsonData['delta'] != null) {
+        return {
+          'type': 'content',
+          'content': jsonData['delta'].toString(),
+        };
+      }
+    } catch (e) {
+      if (e is Exception) {
+        rethrow; // Re-throw API errors
+      }
+      print('⚠️ Failed to parse JSON: $e, treating as text');
+      // If not JSON, treat as plain text content
+      if (data.trim() != '[DONE]' && data.trim().isNotEmpty) {
+        return {
+          'type': 'content',
+          'content': data,
+        };
+      }
+    }
+    return null;
+  }
+  
+  // Helper method for fallback response
+  Future<Map<String, dynamic>> _getFallbackResponse(
+    String counsellorId, 
+    String message, 
+    String? conversationId
+  ) async {
+    final fallbackResponse = await startCounsellingChat(
+      counsellorId: counsellorId,
+      message: message,
+      conversationId: conversationId,
+    );
+    
+    return {
+      'type': 'content',
+      'content': fallbackResponse['message'] ?? fallbackResponse['response'] ?? 'No response received',
+    };
+  }
+
   // Get user conversations
   Future<Map<String, dynamic>> getUserConversations() async {
     final response = await http.get(
