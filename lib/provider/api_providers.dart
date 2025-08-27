@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../models/user.dart';
 import '../models/prayer.dart';
+import '../models/prayer_category.dart';
 import '../models/bible_study.dart';
 import '../models/event.dart';
 import '../models/registration_model.dart';
@@ -197,7 +198,7 @@ final createPrayerRequestProvider =
       return apiService.createPrayerRequest(
         title: params['title'] as String,
         description: params['description'] as String,
-        category: params['category'] as String,
+        category: params['category'].toString(), // Convert to string (supports both int ID and string)
         urgency: params['urgency'] as String,
         isAnonymous: params['is_anonymous'] as bool,
         isPublic: params['is_public'] as bool,
@@ -222,6 +223,12 @@ final participateInDeeperPrayerProvider =
         notes: params['notes'] as String?,
       );
     });
+
+// Prayer Categories Provider
+final prayerCategoriesProvider = FutureProvider<List<PrayerCategory>>((ref) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.getPrayerCategories();
+});
 
 // Bible Study Providers
 final todaysBibleStudyProvider = FutureProvider<BibleStudy>((ref) async {

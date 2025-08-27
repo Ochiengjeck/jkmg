@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../utils/app_theme.dart';
+import 'agent_selection_screen.dart';
+import 'conversation_list_screen.dart';
 
 class AICounselingScreen extends StatefulWidget {
   const AICounselingScreen({super.key});
@@ -67,6 +69,24 @@ class _AICounselingScreenState extends State<AICounselingScreen>
         );
       }
     }
+  }
+
+  void _startNewChat() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AgentSelectionScreen(),
+      ),
+    );
+  }
+
+  void _viewConversations() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const ConversationListScreen(),
+      ),
+    );
   }
 
   @override
@@ -265,27 +285,89 @@ class _AICounselingScreenState extends State<AICounselingScreen>
                 
                 const SizedBox(height: 32),
                 
-                // Launch Button
-                SizedBox(
-                  width: double.infinity,
-                  height: 56,
-                  child: ElevatedButton.icon(
-                    onPressed: _launchChatbot,
-                    icon: const Icon(Icons.open_in_browser, size: 24),
-                    label: const Text(
-                      'Start AI Healing Session',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
+                // Action Buttons
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: _startNewChat,
+                          icon: const Icon(Icons.psychology, size: 20),
+                          label: const Text(
+                            'New Chat',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.primaryGold,
+                            foregroundColor: AppTheme.richBlack,
+                            elevation: 6,
+                            shadowColor: AppTheme.primaryGold.withOpacity(0.3),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryGold,
-                      foregroundColor: AppTheme.richBlack,
-                      elevation: 8,
-                      shadowColor: AppTheme.primaryGold.withOpacity(0.3),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: SizedBox(
+                        height: 56,
+                        child: ElevatedButton.icon(
+                          onPressed: _viewConversations,
+                          icon: const Icon(Icons.chat_bubble_outline, size: 20),
+                          label: const Text(
+                            'My Chats',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.richBlack,
+                            foregroundColor: AppTheme.primaryGold,
+                            elevation: 6,
+                            shadowColor: Colors.black.withOpacity(0.3),
+                            side: BorderSide(
+                              color: AppTheme.primaryGold.withOpacity(0.5),
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Web-based option
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _launchChatbot,
+                    icon: const Icon(Icons.open_in_browser, size: 18),
+                    label: const Text(
+                      'Open Web Version',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppTheme.primaryGold,
+                      side: BorderSide(
+                        color: AppTheme.primaryGold.withOpacity(0.5),
+                      ),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                   ),

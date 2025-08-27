@@ -11,7 +11,11 @@
       "Bash(mkdir:*)",
       "Bash(keytool:*)",
       "Bash(flutter clean:*)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(dart analyze:*)",
+      "Bash(flutter run:*)",
+      "Bash(dart:*)",
+      "Bash(flutter:*)"
     ],
     "deny": []
   }
