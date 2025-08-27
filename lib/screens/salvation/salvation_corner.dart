@@ -15,8 +15,9 @@ enum SalvationType { giveLifeToChrist, rededicateLifeToChrist, testimony }
 
 class SalvationCornerScreen extends ConsumerStatefulWidget {
   final SalvationType? initialSelection;
+  final VoidCallback? onSelectionUsed;
   
-  const SalvationCornerScreen({super.key, this.initialSelection});
+  const SalvationCornerScreen({super.key, this.initialSelection, this.onSelectionUsed});
 
   @override
   ConsumerState<SalvationCornerScreen> createState() =>
@@ -47,6 +48,17 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
     // Set initial selection if provided (for FAB navigation)
     if (widget.initialSelection != null) {
       selectedSalvationType = widget.initialSelection;
+    }
+  }
+
+  @override
+  void didUpdateWidget(SalvationCornerScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Check if initialSelection has changed
+    if (widget.initialSelection != oldWidget.initialSelection && widget.initialSelection != null) {
+      setState(() {
+        selectedSalvationType = widget.initialSelection;
+      });
     }
   }
 
