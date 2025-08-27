@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../services/alarm_service.dart';
 import 'deeper_prayer.dart';
 import 'prayer_schedule.dart';
 import 'request_prayer.dart';
@@ -33,6 +34,8 @@ class PrayerPlanScreen extends ConsumerWidget {
                 _buildIntroductionSection(context),
                 const SizedBox(height: 24),
                 _buildPrayerScheduleSection(context, deeperInfoAsync),
+                const SizedBox(height: 24),
+                _buildTestNotificationSection(context),
                 const SizedBox(height: 24),
                 _buildRequestPrayerSection(context, ref),
                 const SizedBox(height: 24),
@@ -304,6 +307,193 @@ class PrayerPlanScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Widget _buildTestNotificationSection(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(
+          title: 'Test Prayer Notifications',
+          subtitle: 'Test your prayer notification system to ensure it\'s working properly',
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Icon(
+                      Icons.notification_important,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      'Notification Test',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.deepGold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              const Text(
+                'Test your notification system to ensure prayer reminders are working correctly. This will trigger a sample prayer notification with sound and vibration.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                  height: 1.4,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _testPrayerNotification(context, 'Morning Prayer'),
+                      icon: const Icon(Icons.wb_sunny),
+                      label: const Text('Test Morning'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryGold,
+                        foregroundColor: AppTheme.richBlack,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _testPrayerNotification(context, 'Noon Prayer'),
+                      icon: const Icon(Icons.wb_sunny_outlined),
+                      label: const Text('Test Noon'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.darkGold,
+                        foregroundColor: AppTheme.richBlack,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _testPrayerNotification(context, 'Evening Prayer'),
+                      icon: const Icon(Icons.nightlight_round),
+                      label: const Text('Test Evening'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.deepGold,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () => _testPrayerNotification(context, 'Deeper Prayer - Midnight Session'),
+                      icon: const Icon(Icons.nights_stay),
+                      label: const Text('Test Midnight'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.charcoalBlack,
+                        foregroundColor: AppTheme.primaryGold,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Future<void> _testPrayerNotification(BuildContext context, String prayerType) async {
+    try {
+      // Show loading indicator
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => const AlertDialog(
+          content: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(AppTheme.primaryGold),
+              ),
+              SizedBox(width: 16),
+              Text('Triggering test notification...'),
+            ],
+          ),
+        ),
+      );
+
+      // Trigger the test notification
+      await AlarmService.triggerPrayerAlarm(prayerType);
+
+      // Close loading dialog
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Test notification sent for $prayerType!'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      // Close loading dialog if still open
+      if (context.mounted) {
+        Navigator.of(context).pop();
+        
+        // Show error message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.error, color: Colors.white),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text('Failed to send test notification: ${e.toString()}'),
+                ),
+              ],
+            ),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildDeeperPrayerSection(BuildContext context, AsyncValue deeperInfoAsync, WidgetRef ref) {
