@@ -40,6 +40,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late PageController heroPageController;
   late Timer autoScrollTimer;
   int currentHeroPage = 0;
+  bool _shouldPreSelectTestimony = false;
 
   final List<Map<String, dynamic>> _menuPages = [
     {'title': 'Home', 'icon': Icons.home},
@@ -163,22 +164,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   void _navigateToTestimony() {
-    // Navigate to Salvation Corner (index 4) and set testimony as selected
-    navigateToPage(4);
+    // Set the flag to pre-select testimony
+    setState(() {
+      _shouldPreSelectTestimony = true;
+    });
+    
     // Close drawer if it's open
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
       Navigator.pop(context);
     }
-    // Small delay to allow page transition, then trigger testimony selection
-    Future.delayed(const Duration(milliseconds: 300), () {
-      // This will be handled by the SalvationCornerScreen to auto-select testimony
-      _triggerTestimonySelection();
-    });
-  }
-  
-  void _triggerTestimonySelection() {
-    // Trigger testimony selection on the SalvationCornerScreen
-    _salvationCornerKey.currentState?.selectTestimony();
+    
+    // Navigate to Salvation Corner (index 4) with testimony pre-selected
+    navigateToPage(4);
   }
 
   @override
@@ -200,7 +197,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           AboutScreen(),
           PrayerPlanScreen(),
           BibleStudyCornerScreen(),
-          SalvationCornerScreenWrapper(key: _salvationCornerKey),
+          SalvationCornerScreenWrapper(
+            key: _salvationCornerKey,
+            shouldPreSelectTestimony: _shouldPreSelectTestimony,
+            onSelectionUsed: () {
+              setState(() {
+                _shouldPreSelectTestimony = false;
+              });
+            },
+          ),
           CounselingCornerScreen(),
           JKMGResourcesScreen(),
           EventListScreen(),
@@ -3016,23 +3021,45 @@ class _HeroPatternPainter extends CustomPainter {
 
 // Wrapper to handle testimony selection from FAB
 class SalvationCornerScreenWrapper extends StatefulWidget {
-  const SalvationCornerScreenWrapper({super.key});
+  final bool shouldPreSelectTestimony;
+  final VoidCallback? onSelectionUsed;
+  
+  const SalvationCornerScreenWrapper({
+    super.key,
+    this.shouldPreSelectTestimony = false,
+    this.onSelectionUsed,
+  });
 
   @override
   State<SalvationCornerScreenWrapper> createState() => SalvationCornerScreenWrapperState();
 }
 
 class SalvationCornerScreenWrapperState extends State<SalvationCornerScreenWrapper> {
-  SalvationType? _initialSelection;
+  
+  @override
+  void didUpdateWidget(SalvationCornerScreenWrapper oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shouldPreSelectTestimony != oldWidget.shouldPreSelectTestimony && widget.shouldPreSelectTestimony) {
+      // Call the callback after a brief delay to clear the flag
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          widget.onSelectionUsed?.call();
+        }
+      });
+    }
+  }
 
   void selectTestimony() {
-    setState(() {
-      _initialSelection = SalvationType.testimony;
-    });
+    // Legacy method kept for compatibility
   }
 
   @override
   Widget build(BuildContext context) {
-    return SalvationCornerScreen(initialSelection: _initialSelection);
+    final initialSelection = widget.shouldPreSelectTestimony ? SalvationType.testimony : null;
+    
+    return SalvationCornerScreen(
+      initialSelection: initialSelection,
+      onSelectionUsed: widget.onSelectionUsed,
+    );
   }
 }
