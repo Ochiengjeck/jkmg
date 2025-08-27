@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import '../models/user.dart';
 import '../models/prayer.dart';
+import '../models/prayer_category.dart';
 import '../models/bible_study.dart';
 import '../models/event.dart';
 import '../models/registration_model.dart';
@@ -362,6 +363,29 @@ class ApiService {
       throw Exception(
         'Failed to record deeper prayer participation: ${response.body}',
       );
+    }
+  }
+
+  // Get prayer categories
+  Future<List<PrayerCategory>> getPrayerCategories() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/prayer-categories'),
+      headers: await _getHeaders(),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        final categoriesData = data['data'] as List;
+        return categoriesData
+            .map((category) => PrayerCategory.fromJson(category))
+            .toList();
+      } else {
+        throw Exception('Failed to get prayer categories: ${data['message'] ?? 'Unknown error'}');
+      }
+    } else {
+      await _handleAuthenticationError(response);
+      throw Exception('Failed to get prayer categories: ${response.body}');
     }
   }
 

@@ -3,37 +3,23 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../models/prayer_category.dart';
 
-class RequestPrayer extends StatefulWidget {
+class RequestPrayer extends ConsumerStatefulWidget {
   final VoidCallback onPrayerRequestSubmitted;
 
   const RequestPrayer({super.key, required this.onPrayerRequestSubmitted});
 
   @override
-  State<RequestPrayer> createState() => _RequestPrayerState();
+  ConsumerState<RequestPrayer> createState() => _RequestPrayerState();
 }
 
-class _RequestPrayerState extends State<RequestPrayer> {
+class _RequestPrayerState extends ConsumerState<RequestPrayer> {
   final _formKey = GlobalKey<FormState>();
-  String? _selectedCategory;
+  PrayerCategory? _selectedCategory;
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isSubmitting = false;
-
-  final List<String> _prayerCategories = [
-    'praise',
-    'mercy',
-    'healing',
-    'marriage',
-    'protection',
-    'financial',
-    'family',
-    'career',
-    'salvation',
-    'guidance',
-    'thanksgiving',
-    'other',
-  ];
 
   Future<void> _submitPrayerRequest() async {
     if (_selectedCategory == null) {
@@ -44,11 +30,11 @@ class _RequestPrayerState extends State<RequestPrayer> {
     }
     setState(() => _isSubmitting = true);
     try {
-      await ProviderScope.containerOf(context).read(
+      await ref.read(
         createPrayerRequestProvider({
-          'title': 'Prayer for ${_selectedCategory!}',
-          'description': 'Prayer request for ${_selectedCategory!}',
-          'category': _selectedCategory!,
+          'title': 'Prayer for ${_selectedCategory!.name}',
+          'description': 'Prayer request for ${_selectedCategory!.name}',
+          'category': _selectedCategory!.name, // Use category ID instead of name
           'urgency': 'medium',
           'is_anonymous': false,
           'is_public': true,
@@ -176,55 +162,137 @@ class _RequestPrayerState extends State<RequestPrayer> {
           ),
         ),
         const SizedBox(height: 12),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: _prayerCategories.map((category) {
-            final isSelected = _selectedCategory == category;
-            return GestureDetector(
-              onTap: _isSubmitting
-                  ? null
-                  : () {
-                      setState(() {
-                        _selectedCategory = category;
-                        if (_selectedCategory != null) {
-                          _startDate = DateTime.now();
-                          _endDate = DateTime.now().add(
-                            const Duration(days: 7),
-                          );
-                        }
-                      });
-                    },
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
-                ),
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppTheme.primaryGold.withOpacity(0.2)
-                      : AppTheme.accentGold.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isSelected
-                        ? AppTheme.primaryGold
-                        : AppTheme.primaryGold.withOpacity(0.2),
-                    width: isSelected ? 2 : 1,
-                  ),
-                ),
-                child: Text(
-                  category[0].toUpperCase() + category.substring(1),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                    color: isSelected
-                        ? AppTheme.deepGold
-                        : Colors.grey.shade700,
+        Consumer(
+          builder: (context, ref, child) {
+            final prayerCategoriesAsync = ref.watch(prayerCategoriesProvider);
+            
+            return prayerCategoriesAsync.when(
+              data: (categories) {
+                if (categories.isEmpty) {
+                  return Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade100,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: const Text(
+                      'No prayer categories available',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  );
+                }
+                
+                return Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: categories.map((category) {
+                    final isSelected = _selectedCategory?.id == category.id;
+                    return GestureDetector(
+                      onTap: _isSubmitting
+                          ? null
+                          : () {
+                              setState(() {
+                                _selectedCategory = category;
+                                if (_selectedCategory != null) {
+                                  _startDate = DateTime.now();
+                                  _endDate = DateTime.now().add(
+                                    const Duration(days: 7),
+                                  );
+                                }
+                              });
+                            },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isSelected
+                              ? AppTheme.primaryGold.withOpacity(0.2)
+                              : AppTheme.accentGold.withOpacity(0.05),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? AppTheme.primaryGold
+                                : AppTheme.primaryGold.withOpacity(0.2),
+                            width: isSelected ? 2 : 1,
+                          ),
+                        ),
+                        child: Text(
+                          category.name,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                            color: isSelected
+                                ? AppTheme.deepGold
+                                : Colors.grey.shade700,
+                          ),
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                );
+              },
+              loading: () => Container(
+                padding: const EdgeInsets.all(16),
+                child: const Center(
+                  child: SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: AppTheme.primaryGold,
+                    ),
                   ),
                 ),
               ),
+              error: (error, stackTrace) => Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.red.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.red.shade200),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Error loading prayer categories',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      error.toString(),
+                      style: const TextStyle(
+                        fontSize: 10,
+                        color: Colors.red,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    ElevatedButton.icon(
+                      onPressed: () => ref.refresh(prayerCategoriesProvider),
+                      icon: const Icon(Icons.refresh, size: 16),
+                      label: const Text('Retry'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        foregroundColor: Colors.white,
+                        minimumSize: const Size(60, 28),
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        textStyle: const TextStyle(fontSize: 10),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             );
-          }).toList(),
+          },
         ),
       ],
     );
