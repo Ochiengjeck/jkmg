@@ -81,16 +81,18 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildScheduleInfo(context),
-        const SizedBox(height: 16),
-        _buildPrayerTimes(context),
-        const SizedBox(height: 16),
-        _buildAlarmSettings(context),
-        const SizedBox(height: 16),
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildScheduleInfo(context),
+          const SizedBox(height: 16),
+          _buildPrayerTimes(context),
+          const SizedBox(height: 16),
+          _buildAlarmSettings(context),
+          const SizedBox(height: 16),
+        ],
+      ),
     );
   }
 

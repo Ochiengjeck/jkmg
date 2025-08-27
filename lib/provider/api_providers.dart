@@ -13,6 +13,7 @@ import '../models/counseling.dart';
 import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
+import '../models/daily_prayer.dart';
 import '../services/api_service.dart';
 import '../services/preference_service.dart';
 
@@ -228,6 +229,12 @@ final participateInDeeperPrayerProvider =
 final prayerCategoriesProvider = FutureProvider<List<PrayerCategory>>((ref) async {
   final apiService = ref.read(apiServiceProvider);
   return apiService.getPrayerCategories();
+});
+
+// Daily Prayer Provider
+final dailyPrayerProvider = FutureProvider.family<DailyPrayer, int>((ref, categoryId) async {
+  final apiService = ref.read(apiServiceProvider);
+  return apiService.getDailyPrayer(categoryId);
 });
 
 // Bible Study Providers

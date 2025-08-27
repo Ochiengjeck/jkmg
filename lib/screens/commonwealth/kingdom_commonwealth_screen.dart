@@ -71,7 +71,7 @@ class _KingdomCommonwealthScreenState
               ),
               image: const DecorationImage(
                 image: AssetImage('assets/images/commonwealth.png'),
-                fit: BoxFit.fill,
+                fit: BoxFit.contain,
               ),
             ),
             child: Stack(
@@ -104,10 +104,7 @@ class _KingdomCommonwealthScreenState
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [
-                  AppTheme.charcoalBlack,
-                  AppTheme.richBlack,
-                ],
+                colors: [AppTheme.charcoalBlack, AppTheme.richBlack],
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
               ),
@@ -171,10 +168,7 @@ class _KingdomCommonwealthScreenState
 
   Widget _buildFeatureChip(String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: 10,
-        vertical: 4,
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
         color: AppTheme.primaryGold.withOpacity(0.15),
         borderRadius: BorderRadius.circular(15),

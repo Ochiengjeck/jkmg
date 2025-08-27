@@ -6,7 +6,6 @@ import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/event.dart';
 // import 'package:jkmg/widgets/youtube_video_player.dart';  // Temporarily disabled for Windows build
 
-import '../auth/log_in.dart';
 import '../widgets/app_initializer.dart';
 import 'about/about_screen.dart';
 import 'bible_study/bible_study_corner.dart';

@@ -4,6 +4,7 @@ import 'package:jkmg/provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../models/prayer_category.dart';
+import '../../models/daily_prayer.dart';
 
 class RequestPrayer extends ConsumerStatefulWidget {
   final VoidCallback onPrayerRequestSubmitted;
@@ -28,39 +29,29 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
       );
       return;
     }
+    
     setState(() => _isSubmitting = true);
     try {
-      await ref.read(
-        createPrayerRequestProvider({
-          'title': 'Prayer for ${_selectedCategory!.name}',
-          'description': 'Prayer request for ${_selectedCategory!.name}',
-          'category': _selectedCategory!.name, // Use category ID instead of name
-          'urgency': 'medium',
-          'is_anonymous': false,
-          'is_public': true,
-          'start_date':
-              '${_startDate!.year}-${_startDate!.month.toString().padLeft(2, '0')}-${_startDate!.day.toString().padLeft(2, '0')}',
-          'end_date':
-              '${_endDate!.year}-${_endDate!.month.toString().padLeft(2, '0')}-${_endDate!.day.toString().padLeft(2, '0')}',
-        }).future,
+      final dailyPrayer = await ref.read(
+        dailyPrayerProvider(_selectedCategory!.id).future,
       );
-      setState(() {
-        _isSubmitting = false;
-        _selectedCategory = null;
-        _startDate = null;
-        _endDate = null;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Prayer request submitted successfully')),
-      );
-      widget.onPrayerRequestSubmitted();
+      
+      setState(() => _isSubmitting = false);
+      
+      if (mounted) {
+        _showDailyPrayerPopup(dailyPrayer);
+        widget.onPrayerRequestSubmitted();
+      }
     } catch (e) {
       setState(() => _isSubmitting = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error submitting prayer request: $e')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error getting daily prayer: $e')),
+        );
+      }
     }
   }
+
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
@@ -79,6 +70,7 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
       });
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -359,9 +351,9 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                       strokeWidth: 2,
                     ),
                   )
-                : const Icon(Icons.send),
+                : const Icon(Icons.auto_awesome),
             label: Text(
-              _isSubmitting ? 'Submitting...' : 'Submit Prayer Request',
+              _isSubmitting ? 'Getting Prayer...' : 'Get Daily Prayer',
             ),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppTheme.primaryGold,
@@ -373,6 +365,191 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
           ),
         ),
       ],
+    );
+  }
+
+  void _showDailyPrayerPopup(DailyPrayer dailyPrayer) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: AppTheme.richBlack,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            constraints: const BoxConstraints(
+              maxWidth: 400,
+              maxHeight: 600,
+            ),
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryGold.withOpacity(0.1),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                      topRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppTheme.primaryGold.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Icon(
+                          Icons.auto_awesome,
+                          color: AppTheme.primaryGold,
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Text(
+                          dailyPrayer.displayTitle,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppTheme.primaryGold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: AppTheme.primaryGold.withOpacity(0.1),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            dailyPrayer.displayMessage,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              height: 1.6,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                        if (dailyPrayer.pastor.name.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              const Icon(
+                                Icons.person,
+                                size: 18,
+                                color: AppTheme.primaryGold,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'By ${dailyPrayer.displayPastorName}',
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontStyle: FontStyle.italic,
+                                  color: AppTheme.primaryGold,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: AppTheme.richBlack,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                    border: Border(
+                      top: BorderSide(
+                        color: AppTheme.primaryGold.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: dailyPrayer.hasAudio 
+                              ? () {
+                                  // TODO: Implement audio playback
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(content: Text('Playing prayer audio...')),
+                                  );
+                                }
+                              : null,
+                          icon: Icon(
+                            Icons.play_arrow,
+                            color: dailyPrayer.hasAudio 
+                                ? Colors.white 
+                                : Colors.grey.shade400,
+                          ),
+                          label: Text(
+                            'Play Prayer',
+                            style: TextStyle(
+                              color: dailyPrayer.hasAudio 
+                                  ? Colors.white 
+                                  : Colors.grey.shade400,
+                            ),
+                          ),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: dailyPrayer.hasAudio 
+                                ? AppTheme.primaryGold 
+                                : Colors.grey.shade600,
+                            disabledBackgroundColor: Colors.grey.shade600,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            minimumSize: const Size(0, 48),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          foregroundColor: AppTheme.primaryGold,
+                          side: const BorderSide(color: AppTheme.primaryGold),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          minimumSize: const Size(80, 48),
+                        ),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

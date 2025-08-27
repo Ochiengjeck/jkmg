@@ -469,30 +469,43 @@ class _PartnershipGivingScreenState
     String subtitle,
     String method,
   ) {
+    final isPayPal = method == 'paypal';
+    
     return GestureDetector(
-      onTap: () => _showGivingForm(method),
+      onTap: () => isPayPal ? _showComingSoonDialog(title) : _showGivingForm(method),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: AppTheme.softBlack,
+          color: isPayPal ? Colors.grey.shade800 : AppTheme.softBlack,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: AppTheme.primaryGold.withOpacity(0.3)),
+          border: Border.all(
+            color: isPayPal 
+                ? Colors.grey.shade600 
+                : AppTheme.primaryGold.withOpacity(0.3)
+          ),
         ),
         child: Column(
           children: [
-            Icon(icon, color: AppTheme.primaryGold, size: 24),
+            Icon(
+              icon, 
+              color: isPayPal ? Colors.grey.shade500 : AppTheme.primaryGold, 
+              size: 24
+            ),
             const SizedBox(height: 6),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
-                color: Colors.white,
+                color: isPayPal ? Colors.grey.shade500 : Colors.white,
               ),
             ),
             Text(
-              subtitle,
-              style: TextStyle(fontSize: 9, color: Colors.grey.shade400),
+              isPayPal ? 'Coming Soon' : subtitle,
+              style: TextStyle(
+                fontSize: 9, 
+                color: isPayPal ? Colors.grey.shade600 : Colors.grey.shade400
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -671,6 +684,113 @@ class _PartnershipGivingScreenState
     );
   }
 
+  void _showComingSoonDialog(String paymentMethod) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: AppTheme.richBlack,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          title: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(
+                  Icons.hourglass_empty,
+                  color: AppTheme.primaryGold,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  '$paymentMethod Coming Soon',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.primaryGold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'We\'re working hard to bring you $paymentMethod integration for seamless international giving.',
+                style: const TextStyle(
+                  fontSize: 16,
+                  color: Colors.white,
+                  height: 1.5,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: AppTheme.primaryGold.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryGold.withOpacity(0.3),
+                  ),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(
+                      Icons.lightbulb_outline,
+                      color: AppTheme.primaryGold,
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'In the meantime, you can use SendWave for international transfers or bank transfer options.',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: AppTheme.primaryGold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text(
+                'Maybe Later', 
+                style: TextStyle(color: Colors.grey)
+              ),
+            ),
+            ElevatedButton.icon(
+              onPressed: () {
+                Navigator.pop(context);
+                _showGivingForm('sendwave'); // Redirect to SendWave as alternative
+              },
+              icon: const Icon(Icons.send, size: 16),
+              label: const Text('Try SendWave'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: AppTheme.richBlack,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _accessPartnerDashboard() {
     Navigator.push(
       context,
@@ -710,9 +830,9 @@ class _GivingFormScreenState extends State<GivingFormScreen>
       'title': 'M-Pesa',
       'icon': '📱',
       'paybill': '809200',
-      'account': 'JKM GLOBAL',
+      'account': 'RHEMA FEAST',
       'instructions':
-          'Go to M-Pesa > Lipa na M-Pesa > Pay Bill\nEnter Business Number: 809200\nAccount Number: JKM GLOBAL\nEnter Amount and confirm',
+          'Go to M-Pesa > Lipa na M-Pesa > Pay Bill\nEnter Business Number: 809200\nAccount Number: RHEMA FEAST\nEnter Amount and confirm',
     },
     'sendwave': {
       'title': 'SendWave',
@@ -726,23 +846,25 @@ class _GivingFormScreenState extends State<GivingFormScreen>
       'title': 'Bank Transfer (KES)',
       'icon': '🏦',
       'bank': 'ABSA BANK',
-      'account_name': 'Coming soon',
-      'account_number': 'Coming soon',
-      'branch': 'Coming soon',
-      'sort_code': '0390',
+      'account_name': 'THE PURPOSE CENTRE CHURCH',
+      'account_number': '2040739442',
+      'branch': 'NAKURU',
+      'sort_code': 'BARCKENX',
+      'bank_code': '03010',
       'instructions':
-          'Bank: ABSA BANK\nAccount Name: Coming soon\nAccount Number: Coming soon\nBranch: Coming soon',
+          'Bank: ABSA BANK\nAccount Name: THE PURPOSE CENTRE CHURCH\nAccount Number: 2040739442\nSort Code: BARCKENX\nBank Code: 03010\nBranch: NAKURU',
     },
     'bank_usd': {
       'title': 'Bank Transfer (USD)',
       'icon': '💵',
       'bank': 'ABSA BANK',
-      'account_name': 'Coming soon',
-      'account_number': '2045646710',
-      'branch': 'Coming soon',
-      'swift': 'Coming soon',
+      'account_name': 'THE PURPOSE CENTRE CHURCH',
+      'account_number': '2040739568',
+      'branch': 'NAKURU TOWERS',
+      'swift': 'BARCKENX',
+      'sort_code': '03010',
       'instructions':
-          'Bank: ABSA BANK\nAccount Name: Coming soon\nUSD Account: 2045646710\nSWIFT: Coming soon\nBranch: Coming soon',
+          'Bank: ABSA BANK\nAccount Name: THE PURPOSE CENTRE CHURCH\nUSD Account: 2040739568\nSWIFT Code: BARCKENX\nSort Code: 03010\nBranch: NAKURU TOWERS',
     },
   };
 
@@ -1350,6 +1472,10 @@ class _GivingFormScreenState extends State<GivingFormScreen>
           _buildCopyableField('Account Name', methodData['account_name']!),
           _buildCopyableField('Account Number', methodData['account_number']!),
           _buildCopyableField('Branch', methodData['branch']!),
+          if (methodData.containsKey('sort_code'))
+            _buildCopyableField('Sort Code', methodData['sort_code']!),
+          if (methodData.containsKey('bank_code'))
+            _buildCopyableField('Bank Code', methodData['bank_code']!),
           if (methodData.containsKey('swift'))
             _buildCopyableField('SWIFT Code', methodData['swift']!),
         ],

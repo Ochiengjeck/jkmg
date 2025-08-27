@@ -15,6 +15,7 @@ import '../models/counseling.dart';
 import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
+import '../models/daily_prayer.dart';
 import 'preference_service.dart';
 
 class ApiService {
@@ -386,6 +387,29 @@ class ApiService {
     } else {
       await _handleAuthenticationError(response);
       throw Exception('Failed to get prayer categories: ${response.body}');
+    }
+  }
+
+  // Get daily prayer for a specific category
+  Future<DailyPrayer> getDailyPrayer(int categoryId) async {
+    final response = await http.post(
+      Uri.parse('$baseUrl/prayer-categories/daily-prayer'),
+      headers: await _getHeaders(),
+      body: jsonEncode({
+        'category_id': categoryId,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      if (data['success'] == true) {
+        return DailyPrayer.fromJson(data['data']);
+      } else {
+        throw Exception('Failed to get daily prayer: ${data['message'] ?? 'Unknown error'}');
+      }
+    } else {
+      await _handleAuthenticationError(response);
+      throw Exception('Failed to get daily prayer: ${response.body}');
     }
   }
 
