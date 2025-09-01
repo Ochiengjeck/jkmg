@@ -4,6 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/event.dart';
+import 'package:jkmg/models/slider.dart' as slider_model;
+import 'package:jkmg/models/welcome_video.dart';
+import 'package:jkmg/services/api_service.dart';
+import 'package:video_player/video_player.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:media_kit/media_kit.dart';
+import 'package:media_kit_video/media_kit_video.dart';
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 // import 'package:jkmg/widgets/youtube_video_player.dart';  // Temporarily disabled for Windows build
 
 import '../widgets/app_initializer.dart';
@@ -33,7 +42,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-  final GlobalKey<SalvationCornerScreenWrapperState> _salvationCornerKey = GlobalKey<SalvationCornerScreenWrapperState>();
+  final GlobalKey<SalvationCornerScreenWrapperState> _salvationCornerKey =
+      GlobalKey<SalvationCornerScreenWrapperState>();
   // Notification count will be managed by provider
   int _currentPage = 0;
   late PageController pageController;
@@ -41,6 +51,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   late Timer autoScrollTimer;
   int currentHeroPage = 0;
   bool _shouldPreSelectTestimony = false;
+  List<slider_model.Slider> _dynamicSliders = [];
+  WelcomeVideo? _welcomeVideo;
+  bool _isLoadingSliders = true;
+  bool _isLoadingWelcomeVideo = true;
 
   final List<Map<String, dynamic>> _menuPages = [
     {'title': 'Home', 'icon': Icons.home},
@@ -65,6 +79,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     pageController = PageController();
     heroPageController = PageController();
+    _loadDynamicContent();
     _startAutoScroll();
   }
 
@@ -74,6 +89,32 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     heroPageController.dispose();
     autoScrollTimer.cancel();
     super.dispose();
+  }
+
+  Future<void> _loadDynamicContent() async {
+    try {
+      final apiService = ApiService();
+      
+      // Load sliders
+      final sliderResponse = await apiService.getSliders();
+      setState(() {
+        _dynamicSliders = sliderResponse.data;
+        _isLoadingSliders = false;
+      });
+
+      // Load welcome video
+      final welcomeVideoResponse = await apiService.getWelcomeVideo();
+      setState(() {
+        _welcomeVideo = welcomeVideoResponse.data;
+        _isLoadingWelcomeVideo = false;
+      });
+    } catch (e) {
+      print('Error loading dynamic content: $e');
+      setState(() {
+        _isLoadingSliders = false;
+        _isLoadingWelcomeVideo = false;
+      });
+    }
   }
 
   void _startAutoScroll() {
@@ -143,9 +184,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onPressed: _navigateToTestimony,
         backgroundColor: Colors.transparent,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         icon: const Icon(
           Icons.campaign_outlined,
           color: Colors.white,
@@ -168,12 +207,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     setState(() {
       _shouldPreSelectTestimony = true;
     });
-    
+
     // Close drawer if it's open
     if (_scaffoldKey.currentState?.isDrawerOpen == true) {
       Navigator.pop(context);
     }
-    
+
     // Navigate to Salvation Corner (index 4) with testimony pre-selected
     navigateToPage(4);
   }
@@ -933,6 +972,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   List<Widget> _getHeroSlides() {
+    // If we have dynamic sliders, use them
+    if (!_isLoadingSliders && _dynamicSliders.isNotEmpty) {
+      return [
+        ..._dynamicSliders.map((slider) => _buildDynamicHeroSlide(
+          context: context,
+          slider: slider,
+        )).toList(),
+        _buildIntroVideoSlide(context),
+      ];
+    }
+    
+    // Fallback to static slides if dynamic content is not loaded or empty
     return [
       _buildImageHeroSlide(
         context: context,
@@ -1238,25 +1289,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ],
                     ),
                     child: const Icon(
-                      Icons.record_voice_over,
+                      Icons.play_circle_fill,
                       size: 30,
                       color: Color(0xFF1A1A1A),
                     ),
                   ),
                   const SizedBox(width: 16),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Welcome Message',
-                          style: TextStyle(
+                          _welcomeVideo?.title ?? 'Welcome Message',
+                          style: const TextStyle(
                             color: Color(0xFFFFD700),
                             fontSize: 18,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
-                        Text(
+                        const Text(
                           'From Rev. Julian Kyula',
                           style: TextStyle(
                             color: Colors.white70,
@@ -1270,30 +1321,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ],
               ),
               const SizedBox(height: 16),
-              const Text(
+              Text(
+                _welcomeVideo?.description ??
                 'Welcome to Julian Kyula Ministry Global (JKMG) - a faith-driven movement dedicated to transforming lives and nations through the power of God\'s Word, apostolic insight, and marketplace impact.',
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 14,
                   height: 1.5,
                 ),
               ),
               const SizedBox(height: 16),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // Play pre-recorded welcome message
-                    _playWelcomeMessage(context);
-                  },
-                  icon: const Icon(Icons.play_circle_fill),
-                  label: const Text('Play Message'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFFFFD700),
-                    foregroundColor: const Color(0xFF1A1A1A),
+              if (_isLoadingWelcomeVideo)
+                const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                  ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      if (_welcomeVideo != null) {
+                        _playWelcomeVideo(context, _welcomeVideo!);
+                      } else {
+                        _playWelcomeMessage(context);
+                      }
+                    },
+                    icon: const Icon(Icons.play_circle_fill),
+                    label: const Text('Play Video'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFFFD700),
+                      foregroundColor: const Color(0xFF1A1A1A),
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
           // Info button at top right corner
@@ -1721,6 +1783,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: const Text('Close'),
           ),
         ],
+      ),
+    );
+  }
+
+  void _playWelcomeVideo(BuildContext context, WelcomeVideo video) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: WelcomeVideoPlayer(video: video),
       ),
     );
   }
@@ -2526,6 +2597,262 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
   }
 
+  Widget _buildDynamicHeroSlide({
+    required BuildContext context,
+    required slider_model.Slider slider,
+  }) {
+    return GestureDetector(
+      onTap: () => _handleHeroSlideClick('dynamic_${slider.id}'),
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(24),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFFFD700).withOpacity(0.4),
+              blurRadius: 30,
+              offset: const Offset(0, 15),
+              spreadRadius: 5,
+            ),
+            BoxShadow(
+              color: Colors.black.withOpacity(0.6),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+          ],
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(24),
+          child: Stack(
+            children: [
+              // Full background image with caching
+              Positioned.fill(
+                child: CachedNetworkImage(
+                  imageUrl: slider.imageUrl,
+                  fit: BoxFit.cover,
+                  memCacheWidth: 800, // Optimize memory usage
+                  memCacheHeight: 600,
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF87CEEB).withOpacity(0.8),
+                          const Color(0xFFFFE066).withOpacity(0.9),
+                          const Color(0xFF1A1A2E).withOpacity(0.9),
+                        ],
+                      ),
+                    ),
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withOpacity(0.3),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Loading...',
+                              style: TextStyle(
+                                color: Colors.white.withOpacity(0.9),
+                                fontSize: 12,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          const Color(0xFF87CEEB).withOpacity(0.8),
+                          const Color(0xFFFFE066).withOpacity(0.9),
+                          const Color(0xFF1A1A2E).withOpacity(0.9),
+                        ],
+                      ),
+                    ),
+                    child: const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.image_not_supported,
+                            color: Colors.white,
+                            size: 48,
+                          ),
+                          SizedBox(height: 8),
+                          Text(
+                            'Image not available',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              // Enhanced gradient overlay for better text readability
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        const Color(0xFFFFD700).withOpacity(0.1),
+                        Colors.transparent,
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.4),
+                        Colors.black.withOpacity(0.8),
+                        const Color(0xFF0A0A0A).withOpacity(0.95),
+                      ],
+                      stops: const [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
+                    ),
+                  ),
+                ),
+              ),
+              // Enhanced content section with modern typography
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(32, 24, 32, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Modern title with enhanced styling
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: const Color(0xFFFFD700).withOpacity(0.3),
+                            width: 1,
+                          ),
+                          gradient: LinearGradient(
+                            colors: [
+                              Colors.black.withOpacity(0.2),
+                              Colors.black.withOpacity(0.1),
+                            ],
+                          ),
+                        ),
+                        child: Text(
+                          slider.title.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 2.5,
+                            height: 1.2,
+                            shadows: [
+                              Shadow(
+                                offset: const Offset(0, 2),
+                                blurRadius: 4,
+                                color: Colors.black.withOpacity(0.8),
+                              ),
+                              Shadow(
+                                offset: const Offset(0, 0),
+                                blurRadius: 20,
+                                color: const Color(0xFFFFD700).withOpacity(0.3),
+                              ),
+                            ],
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      // Enhanced caption with better readability
+                      if (slider.caption != null && slider.caption!.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.black.withOpacity(0.4),
+                            border: Border.all(
+                              color: Colors.white.withOpacity(0.2),
+                              width: 1,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 10,
+                                spreadRadius: 2,
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            slider.caption!,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.white.withOpacity(0.95),
+                              letterSpacing: 0.8,
+                              height: 1.5,
+                              shadows: [
+                                Shadow(
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
+                                  color: Colors.black.withOpacity(0.6),
+                                ),
+                              ],
+                            ),
+                            textAlign: TextAlign.center,
+                            maxLines: 3,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      // Add a subtle indicator dot
+                      const SizedBox(height: 16),
+                      Container(
+                        width: 4,
+                        height: 4,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFFFD700),
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFFFD700).withOpacity(0.6),
+                              blurRadius: 8,
+                              spreadRadius: 2,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildDatabaseEventCard(BuildContext context, Event event) {
     final formattedDate = _formatEventDate(event.startDate, event.endDate);
     final eventColor = _getEventTypeColor(event.type.value);
@@ -3023,7 +3350,7 @@ class _HeroPatternPainter extends CustomPainter {
 class SalvationCornerScreenWrapper extends StatefulWidget {
   final bool shouldPreSelectTestimony;
   final VoidCallback? onSelectionUsed;
-  
+
   const SalvationCornerScreenWrapper({
     super.key,
     this.shouldPreSelectTestimony = false,
@@ -3031,15 +3358,17 @@ class SalvationCornerScreenWrapper extends StatefulWidget {
   });
 
   @override
-  State<SalvationCornerScreenWrapper> createState() => SalvationCornerScreenWrapperState();
+  State<SalvationCornerScreenWrapper> createState() =>
+      SalvationCornerScreenWrapperState();
 }
 
-class SalvationCornerScreenWrapperState extends State<SalvationCornerScreenWrapper> {
-  
+class SalvationCornerScreenWrapperState
+    extends State<SalvationCornerScreenWrapper> {
   @override
   void didUpdateWidget(SalvationCornerScreenWrapper oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.shouldPreSelectTestimony != oldWidget.shouldPreSelectTestimony && widget.shouldPreSelectTestimony) {
+    if (widget.shouldPreSelectTestimony != oldWidget.shouldPreSelectTestimony &&
+        widget.shouldPreSelectTestimony) {
       // Call the callback after a brief delay to clear the flag
       Future.delayed(const Duration(milliseconds: 500), () {
         if (mounted) {
@@ -3055,11 +3384,567 @@ class SalvationCornerScreenWrapperState extends State<SalvationCornerScreenWrapp
 
   @override
   Widget build(BuildContext context) {
-    final initialSelection = widget.shouldPreSelectTestimony ? SalvationType.testimony : null;
-    
+    // final initialSelection = widget.shouldPreSelectTestimony ? SalvationType.testimony : null;
+    final initialSelection = null;
+
     return SalvationCornerScreen(
       initialSelection: initialSelection,
       onSelectionUsed: widget.onSelectionUsed,
     );
+  }
+}
+
+class WelcomeVideoPlayer extends StatefulWidget {
+  final WelcomeVideo video;
+
+  const WelcomeVideoPlayer({super.key, required this.video});
+
+  @override
+  State<WelcomeVideoPlayer> createState() => _WelcomeVideoPlayerState();
+}
+
+class _WelcomeVideoPlayerState extends State<WelcomeVideoPlayer> {
+  VideoPlayerController? _controller;
+  Player? _mediaKitPlayer;
+  VideoController? _mediaKitVideoController;
+  bool _isInitialized = false;
+  bool _hasError = false;
+  String? _errorMessage;
+  bool _isDesktop = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _isDesktop = !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux);
+    _initializeVideoSafely();
+  }
+
+  Future<void> _initializeVideoSafely() async {
+    if (_isDesktop) {
+      try {
+        // Ensure MediaKit is initialized for desktop
+        MediaKit.ensureInitialized();
+        print('✅ MediaKit initialized successfully');
+      } catch (e) {
+        print('⚠️ MediaKit initialization failed: $e');
+        // Fall back to mobile video player even on desktop
+        _isDesktop = false;
+        print('🔄 Falling back to mobile video player');
+      }
+    }
+    _initializeVideo();
+  }
+
+  Future<void> _initializeVideo() async {
+    try {
+      print('🎥 Initializing video: ${widget.video.videoUrl}');
+      print('🖥️ Is desktop platform: $_isDesktop');
+      
+      // Validate URL
+      final uri = Uri.parse(widget.video.videoUrl);
+      print('📍 Parsed URI: ${uri.toString()}');
+      print('📍 URI scheme: ${uri.scheme}');
+      print('📍 URI host: ${uri.host}');
+      
+      if (!uri.hasScheme || (uri.scheme != 'http' && uri.scheme != 'https')) {
+        throw Exception('Invalid video URL scheme. Must be http or https');
+      }
+
+      if (_isDesktop) {
+        // Use MediaKit for desktop platforms
+        print('🖥️ Using MediaKit for desktop platform');
+        try {
+          _mediaKitPlayer = Player();
+          _mediaKitVideoController = VideoController(_mediaKitPlayer!);
+          
+          // Add error listener
+          _mediaKitPlayer!.stream.error.listen((error) {
+            if (mounted) {
+              print('🚨 MediaKit error: $error');
+              setState(() {
+                _hasError = true;
+                _errorMessage = 'MediaKit error: $error';
+              });
+            }
+          });
+
+          // Open the video
+          await _mediaKitPlayer!.open(Media(widget.video.videoUrl));
+          
+          print('✅ MediaKit video initialized successfully');
+          if (mounted) {
+            setState(() {
+              _isInitialized = true;
+            });
+          }
+        } catch (e) {
+          print('🚨 MediaKit failed, falling back to basic video player: $e');
+          // Fall back to a simple URL display for desktop debugging
+          if (mounted) {
+            setState(() {
+              _hasError = true;
+              _errorMessage = 'Desktop video player not available.\n\nFor full testing, please use Android device.\n\nVideo URL: ${widget.video.videoUrl}';
+            });
+          }
+        }
+      } else {
+        // Use VideoPlayer for mobile platforms
+        print('📱 Using VideoPlayer for mobile platform');
+        _controller = VideoPlayerController.networkUrl(uri);
+
+        // Add error listener
+        _controller!.addListener(() {
+          if (_controller!.value.hasError && mounted) {
+            print('🚨 Video player error: ${_controller!.value.errorDescription}');
+            setState(() {
+              _hasError = true;
+              _errorMessage = 'Playback error: ${_controller!.value.errorDescription ?? "Unknown video error"}';
+            });
+          }
+        });
+
+        print('🔄 Starting mobile video initialization...');
+        await _controller!.initialize().timeout(
+          const Duration(seconds: 30),
+          onTimeout: () {
+            throw Exception('Video initialization timed out after 30 seconds');
+          },
+        );
+        
+        print('✅ Mobile video initialized successfully');
+        print('📹 Video duration: ${_controller!.value.duration}');
+        print('📹 Video size: ${_controller!.value.size}');
+        
+        if (mounted) {
+          setState(() {
+            _isInitialized = true;
+          });
+        }
+      }
+    } catch (e) {
+      print('❌ Video initialization error: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+          _errorMessage = 'Failed to load video: ${e.toString()}\n\nURL: ${widget.video.videoUrl}';
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller?.dispose();
+    _mediaKitPlayer?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(
+        maxWidth: 600,
+        maxHeight: MediaQuery.of(context).size.height * 0.8, // 80% of screen height
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Header
+          Container(
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1A1A1A),
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(16),
+                topRight: Radius.circular(16),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.play_circle_fill,
+                  color: Color(0xFFFFD700),
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.video.title,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (widget.video.description != null && widget.video.description!.isNotEmpty)
+                        Text(
+                          widget.video.description!,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.7),
+                            fontSize: 14,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                    ],
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  icon: const Icon(
+                    Icons.close,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          // Video Player
+          Flexible(
+            child: Container(
+              color: Colors.black,
+              child: _buildVideoContent(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildVideoContent() {
+    if (_hasError) {
+      return Container(
+        height: 300,
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(
+              Icons.error_outline,
+              color: Colors.red,
+              size: 64,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Error loading video',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              _errorMessage ?? 'Unknown error occurred',
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.7),
+                fontSize: 14,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
+            const SizedBox(height: 16),
+            Column(
+              children: [
+                ElevatedButton.icon(
+                  onPressed: () {
+                    setState(() {
+                      _hasError = false;
+                      _isInitialized = false;
+                    });
+                    _initializeVideo();
+                  },
+                  icon: const Icon(Icons.refresh),
+                  label: const Text('Retry'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFFFD700),
+                    foregroundColor: Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                TextButton.icon(
+                  onPressed: () {
+                    // Copy video URL to clipboard for debugging
+                    print('📋 Video URL: ${widget.video.videoUrl}');
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Video URL logged to console - check debug output'),
+                        backgroundColor: Colors.blue,
+                      ),
+                    );
+                  },
+                  icon: const Icon(Icons.link, color: Colors.white70),
+                  label: const Text(
+                    'Copy URL to Console',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (!_isInitialized) {
+      return Container(
+        height: 300,
+        child: const Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircularProgressIndicator(
+                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFFFFD700)),
+              ),
+              SizedBox(height: 16),
+              Text(
+                'Loading video...',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (_isDesktop) {
+      // Desktop version with MediaKit
+      return Container(
+        height: 400,
+        child: Stack(
+          children: [
+            // MediaKit Video Widget
+            Video(
+              controller: _mediaKitVideoController!,
+              controls: NoVideoControls,
+            ),
+            // Custom overlay controls
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () async {
+                  if (_mediaKitPlayer!.state.playing) {
+                    await _mediaKitPlayer!.pause();
+                  } else {
+                    await _mediaKitPlayer!.play();
+                  }
+                  setState(() {});
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: AnimatedOpacity(
+                      opacity: _mediaKitPlayer!.state.playing ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _mediaKitPlayer!.state.playing ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Desktop controls
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () async {
+                        if (_mediaKitPlayer!.state.playing) {
+                          await _mediaKitPlayer!.pause();
+                        } else {
+                          await _mediaKitPlayer!.play();
+                        }
+                        setState(() {});
+                      },
+                      icon: Icon(
+                        _mediaKitPlayer!.state.playing ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Expanded(
+                      child: StreamBuilder<Duration>(
+                        stream: _mediaKitPlayer!.stream.position,
+                        builder: (context, snapshot) {
+                          final position = snapshot.data ?? Duration.zero;
+                          final duration = _mediaKitPlayer!.state.duration ?? Duration.zero;
+                          return Slider(
+                            value: duration.inMilliseconds > 0 
+                                ? position.inMilliseconds / duration.inMilliseconds 
+                                : 0.0,
+                            onChanged: (value) async {
+                              final newPosition = Duration(
+                                milliseconds: (value * duration.inMilliseconds).round(),
+                              );
+                              await _mediaKitPlayer!.seek(newPosition);
+                            },
+                            activeColor: const Color(0xFFFFD700),
+                            inactiveColor: Colors.white30,
+                          );
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    StreamBuilder<Duration>(
+                      stream: _mediaKitPlayer!.stream.position,
+                      builder: (context, snapshot) {
+                        final position = snapshot.data ?? Duration.zero;
+                        final duration = _mediaKitPlayer!.state.duration ?? Duration.zero;
+                        return Text(
+                          '${_formatDuration(position)} / ${_formatDuration(duration)}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    } else {
+      // Mobile version with VideoPlayer
+      return AspectRatio(
+        aspectRatio: _controller!.value.aspectRatio,
+        child: Stack(
+          children: [
+            VideoPlayer(_controller!),
+            // Play/Pause overlay
+            Positioned.fill(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    if (_controller!.value.isPlaying) {
+                      _controller!.pause();
+                    } else {
+                      _controller!.play();
+                    }
+                  });
+                },
+                child: Container(
+                  color: Colors.transparent,
+                  child: Center(
+                    child: AnimatedOpacity(
+                      opacity: _controller!.value.isPlaying ? 0.0 : 1.0,
+                      duration: const Duration(milliseconds: 300),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.black54,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _controller!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            // Video controls at bottom
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withOpacity(0.7),
+                    ],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        setState(() {
+                          if (_controller!.value.isPlaying) {
+                            _controller!.pause();
+                          } else {
+                            _controller!.play();
+                          }
+                        });
+                      },
+                      icon: Icon(
+                        _controller!.value.isPlaying ? Icons.pause : Icons.play_arrow,
+                        color: Colors.white,
+                      ),
+                    ),
+                    Expanded(
+                      child: VideoProgressIndicator(
+                        _controller!,
+                        allowScrubbing: true,
+                        colors: const VideoProgressColors(
+                          playedColor: Color(0xFFFFD700),
+                          bufferedColor: Colors.grey,
+                          backgroundColor: Colors.white30,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '${_formatDuration(_controller!.value.position)} / ${_formatDuration(_controller!.value.duration)}',
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+  }
+
+  String _formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    String twoDigitMinutes = twoDigits(duration.inMinutes.remainder(60));
+    String twoDigitSeconds = twoDigits(duration.inSeconds.remainder(60));
+    return '${twoDigits(duration.inHours)}:$twoDigitMinutes:$twoDigitSeconds';
   }
 }

@@ -295,10 +295,21 @@ class _ConversationListScreenState extends ConsumerState<ConversationListScreen>
             ),
             shape: BoxShape.circle,
           ),
-          child: const Icon(
-            Icons.psychology,
-            color: AppTheme.richBlack,
-            size: 24,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(25),
+            child: Image.asset(
+              'assets/images/counseling & care.png',
+              width: 50,
+              height: 50,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return const Icon(
+                  Icons.psychology,
+                  color: AppTheme.richBlack,
+                  size: 24,
+                );
+              },
+            ),
           ),
         ),
         title: Column(

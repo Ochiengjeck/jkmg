@@ -4,6 +4,7 @@ import '../../utils/app_theme.dart';
 import '../../models/resource.dart';
 import '../../provider/api_providers.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/simple_header_tabs.dart';
 import 'resource_detail_screen.dart';
 
 // Create a simple provider for resources by type similar to allEventsProvider
@@ -49,62 +50,59 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppTheme.richBlack,
-      body: SafeArea(
-        child: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                expandedHeight: 445.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: AppTheme.richBlack,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _buildHeroSection(),
-                  ),
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(80.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: AppTheme.primaryGold.withOpacity(0.2),
-                      ),
-                    ),
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: _buildTabBarContent(),
-                  ),
-                ),
-              ),
-            ];
-          },
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              Container(
-                color: AppTheme.richBlack,
-                child: ResourcesTabContent(type: 'ebook'),
-              ),
-              Container(
-                color: AppTheme.richBlack,
-                child: ResourcesTabContent(type: 'audiobook'),
-              ),
-              Container(
-                color: AppTheme.richBlack,
-                child: ResourcesTabContent(type: 'sermon'),
-              ),
+    return SimpleHeaderTabs(
+      heroSection: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _buildHeroSection(),
+      ),
+      tabController: _tabController,
+      tabMargin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      tabs: [
+        Tab(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.menu_book, size: 14),
+              SizedBox(height: 2),
+              Text('E-Books', textAlign: TextAlign.center),
             ],
           ),
         ),
-      ),
+        Tab(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.headphones, size: 14),
+              SizedBox(height: 2),
+              Text('Audio', textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+        Tab(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: const [
+              Icon(Icons.play_circle, size: 14),
+              SizedBox(height: 2),
+              Text('Sermons', textAlign: TextAlign.center),
+            ],
+          ),
+        ),
+      ],
+      tabViews: [
+        Container(
+          color: AppTheme.richBlack,
+          child: ResourcesTabContent(type: 'ebook'),
+        ),
+        Container(
+          color: AppTheme.richBlack,
+          child: ResourcesTabContent(type: 'audiobook'),
+        ),
+        Container(
+          color: AppTheme.richBlack,
+          child: ResourcesTabContent(type: 'sermon'),
+        ),
+      ],
     );
   }
 
@@ -232,67 +230,6 @@ class _JKMGResourcesScreenState extends ConsumerState<JKMGResourcesScreen>
     );
   }
 
-  Widget _buildTabBarContent() {
-    return TabBar(
-      controller: _tabController,
-      labelColor: Colors.black87,
-      unselectedLabelColor: Colors.white60,
-      indicatorColor: Colors.transparent,
-      indicatorSize: TabBarIndicatorSize.label,
-      dividerHeight: 0,
-      indicator: BoxDecoration(
-        color: AppTheme.primaryGold,
-        borderRadius: BorderRadius.circular(20),
-      ),
-      indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
-      labelStyle: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
-      unselectedLabelStyle: const TextStyle(
-        fontSize: 11,
-        fontWeight: FontWeight.w500,
-      ),
-      tabs: [
-        SizedBox(
-          width: 80,
-          child: Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.menu_book, size: 14),
-                SizedBox(height: 2),
-                Text('E-Books', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 80,
-          child: Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.headphones, size: 14),
-                SizedBox(height: 2),
-                Text('Audio', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 80,
-          child: Tab(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: const [
-                Icon(Icons.play_circle, size: 14),
-                SizedBox(height: 2),
-                Text('Sermons', textAlign: TextAlign.center),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
 }
 
 class ResourcesTabContent extends ConsumerWidget {

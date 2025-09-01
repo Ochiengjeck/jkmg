@@ -295,7 +295,7 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
     final String specialty = counsellor['specialization'] ?? 'General Guidance';
     final String description = counsellor['personality'] ?? 'A compassionate guide ready to walk with you on your healing journey.';
     final bool isOnline = counsellor['is_online'] ?? true;
-    final String? avatarUrl = counsellor['avatar'];
+    // final String? avatarUrl = counsellor['avatar']; // Removed avatars
     // final String id = counsellor['id'] ?? '';
 
     return Container(
@@ -344,41 +344,22 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
                         width: 2,
                       ),
                     ),
-                    child: avatarUrl != null && avatarUrl.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(27),
-                            child: Image.network(
-                              avatarUrl,
-                              width: 54,
-                              height: 54,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Icon(
-                                  Icons.psychology,
-                                  size: 28,
-                                  color: isOnline ? AppTheme.richBlack : Colors.white,
-                                );
-                              },
-                              loadingBuilder: (context, child, loadingProgress) {
-                                if (loadingProgress == null) return child;
-                                return Center(
-                                  child: SizedBox(
-                                    width: 20,
-                                    height: 20,
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                      color: isOnline ? AppTheme.richBlack : Colors.white,
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        : Icon(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(27),
+                      child: Image.asset(
+                        'assets/images/counseling & care.png',
+                        width: 54,
+                        height: 54,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Icon(
                             Icons.psychology,
                             size: 28,
-                            color: isOnline ? AppTheme.richBlack : Colors.white,
-                          ),
+                            color: isOnline ? AppTheme.primaryGold : Colors.white,
+                          );
+                        },
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(width: 15),

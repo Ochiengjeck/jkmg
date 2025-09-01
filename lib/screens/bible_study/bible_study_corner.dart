@@ -8,6 +8,14 @@ import 'study_list.dart';
 import 'todays_study.dart';
 import 'holy_bible_section.dart';
 
+enum BibleStudyType { 
+  introduction, 
+  holyBible, 
+  todaysStudy, 
+  studyTemplates, 
+  pastStudies 
+}
+
 class BibleStudyCornerScreen extends ConsumerStatefulWidget {
   const BibleStudyCornerScreen({super.key});
 
@@ -22,6 +30,7 @@ class _BibleStudyCornerScreenState
   DateTime? _selectedDate;
   DateTime _displayedMonth = DateTime.now();
   bool _showCalendar = false;
+  BibleStudyType? selectedStudyType;
 
   @override
   void initState() {
@@ -94,16 +103,95 @@ class _BibleStudyCornerScreenState
                 const SizedBox(height: 32),
                 _buildIntroductionSection(context),
                 const SizedBox(height: 24),
-                _buildHolyBibleSection(context),
+                _buildStudyDropdown(context),
                 const SizedBox(height: 24),
-                _buildStudyTemplateSection(context),
-                const SizedBox(height: 24),
+                if (selectedStudyType != null) _buildSelectedSection(context, todayStudyAsync, studiesAsync),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildStudyDropdown(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(
+          title: 'Choose Your Study Focus',
+          subtitle: 'Select what you\'d like to explore in your Bible study journey',
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<BibleStudyType>(
+                value: selectedStudyType,
+                hint: Text(
+                  'Select a study option',
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Bible Study Options',
+                  labelStyle: const TextStyle(color: AppTheme.primaryGold),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.primaryGold),
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: BibleStudyType.holyBible,
+                    child: Text('Holy Bible Reading'),
+                  ),
+                  DropdownMenuItem(
+                    value: BibleStudyType.todaysStudy,
+                    child: Text('Today\'s Study'),
+                  ),
+                  // DropdownMenuItem(
+                  //   value: BibleStudyType.studyTemplates,
+                  //   child: Text('Study Templates'),
+                  // ),
+                  DropdownMenuItem(
+                    value: BibleStudyType.pastStudies,
+                    child: Text('Past Studies'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedStudyType = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectedSection(BuildContext context, AsyncValue todayStudyAsync, AsyncValue studiesAsync) {
+    switch (selectedStudyType!) {
+      case BibleStudyType.introduction:
+        return const SizedBox.shrink(); // This case shouldn't occur anymore
+      case BibleStudyType.holyBible:
+        return _buildHolyBibleSection(context);
+      case BibleStudyType.todaysStudy:
+        return _buildTodaysStudySection(context, todayStudyAsync);
+      case BibleStudyType.studyTemplates:
+        return _buildStudyTemplateSection(context);
+      case BibleStudyType.pastStudies:
+        return _buildPastStudiesSection(context, studiesAsync);
+    }
   }
 
   Widget _buildHeroSection(BuildContext context) {

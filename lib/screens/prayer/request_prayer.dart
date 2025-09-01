@@ -5,6 +5,7 @@ import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../models/prayer_category.dart';
 import '../../models/daily_prayer.dart';
+import '../../services/preference_service.dart';
 
 class RequestPrayer extends ConsumerStatefulWidget {
   final VoidCallback onPrayerRequestSubmitted;
@@ -21,6 +22,65 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
   DateTime? _startDate;
   DateTime? _endDate;
   bool _isSubmitting = false;
+  bool _hasActiveCommitment = false;
+  DateTime? _commitmentEndDate;
+  int _remainingDays = 0;
+
+  static const String _commitmentStartKey = 'prayer_commitment_start';
+  static const String _commitmentEndKey = 'prayer_commitment_end';
+  static const String _commitmentCategoryKey = 'prayer_commitment_category';
+
+  @override
+  void initState() {
+    super.initState();
+    _checkActiveCommitment();
+  }
+
+  Future<void> _checkActiveCommitment() async {
+    final prefs = await PreferenceService.getInstance();
+    final commitmentEndString = prefs.getString(_commitmentEndKey);
+
+    if (commitmentEndString != null) {
+      final commitmentEnd = DateTime.parse(commitmentEndString);
+      final now = DateTime.now();
+
+      if (commitmentEnd.isAfter(now)) {
+        setState(() {
+          _hasActiveCommitment = true;
+          _commitmentEndDate = commitmentEnd;
+          _remainingDays = commitmentEnd.difference(now).inDays + 1;
+        });
+      } else {
+        // Clear expired commitment
+        await _clearCommitment();
+      }
+    }
+  }
+
+  Future<void> _clearCommitment() async {
+    final prefs = await PreferenceService.getInstance();
+    await prefs.remove(_commitmentStartKey);
+    await prefs.remove(_commitmentEndKey);
+    await prefs.remove(_commitmentCategoryKey);
+  }
+
+  Future<void> _saveCommitment() async {
+    final prefs = await PreferenceService.getInstance();
+    final startDate = DateTime.now();
+    final endDate = startDate.add(
+      const Duration(days: 6),
+    ); // 7 days including today
+
+    await prefs.setString(_commitmentStartKey, startDate.toIso8601String());
+    await prefs.setString(_commitmentEndKey, endDate.toIso8601String());
+    await prefs.setString(_commitmentCategoryKey, _selectedCategory!.name);
+
+    setState(() {
+      _hasActiveCommitment = true;
+      _commitmentEndDate = endDate;
+      _remainingDays = 7;
+    });
+  }
 
   Future<void> _submitPrayerRequest() async {
     if (_selectedCategory == null) {
@@ -29,15 +89,22 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
       );
       return;
     }
-    
+
+    // Show confirmation dialog first
+    final confirmed = await _showCommitmentConfirmationDialog();
+    if (!confirmed) return;
+
     setState(() => _isSubmitting = true);
     try {
       final dailyPrayer = await ref.read(
         dailyPrayerProvider(_selectedCategory!.id).future,
       );
-      
+
+      // Save the commitment after successful prayer retrieval
+      await _saveCommitment();
+
       setState(() => _isSubmitting = false);
-      
+
       if (mounted) {
         _showDailyPrayerPopup(dailyPrayer);
         widget.onPrayerRequestSubmitted();
@@ -52,6 +119,127 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
     }
   }
 
+  Future<bool> _showCommitmentConfirmationDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          barrierDismissible: false,
+          builder: (BuildContext context) {
+            return AlertDialog(
+              backgroundColor: AppTheme.richBlack,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              title: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Icon(
+                      Icons.warning_amber_rounded,
+                      color: AppTheme.primaryGold,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  const Expanded(
+                    child: Text(
+                      '7-Day Prayer Commitment',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppTheme.primaryGold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppTheme.primaryGold.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppTheme.primaryGold.withOpacity(0.3),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Selected Category: ${_selectedCategory?.name}',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: AppTheme.primaryGold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          'By confirming, you agree to:',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        const Text(
+                          '• Commit to 7 days of focused prayer\n• Cannot make other prayer requests during this period\n• Other prayer categories will be disabled\n• Daily prayer reminders will be sent',
+                          style: TextStyle(
+                            fontSize: 13,
+                            color: Colors.white70,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'This commitment helps maintain focus and consistency in your spiritual journey. Are you ready to begin?',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.white,
+                      height: 1.4,
+                    ),
+                  ),
+                ],
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(false),
+                  child: const Text(
+                    'Cancel',
+                    style: TextStyle(color: Colors.white70),
+                  ),
+                ),
+                ElevatedButton(
+                  onPressed: () => Navigator.of(context).pop(true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppTheme.primaryGold,
+                    foregroundColor: AppTheme.richBlack,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'Start Commitment',
+                    style: TextStyle(fontWeight: FontWeight.w600),
+                  ),
+                ),
+              ],
+            );
+          },
+        ) ??
+        false;
+  }
 
   Future<void> _selectDate(BuildContext context, bool isStartDate) async {
     final DateTime? picked = await showDatePicker(
@@ -71,7 +259,6 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return CustomCard(
@@ -80,16 +267,87 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 16),
-          _buildIntroText(context),
-          const SizedBox(height: 16),
-          _buildCategorySelection(context),
-          if (_selectedCategory != null) ...[
-            const SizedBox(height: 20),
-            _buildSubmitSection(context),
+          if (_hasActiveCommitment) ...[
+            ..._buildActiveCommitmentSection(context),
+          ] else ...[
+            ..._buildPrayerRequestSection(context),
           ],
         ],
       ),
     );
+  }
+
+  List<Widget> _buildActiveCommitmentSection(BuildContext context) {
+    return [
+      Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppTheme.successGreen.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.successGreen.withOpacity(0.3)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.check_circle,
+                  color: AppTheme.successGreen,
+                  size: 24,
+                ),
+                const SizedBox(width: 12),
+                const Expanded(
+                  child: Text(
+                    'Active 7-Day Prayer Commitment',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: AppTheme.successGreen,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Text(
+              'You have $_remainingDays day${_remainingDays == 1 ? '' : 's'} remaining in your prayer commitment.',
+              style: const TextStyle(
+                fontSize: 14,
+                color: Colors.white,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Commitment ends: ${_formatDate(_commitmentEndDate!)}',
+              style: const TextStyle(fontSize: 12, color: Colors.white70),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'Other prayer categories are disabled during your commitment period. Stay focused on your current prayer journey.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.white70,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  List<Widget> _buildPrayerRequestSection(BuildContext context) {
+    return [
+      _buildIntroText(context),
+      const SizedBox(height: 16),
+      _buildCategorySelection(context),
+      if (_selectedCategory != null) ...[
+        const SizedBox(height: 20),
+        _buildSubmitSection(context),
+      ],
+    ];
   }
 
   Widget _buildHeader(BuildContext context) {
@@ -157,7 +415,7 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
         Consumer(
           builder: (context, ref, child) {
             final prayerCategoriesAsync = ref.watch(prayerCategoriesProvider);
-            
+
             return prayerCategoriesAsync.when(
               data: (categories) {
                 if (categories.isEmpty) {
@@ -169,21 +427,18 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                     ),
                     child: const Text(
                       'No prayer categories available',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 12, color: Colors.grey),
                     ),
                   );
                 }
-                
+
                 return Wrap(
                   spacing: 8,
                   runSpacing: 8,
                   children: categories.map((category) {
                     final isSelected = _selectedCategory?.id == category.id;
                     return GestureDetector(
-                      onTap: _isSubmitting
+                      onTap: (_isSubmitting || _hasActiveCommitment)
                           ? null
                           : () {
                               setState(() {
@@ -202,12 +457,16 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                           vertical: 8,
                         ),
                         decoration: BoxDecoration(
-                          color: isSelected
+                          color: _hasActiveCommitment
+                              ? Colors.grey.withOpacity(0.1)
+                              : isSelected
                               ? AppTheme.primaryGold.withOpacity(0.2)
                               : AppTheme.accentGold.withOpacity(0.05),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isSelected
+                            color: _hasActiveCommitment
+                                ? Colors.grey.withOpacity(0.3)
+                                : isSelected
                                 ? AppTheme.primaryGold
                                 : AppTheme.primaryGold.withOpacity(0.2),
                             width: isSelected ? 2 : 1,
@@ -217,8 +476,12 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                           category.name,
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
-                            color: isSelected
+                            fontWeight: isSelected
+                                ? FontWeight.w600
+                                : FontWeight.w500,
+                            color: _hasActiveCommitment
+                                ? Colors.grey.shade500
+                                : isSelected
                                 ? AppTheme.deepGold
                                 : Colors.grey.shade700,
                           ),
@@ -262,10 +525,7 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                     const SizedBox(height: 4),
                     Text(
                       error.toString(),
-                      style: const TextStyle(
-                        fontSize: 10,
-                        color: Colors.red,
-                      ),
+                      style: const TextStyle(fontSize: 10, color: Colors.red),
                     ),
                     const SizedBox(height: 8),
                     ElevatedButton.icon(
@@ -276,7 +536,10 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                         backgroundColor: Colors.red,
                         foregroundColor: Colors.white,
                         minimumSize: const Size(60, 28),
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         textStyle: const TextStyle(fontSize: 10),
                       ),
                     ),
@@ -341,7 +604,9 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
           width: double.infinity,
           height: 48,
           child: ElevatedButton.icon(
-            onPressed: _isSubmitting ? null : _submitPrayerRequest,
+            onPressed: (_isSubmitting || _hasActiveCommitment)
+                ? null
+                : _submitPrayerRequest,
             icon: _isSubmitting
                 ? const SizedBox(
                     width: 16,
@@ -378,10 +643,7 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
             borderRadius: BorderRadius.circular(20),
           ),
           child: Container(
-            constraints: const BoxConstraints(
-              maxWidth: 400,
-              maxHeight: 600,
-            ),
+            constraints: const BoxConstraints(maxWidth: 400, maxHeight: 600),
             child: Column(
               children: [
                 Container(
@@ -494,31 +756,33 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
                     children: [
                       Expanded(
                         child: ElevatedButton.icon(
-                          onPressed: dailyPrayer.hasAudio 
+                          onPressed: dailyPrayer.hasAudio
                               ? () {
                                   // TODO: Implement audio playback
                                   ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(content: Text('Playing prayer audio...')),
+                                    const SnackBar(
+                                      content: Text('Playing prayer audio...'),
+                                    ),
                                   );
                                 }
                               : null,
                           icon: Icon(
                             Icons.play_arrow,
-                            color: dailyPrayer.hasAudio 
-                                ? Colors.white 
+                            color: dailyPrayer.hasAudio
+                                ? Colors.white
                                 : Colors.grey.shade400,
                           ),
                           label: Text(
                             'Play Prayer',
                             style: TextStyle(
-                              color: dailyPrayer.hasAudio 
-                                  ? Colors.white 
+                              color: dailyPrayer.hasAudio
+                                  ? Colors.white
                                   : Colors.grey.shade400,
                             ),
                           ),
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: dailyPrayer.hasAudio 
-                                ? AppTheme.primaryGold 
+                            backgroundColor: dailyPrayer.hasAudio
+                                ? AppTheme.primaryGold
                                 : Colors.grey.shade600,
                             disabledBackgroundColor: Colors.grey.shade600,
                             shape: RoundedRectangleBorder(

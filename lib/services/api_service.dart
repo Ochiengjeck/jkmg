@@ -16,6 +16,8 @@ import '../models/salvation.dart';
 import '../models/notification.dart';
 import '../models/feedback.dart';
 import '../models/daily_prayer.dart';
+import '../models/slider.dart';
+import '../models/welcome_video.dart';
 import 'preference_service.dart';
 
 class ApiService {
@@ -1460,6 +1462,36 @@ class ApiService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Failed to get salvation stats: ${response.body}');
+    }
+  }
+
+  // Get sliders for home page hero section
+  Future<SliderResponse> getSliders() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/sliders'),
+      headers: await _getHeaders(false),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return SliderResponse.fromJson(data);
+    } else {
+      throw Exception('Failed to get sliders: ${response.body}');
+    }
+  }
+
+  // Get welcome video for home page
+  Future<WelcomeVideoResponse> getWelcomeVideo() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/welcome-video'),
+      headers: await _getHeaders(false),
+    );
+
+    if (response.statusCode == 200) {
+      final data = jsonDecode(response.body);
+      return WelcomeVideoResponse.fromJson(data);
+    } else {
+      throw Exception('Failed to get welcome video: ${response.body}');
     }
   }
 }

@@ -4,15 +4,56 @@ import '../../provider/api_providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../services/alarm_service.dart';
+import '../../services/preference_service.dart';
 import 'deeper_prayer.dart';
 import 'prayer_schedule.dart';
 import 'request_prayer.dart';
 
-class PrayerPlanScreen extends ConsumerWidget {
+enum PrayerPlanType { 
+  introduction, 
+  prayerSchedule, 
+  requestPrayer, 
+  deeperPrayer, 
+  testNotifications 
+}
+
+class PrayerPlanScreen extends ConsumerStatefulWidget {
   const PrayerPlanScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<PrayerPlanScreen> createState() => _PrayerPlanScreenState();
+}
+
+class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
+  PrayerPlanType? selectedPrayerType;
+  bool _hasActiveCommitment = false;
+  
+  static const String _commitmentEndKey = 'prayer_commitment_end';
+  
+  @override
+  void initState() {
+    super.initState();
+    _checkActiveCommitment();
+  }
+  
+  Future<void> _checkActiveCommitment() async {
+    final prefs = await PreferenceService.getInstance();
+    final commitmentEndString = prefs.getString(_commitmentEndKey);
+    
+    if (commitmentEndString != null) {
+      final commitmentEnd = DateTime.parse(commitmentEndString);
+      final now = DateTime.now();
+      
+      if (commitmentEnd.isAfter(now)) {
+        setState(() {
+          _hasActiveCommitment = true;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final deeperInfoAsync = ref.watch(deeperPrayerInfoProvider);
 
     return Scaffold(
@@ -33,19 +74,112 @@ class PrayerPlanScreen extends ConsumerWidget {
                 const SizedBox(height: 32),
                 _buildIntroductionSection(context),
                 const SizedBox(height: 24),
-                _buildPrayerScheduleSection(context, deeperInfoAsync),
+                _buildPrayerDropdown(context),
                 const SizedBox(height: 24),
-                _buildTestNotificationSection(context),
-                const SizedBox(height: 24),
-                _buildRequestPrayerSection(context, ref),
-                const SizedBox(height: 24),
-                _buildDeeperPrayerSection(context, deeperInfoAsync, ref),
+                if (selectedPrayerType != null) _buildSelectedSection(context, deeperInfoAsync, ref),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  Widget _buildPrayerDropdown(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(
+          title: 'Choose Your Prayer Focus',
+          subtitle: 'Select what you\'d like to explore in your prayer journey',
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<PrayerPlanType>(
+                value: selectedPrayerType,
+                hint: Text(
+                  'Select a prayer option',
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Prayer Plan Options',
+                  labelStyle: const TextStyle(color: AppTheme.primaryGold),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.primaryGold),
+                  ),
+                ),
+                items: [
+                  const DropdownMenuItem(
+                    value: PrayerPlanType.prayerSchedule,
+                    child: Text('Daily Prayer Schedule'),
+                  ),
+                  DropdownMenuItem(
+                    value: PrayerPlanType.requestPrayer,
+                    enabled: !_hasActiveCommitment,
+                    child: Text(
+                      _hasActiveCommitment ? 'Request Prayer (Disabled)' : 'Request Prayer',
+                      style: TextStyle(
+                        color: _hasActiveCommitment ? Colors.grey : null,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  const DropdownMenuItem(
+                    value: PrayerPlanType.deeperPrayer,
+                    child: Text('Deeper Prayer'),
+                  ),
+                  // DropdownMenuItem(
+                  //   value: PrayerPlanType.testNotifications,
+                  //   child: Text('Test Notifications'),
+                  // ),
+                ],
+                onChanged: (value) {
+                  // Prevent selection of disabled items during active commitment
+                  if (_hasActiveCommitment && value == PrayerPlanType.requestPrayer) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Request Prayer is disabled during your active prayer commitment'),
+                        backgroundColor: AppTheme.primaryGold,
+                      ),
+                    );
+                    return;
+                  }
+                  setState(() {
+                    selectedPrayerType = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectedSection(BuildContext context, AsyncValue deeperInfoAsync, WidgetRef ref) {
+    switch (selectedPrayerType!) {
+      case PrayerPlanType.introduction:
+        return const SizedBox.shrink(); // This case shouldn't occur anymore
+      case PrayerPlanType.prayerSchedule:
+        return _buildPrayerScheduleSection(context, deeperInfoAsync);
+      case PrayerPlanType.requestPrayer:
+        return _buildRequestPrayerSection(context, ref);
+      case PrayerPlanType.deeperPrayer:
+        return _buildDeeperPrayerSection(context, deeperInfoAsync, ref);
+      case PrayerPlanType.testNotifications:
+        return _buildTestNotificationSection(context);
+    }
   }
 
   Widget _buildHeroSection(BuildContext context) {
@@ -303,6 +437,7 @@ class PrayerPlanScreen extends ConsumerWidget {
         RequestPrayer(
           onPrayerRequestSubmitted: () {
             ref.invalidate(deeperPrayerInfoProvider);
+            _checkActiveCommitment(); // Refresh commitment status
           },
         ),
       ],

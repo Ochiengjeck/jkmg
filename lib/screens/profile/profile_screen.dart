@@ -4,6 +4,7 @@ import '../../provider/api_providers.dart';
 import '../../provider/providers.dart';
 import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
+import '../../widgets/simple_header_tabs.dart';
 
 class ProfileScreen extends ConsumerStatefulWidget {
   const ProfileScreen({super.key});
@@ -54,81 +55,25 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
   Widget build(BuildContext context) {
     final user = ref.watch(currentUserProvider);
 
-    return Scaffold(
-      backgroundColor: AppTheme.richBlack,
-      body: SafeArea(
-        child: NestedScrollView(
-          headerSliverBuilder: (BuildContext context, bool innerBoxIsScrolled) {
-            return [
-              SliverAppBar(
-                expandedHeight: 320.0,
-                floating: false,
-                pinned: true,
-                backgroundColor: AppTheme.richBlack,
-                flexibleSpace: FlexibleSpaceBar(
-                  background: _buildHeaderContent(context, user.value),
-                ),
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(60.0),
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(25),
-                      border: Border.all(
-                        color: AppTheme.primaryGold.withOpacity(0.2),
-                      ),
-                    ),
-                    margin: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 8,
-                    ),
-                    child: TabBar(
-                      controller: _tabController,
-                      labelColor: Colors.black87,
-                      unselectedLabelColor: Colors.white60,
-                      indicatorColor: Colors.transparent,
-                      indicatorSize: TabBarIndicatorSize.label,
-                      dividerHeight: 0,
-                      indicator: BoxDecoration(
-                        color: AppTheme.primaryGold,
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      indicatorPadding: const EdgeInsets.symmetric(vertical: 3),
-                      labelStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      tabs: [
-                        SizedBox(width: 100, child: Tab(text: 'Profile')),
-                        SizedBox(width: 100, child: Tab(text: 'Settings')),
-                        SizedBox(width: 100, child: Tab(text: 'Activity')),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ];
-          },
-          body: TabBarView(
-            controller: _tabController,
-            children: [
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildProfileTab(user.value),
-              ),
-              Container(
-                color: AppTheme.richBlack,
-                child: _buildPreferencesTab(),
-              ),
-              Container(color: AppTheme.richBlack, child: _buildActivityTab()),
-            ],
-          ),
+    return SimpleHeaderTabs(
+      heroSection: _buildHeaderContent(context, user.value),
+      tabController: _tabController,
+      tabs: [
+        Tab(text: 'Profile'),
+        Tab(text: 'Settings'),
+        Tab(text: 'Activity'),
+      ],
+      tabViews: [
+        Container(
+          color: AppTheme.richBlack,
+          child: _buildProfileTab(user.value),
         ),
-      ),
+        Container(
+          color: AppTheme.richBlack,
+          child: _buildPreferencesTab(),
+        ),
+        Container(color: AppTheme.richBlack, child: _buildActivityTab()),
+      ],
     );
   }
 

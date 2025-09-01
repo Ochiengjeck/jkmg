@@ -389,41 +389,22 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
                     width: 1,
                   ),
                 ),
-                child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(17),
-                        child: Image.network(
-                          widget.counsellor['avatar'],
-                          width: 34,
-                          height: 34,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.psychology,
-                              size: 20,
-                              color: AppTheme.richBlack,
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: SizedBox(
-                                width: 14,
-                                height: 14,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: AppTheme.richBlack,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : const Icon(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(17),
+                  child: Image.asset(
+                    'assets/images/counseling & care.png',
+                    width: 34,
+                    height: 34,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
                         Icons.psychology,
                         size: 20,
                         color: AppTheme.richBlack,
-                      ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -634,41 +615,22 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
                     width: 1,
                   ),
                 ),
-                child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: Image.network(
-                          widget.counsellor['avatar'],
-                          width: 28,
-                          height: 28,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(
-                              Icons.psychology,
-                              size: 16,
-                              color: AppTheme.richBlack,
-                            );
-                          },
-                          loadingBuilder: (context, child, loadingProgress) {
-                            if (loadingProgress == null) return child;
-                            return const Center(
-                              child: SizedBox(
-                                width: 12,
-                                height: 12,
-                                child: CircularProgressIndicator(
-                                  strokeWidth: 1.5,
-                                  color: AppTheme.richBlack,
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      )
-                    : const Icon(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(14),
+                  child: Image.asset(
+                    'assets/images/counseling & care.png',
+                    width: 28,
+                    height: 28,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return const Icon(
                         Icons.psychology,
                         size: 16,
                         color: AppTheme.richBlack,
-                      ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
             const SizedBox(width: 8),
@@ -946,28 +908,22 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
                         ),
                       ],
                     ),
-                    child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(37),
-                            child: Image.network(
-                              widget.counsellor['avatar'],
-                              width: 74,
-                              height: 74,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(
-                                  Icons.psychology,
-                                  size: 40,
-                                  color: AppTheme.richBlack,
-                                );
-                              },
-                            ),
-                          )
-                        : const Icon(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(37),
+                      child: Image.asset(
+                        'assets/images/counseling & care.png',
+                        width: 74,
+                        height: 74,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(
                             Icons.psychology,
                             size: 40,
                             color: AppTheme.richBlack,
-                          ),
+                          );
+                        },
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -1152,41 +1108,22 @@ class _CounselingChatScreenState extends ConsumerState<CounselingChatScreen>
                   width: 1,
                 ),
               ),
-              child: widget.counsellor['avatar'] != null && widget.counsellor['avatar'].isNotEmpty
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(17),
-                      child: Image.network(
-                        widget.counsellor['avatar'],
-                        width: 34,
-                        height: 34,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(
-                            Icons.psychology,
-                            size: 20,
-                            color: AppTheme.richBlack,
-                          );
-                        },
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                            child: SizedBox(
-                              width: 14,
-                              height: 14,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 1.5,
-                                color: AppTheme.richBlack,
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-                    )
-                  : const Icon(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(17),
+                child: Image.asset(
+                  'assets/images/counseling & care.png',
+                  width: 34,
+                  height: 34,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(
                       Icons.psychology,
                       size: 20,
                       color: AppTheme.richBlack,
-                    ),
+                    );
+                  },
+                ),
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(

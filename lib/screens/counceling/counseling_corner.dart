@@ -10,6 +10,13 @@ import 'healing_session_screen.dart';
 // import 'book_counseling.dart';
 // import 'counseling_list.dart';
 
+enum CounselingType {
+  introduction,
+  accessCounseling,
+  startHealing,
+  emergencyHelp,
+}
+
 class CounselingCornerScreen extends ConsumerStatefulWidget {
   const CounselingCornerScreen({super.key});
 
@@ -23,6 +30,7 @@ class _CounselingCornerScreenState
   String _searchQuery = '';
   DateTime? _startDate;
   DateTime? _endDate;
+  CounselingType? selectedCounselingType;
 
   // Direct state management
   bool _isLoading = true;
@@ -115,15 +123,144 @@ class _CounselingCornerScreenState
                     const SizedBox(height: 24),
                     _buildIntroductionSection(),
                     const SizedBox(height: 24),
-                    _buildCounselingOptionsSection(),
+                    _buildCounselingDropdown(),
                     const SizedBox(height: 24),
-                    // _buildMySessionsSection(),
+                    if (selectedCounselingType != null) _buildSelectedSection(),
                   ],
                 ),
               ),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildCounselingDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SectionHeader(
+          title: 'Choose Your Support',
+          subtitle: 'Select the type of counseling and care you need',
+        ),
+        const SizedBox(height: 12),
+        CustomCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              DropdownButtonFormField<CounselingType>(
+                value: selectedCounselingType,
+                hint: Text(
+                  'Select a counseling option',
+                  style: TextStyle(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white70
+                        : Colors.black54,
+                  ),
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Counseling & Care Options',
+                  labelStyle: const TextStyle(color: AppTheme.primaryGold),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppTheme.primaryGold),
+                  ),
+                ),
+                items: const [
+                  DropdownMenuItem(
+                    value: CounselingType.accessCounseling,
+                    child: Text('Access Counseling'),
+                  ),
+                  DropdownMenuItem(
+                    value: CounselingType.startHealing,
+                    child: Text('Start Healing Session'),
+                  ),
+                  DropdownMenuItem(
+                    value: CounselingType.emergencyHelp,
+                    child: Text('Emergency Help'),
+                  ),
+                ],
+                onChanged: (value) {
+                  setState(() {
+                    selectedCounselingType = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSelectedSection() {
+    switch (selectedCounselingType!) {
+      case CounselingType.introduction:
+        return const SizedBox.shrink(); // This case shouldn't occur anymore
+      case CounselingType.accessCounseling:
+        return _buildAccessCounselingCard();
+      case CounselingType.startHealing:
+        return _buildStartHealingCard();
+      case CounselingType.emergencyHelp:
+        return _buildEmergencyHelpCard();
+    }
+  }
+
+  Widget _buildStartHealingCard() {
+    return CustomCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SectionHeader(
+            title: 'Start Healing Session',
+            subtitle: 'Begin your journey to spiritual and emotional healing',
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'Our healing sessions provide guided spiritual support to help you find peace, comfort, and restoration through faith-based healing practices.',
+            style: TextStyle(fontSize: 14),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Icon(Icons.favorite, color: Colors.red.shade400, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Spiritual healing and comfort',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Row(
+            children: [
+              Icon(Icons.psychology, color: Colors.blue.shade400, size: 20),
+              const SizedBox(width: 8),
+              const Text(
+                'Faith-based emotional support',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () => _startHealingSession(),
+              icon: const Icon(Icons.healing),
+              label: const Text('Start Healing Session'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryGold,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -272,8 +409,6 @@ class _CounselingCornerScreenState
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       _buildFeatureChip('Professional Care'),
-                      const SizedBox(width: 8),
-                      _buildFeatureChip('Digital Healing'),
                       const SizedBox(width: 8),
                       _buildFeatureChip('Emergency Support'),
                     ],
