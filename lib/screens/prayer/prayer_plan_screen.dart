@@ -71,8 +71,6 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeroSection(context),
-                const SizedBox(height: 32),
-                _buildIntroductionSection(context),
                 const SizedBox(height: 24),
                 _buildPrayerDropdown(context),
                 const SizedBox(height: 24),
@@ -253,11 +251,11 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Stay aligned in prayer every 6 hours, led by Rev. Julian',
+                  'An alarm-based system for consistent prayer engagement with timely reminders and guided sessions by Rev. Julian Kyula.',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.white70,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -306,58 +304,6 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
           color: AppTheme.primaryGold,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildIntroductionSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.info_outline,
-                  color: AppTheme.primaryGold,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'About Rhema Prayer Plan',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.deepGold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'The JKMG App introduces an innovative Prayer Plan feature designed to integrate spiritual discipline seamlessly into your daily routine. Functioning as an alarm notification system, this feature ensures consistent prayer engagement by providing timely reminders and guided prayer sessions led by Rev. Julian Kyula.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
-              height: 1.4,
-            ),
-          ),
-        ],
       ),
     );
   }

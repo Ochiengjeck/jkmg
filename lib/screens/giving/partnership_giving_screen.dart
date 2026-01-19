@@ -44,8 +44,6 @@ class _PartnershipGivingScreenState
           children: [
             _buildHeroSection(),
             const SizedBox(height: 24),
-            _buildIntroSection(),
-            const SizedBox(height: 24),
             _buildPartnershipOptions(),
             const SizedBox(height: 24),
             _buildGivingSection(),
@@ -127,11 +125,11 @@ class _PartnershipGivingScreenState
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Join us in advancing the Kingdom through generous partnership',
+                  'Support the transformative work of JKMG through financial or in-kind contributions. "I desire fruit that may abound to your account." - Phil 4:17',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.white70,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -177,55 +175,6 @@ class _PartnershipGivingScreenState
           color: AppTheme.primaryGold,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildIntroSection() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Row(
-            children: [
-              Icon(Icons.format_quote, color: AppTheme.primaryGold, size: 24),
-              SizedBox(width: 8),
-              Text(
-                'Partnership Scripture',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: AppTheme.deepGold,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          const Text(
-            '"Not because I desire a gift: but I desire fruit that may abound to your account." - Philippians 4:17',
-            style: TextStyle(
-              fontSize: 12,
-              fontStyle: FontStyle.italic,
-              color: AppTheme.deepGold,
-              height: 1.4,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'To partner with the transformative work God is doing through Rev. Julian Kyula and JKMG—whether through financial support or in-kind contributions—please find our giving and contact details below. Thank you, and may God bless you abundantly.',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey.shade700,
-              height: 1.4,
-            ),
-          ),
-        ],
       ),
     );
   }

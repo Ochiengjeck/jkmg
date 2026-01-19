@@ -121,8 +121,6 @@ class _CounselingCornerScreenState
                   children: [
                     _buildHeroSection(),
                     const SizedBox(height: 24),
-                    _buildIntroductionSection(),
-                    const SizedBox(height: 24),
                     _buildCounselingDropdown(),
                     const SizedBox(height: 24),
                     if (selectedCounselingType != null) _buildSelectedSection(),
@@ -392,11 +390,11 @@ class _CounselingCornerScreenState
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Professional spiritual care and emotional support',
+                  'Your emotional, spiritual, and overall well-being matter deeply to us. Select the option that fits your need.',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.white70,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -440,29 +438,6 @@ class _CounselingCornerScreenState
           color: AppTheme.primaryGold,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildIntroductionSection() {
-    return CustomCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SectionHeader(
-            title: 'Welcome to Counseling & Care',
-            // icon: Icons.favorite,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Your emotional, spiritual, and overall well-being matter deeply to us as a ministry. Please select the option below that best fits your specific need.',
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-              height: 1.5,
-            ),
-          ),
-        ],
       ),
     );
   }

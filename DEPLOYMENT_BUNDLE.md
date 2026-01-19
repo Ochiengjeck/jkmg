@@ -32,21 +32,23 @@ flutter build apk --release
 |-------|--------|
 | **App Name** | JKMG |
 | **Package ID** | `com.jkmg.app` |
-| **Version** | 1.0.0+1 |
+| **Version** | 1.0.4+5 |
 | **Min Android** | API 21 (Android 5.0+) |
 | **Target Android** | Latest |
 | **Architectures** | ARM, ARM64, x86_64 (Universal) |
 
 ---
 
-## 🔐 **Signing Details**
+## 🔐 **Signing Details** (Updated January 2026)
 
 | Field | Value |
 |-------|--------|
-| **Keystore** | `android/keystore.jks` |
+| **Keystore** | `keystore.jks` (project root) |
 | **Alias** | `jkmg-key` |
-| **SHA-1** | `BB:AF:48:4B:14:D1:9D:77:49:DF:05:A3:D5:67:27:AA:F7:B1:4B:B1` |
-| **SHA-256** | `3E:AB:89:8A:19:A4:AA:09:69:3C:C3:32:A4:A6:66:1F:2F:AF:CD:8F:B7:07:A7:E0:C7:9C:3E:4C:D1:85:1B:F5` |
+| **SHA-1** | `9B:AA:09:8A:D3:B9:95:A1:95:CB:A8:37:AD:17:99:F7:B5:3D:BE:6E` |
+| **SHA-256** | `A2:70:B7:85:32:AD:09:0B:98:10:68:36:14:EB:CC:4E:18:2D:87:D1:EB:A3:22:6B:FF:D1:88:6D:F6:C2:6F:42` |
+
+> **Note**: Upload key was reset via Google Play Console in January 2026.
 
 **⚠️ IMPORTANT**: Keep keystore and passwords secure! Cannot be recovered if lost.
 

@@ -107,8 +107,6 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
         children: [
           _buildHeader(context),
           const SizedBox(height: 16),
-          _buildIntroText(context),
-          const SizedBox(height: 16),
           _buildStatsSection(context, totalCompleted, todayParticipation),
           if (isTodayCompleted)
             ..._buildCompletedState(context)
@@ -120,51 +118,46 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryGold.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.nightlight_round,
-            color: AppTheme.primaryGold,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Text(
-            'Deeper in Prayer',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepGold,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryGold.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.nightlight_round,
+                color: AppTheme.primaryGold,
+                size: 20,
+              ),
             ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Deeper in Prayer',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepGold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Midnight prayer sessions (12 AM - 1 AM) for spiritual growth and deeper encounter with God.',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+            height: 1.4,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildIntroText(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.richBlack.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        'As the name suggests, this feature is designed to facilitate a powerful midnight prayer session from 12:00 AM to 1:00 AM (local time), for users seeking spiritual growth and a deeper encounter with God.',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-          height: 1.4,
-          fontStyle: FontStyle.italic,
-        ),
-      ),
     );
   }
 

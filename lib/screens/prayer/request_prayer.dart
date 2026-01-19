@@ -340,8 +340,6 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
 
   List<Widget> _buildPrayerRequestSection(BuildContext context) {
     return [
-      _buildIntroText(context),
-      const SizedBox(height: 16),
       _buildCategorySelection(context),
       if (_selectedCategory != null) ...[
         const SizedBox(height: 20),
@@ -351,51 +349,46 @@ class _RequestPrayerState extends ConsumerState<RequestPrayer> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppTheme.primaryGold.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Icon(
-            Icons.church,
-            color: AppTheme.primaryGold,
-            size: 20,
-          ),
-        ),
-        const SizedBox(width: 12),
-        const Expanded(
-          child: Text(
-            'Request Prayer',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w700,
-              color: AppTheme.deepGold,
+        Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryGold.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Icon(
+                Icons.church,
+                color: AppTheme.primaryGold,
+                size: 20,
+              ),
             ),
+            const SizedBox(width: 12),
+            const Expanded(
+              child: Text(
+                'Request Prayer',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.deepGold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        const Text(
+          'Select a prayer focus for 7-day focused intercession and spiritual support.',
+          style: TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+            height: 1.4,
           ),
         ),
       ],
-    );
-  }
-
-  Widget _buildIntroText(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppTheme.richBlack.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
-        'This feature offers personalized spiritual support by allowing you to select a specific prayer focus based on the life challenge you are facing. Once chosen, the prayer request remains fixed for a 7-day period to encourage consistency and focused intercession.',
-        style: TextStyle(
-          fontSize: 12,
-          color: Colors.grey,
-          height: 1.4,
-          fontStyle: FontStyle.italic,
-        ),
-      ),
     );
   }
 

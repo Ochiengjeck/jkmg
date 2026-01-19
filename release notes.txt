@@ -1,8 +1,34 @@
 =============================================================================
 JKMG APP - RELEASE NOTES
+=============================================================================
+
+-----------------------------------------------------------------------------
+Version: 1.0.4+5
+Release Date: January 2026
+-----------------------------------------------------------------------------
+
+WHAT'S NEW - COMPLETE REDESIGN
+
+We've completely redesigned the JKMG app from the ground up to bring you a
+fresh, modern experience:
+
+• Fresh New Look - Completely redesigned user interface with improved
+  navigation and visual aesthetics
+• Enhanced User Experience - Smoother transitions, faster loading, and
+  more intuitive layouts
+• Improved Performance - Optimized for better speed and responsiveness
+• Android 15 Compatibility - Full edge-to-edge display support for the
+  latest devices
+• Better Stability - Bug fixes and under-the-hood improvements
+
+Thank you for being part of our community. We hope you enjoy the new design!
+
+=============================================================================
+
+-----------------------------------------------------------------------------
 Version: 1.0.1+2
 Release Date: August 2025
-=============================================================================
+-----------------------------------------------------------------------------
 
 APP DESCRIPTION FOR PLAY STORE:
 ===============================

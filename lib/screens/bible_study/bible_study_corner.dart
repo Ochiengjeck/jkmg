@@ -100,8 +100,6 @@ class _BibleStudyCornerScreenState
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _buildHeroSection(context),
-                const SizedBox(height: 32),
-                _buildIntroductionSection(context),
                 const SizedBox(height: 24),
                 _buildStudyDropdown(context),
                 const SizedBox(height: 24),
@@ -265,11 +263,11 @@ class _BibleStudyCornerScreenState
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Grow in faith through God\'s Word with structured study templates',
+                  'Comprehensive Bible study materials with structured templates, daily devotionals, and group discussion questions.',
                   style: TextStyle(
-                    fontSize: 13,
+                    fontSize: 12,
                     color: Colors.white70,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w400,
                     height: 1.4,
                   ),
                   textAlign: TextAlign.center,
@@ -318,54 +316,6 @@ class _BibleStudyCornerScreenState
           color: AppTheme.primaryGold,
           fontWeight: FontWeight.w600,
         ),
-      ),
-    );
-  }
-
-  Widget _buildIntroductionSection(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: AppTheme.accentGold.withOpacity(0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.primaryGold.withOpacity(0.1)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryGold.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: const Icon(
-                  Icons.info_outline,
-                  color: AppTheme.primaryGold,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 12),
-              const Expanded(
-                child: Text(
-                  'About Bible Study Corner',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: AppTheme.deepGold,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          const Text(
-            'Access comprehensive Bible study materials including the Holy Bible in multiple formats, structured study templates with memory verses, daily devotionals, and group discussion questions to deepen your understanding of God\'s Word.',
-            style: TextStyle(fontSize: 12, color: Colors.grey, height: 1.4),
-          ),
-        ],
       ),
     );
   }

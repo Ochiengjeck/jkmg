@@ -73,8 +73,6 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
           children: [
             _buildHeroSection(),
             const SizedBox(height: 24),
-            _buildIntroSection(),
-            const SizedBox(height: 32),
             _buildEventCategories(),
             const SizedBox(height: 32),
             _buildAllEventsSection(),
@@ -159,11 +157,11 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
                       ),
                       const SizedBox(height: 8),
                       const Text(
-                        'Join various expressions and gatherings offered by JKMG',
+                        'Up-to-date info on ministry events and marketplace initiatives from JKMG.',
                         style: TextStyle(
-                          fontSize: 13,
+                          fontSize: 12,
                           color: Colors.white70,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w400,
                           height: 1.4,
                         ),
                         textAlign: TextAlign.center,
@@ -215,39 +213,6 @@ class _EventListScreenState extends ConsumerState<EventListScreen>
           fontWeight: FontWeight.w600,
         ),
       ),
-    );
-  }
-
-  Widget _buildIntroSection() {
-    return AnimatedBuilder(
-      animation: _fadeAnimation,
-      builder: (context, child) {
-        return FadeTransition(
-          opacity: _fadeAnimation,
-          child: SlideTransition(
-            position: _slideAnimation,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: AppTheme.accentGold.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: AppTheme.primaryGold.withOpacity(0.1),
-                ),
-              ),
-              child: const Text(
-                'Here you\'ll find up-to-date information on the various expressions and gatherings offered by JKMG—ranging from ministry-focused events to marketplace initiatives.',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white70,
-                  height: 1.5,
-                ),
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 
