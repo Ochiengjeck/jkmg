@@ -980,7 +980,7 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                           await _initializeAlarms();
                         }
                       : null,
-                  activeColor: AppTheme.primaryGold,
+                  activeThumbColor: AppTheme.primaryGold,
                 ),
               ],
             ),
@@ -1042,7 +1042,7 @@ class _PrayerScheduleState extends State<PrayerSchedule> {
                           await _initializeAlarms();
                         }
                       : null,
-                  activeColor: AppTheme.accentGold,
+                  activeThumbColor: AppTheme.accentGold,
                 ),
               ],
             ),

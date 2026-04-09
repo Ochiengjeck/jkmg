@@ -160,7 +160,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<String>(
-              value: _selectedLanguage,
+              initialValue: _selectedLanguage,
               decoration: const InputDecoration(
                 labelText: 'App Language',
                 prefixIcon: Icon(Icons.translate, color: AppTheme.deepGold),
@@ -314,7 +314,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       });
                       _saveSettings();
                     },
-                    activeColor: AppTheme.primaryGold,
+                    activeThumbColor: AppTheme.primaryGold,
                   ),
                   const Divider(),
                   SwitchListTile(
@@ -329,7 +329,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                             _saveSettings();
                           }
                         : null,
-                    activeColor: AppTheme.primaryGold,
+                    activeThumbColor: AppTheme.primaryGold,
                   ),
                   const Divider(),
                   SwitchListTile(
@@ -344,7 +344,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                             _saveSettings();
                           }
                         : null,
-                    activeColor: AppTheme.primaryGold,
+                    activeThumbColor: AppTheme.primaryGold,
                   ),
                   const Divider(),
                   SwitchListTile(
@@ -359,7 +359,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                             _saveSettings();
                           }
                         : null,
-                    activeColor: AppTheme.primaryGold,
+                    activeThumbColor: AppTheme.primaryGold,
                   ),
                 ],
               ),
@@ -403,7 +403,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                           ),
                         );
                       },
-                      activeColor: AppTheme.primaryGold,
+                      activeThumbColor: AppTheme.primaryGold,
                     ),
                   ),
                 ],
@@ -466,7 +466,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                       onChanged: (value) {
                         ref.read(themeProvider.notifier).toggleTheme();
                       },
-                      activeColor: AppTheme.primaryGold,
+                      activeThumbColor: AppTheme.primaryGold,
                     ),
                     const Divider(),
                     ListTile(
@@ -595,7 +595,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen>
                 });
                 _saveSettings();
               },
-              activeColor: AppTheme.primaryGold,
+              activeThumbColor: AppTheme.primaryGold,
             ),
             if (_offlineMode) ...[
               const Divider(),

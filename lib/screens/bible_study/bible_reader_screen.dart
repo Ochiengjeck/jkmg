@@ -559,7 +559,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
                   ),
                 )
               : DropdownButtonFormField<T>(
-                  value: value,
+                  initialValue: value,
                   isExpanded: true,
                   decoration: const InputDecoration(
                     contentPadding: EdgeInsets.symmetric(
@@ -1398,7 +1398,7 @@ class _BibleReaderScreenState extends State<BibleReaderScreen>
                                 });
                                 setDialogState(() {});
                               },
-                              activeColor: AppTheme.primaryGold,
+                              activeThumbColor: AppTheme.primaryGold,
                             ),
                           ],
                         ),

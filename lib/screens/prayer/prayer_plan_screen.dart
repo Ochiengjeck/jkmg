@@ -97,7 +97,7 @@ class _PrayerPlanScreenState extends ConsumerState<PrayerPlanScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<PrayerPlanType>(
-                value: selectedPrayerType,
+                initialValue: selectedPrayerType,
                 hint: Text(
                   'Select a prayer option',
                   style: TextStyle(

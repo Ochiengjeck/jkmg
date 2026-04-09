@@ -6,7 +6,6 @@ import '../../utils/app_theme.dart';
 import '../../widgets/common_widgets.dart';
 import '../../widgets/simple_header_tabs.dart';
 import '../../widgets/feedback_dialog.dart';
-import '../../services/preference_service.dart';
 
 class ContactScreen extends ConsumerStatefulWidget {
   const ContactScreen({super.key});

@@ -379,7 +379,7 @@ class _BookCounselingFormState extends ConsumerState<BookCounselingForm>
                               ),
                             ),
                             child: DropdownButtonFormField<String>(
-                              value: _urgencyLevel,
+                              initialValue: _urgencyLevel,
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: 16,

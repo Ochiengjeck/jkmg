@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../utils/responsive.dart';
 import 'package:intl/intl.dart';
 import 'package:jkmg/provider/api_providers.dart';
 import 'package:jkmg/models/event.dart';
@@ -219,6 +220,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    if (Responsive.isDesktop(context)) {
+      return _buildDesktopLayout(context);
+    }
+    return _buildMobileLayout(context);
+  }
+
+  Widget _buildMobileLayout(BuildContext context) {
     return Scaffold(
       key: _scaffoldKey,
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -231,33 +239,434 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             _currentPage = index;
           });
         },
-        children: [
-          _buildLandingPage(context),
-          AboutScreen(),
-          PrayerPlanScreen(),
-          BibleStudyCornerScreen(),
-          SalvationCornerScreenWrapper(
-            key: _salvationCornerKey,
-            shouldPreSelectTestimony: _shouldPreSelectTestimony,
-            onSelectionUsed: () {
-              setState(() {
-                _shouldPreSelectTestimony = false;
-              });
-            },
-          ),
-          CounselingCornerScreen(),
-          JKMGResourcesScreen(),
-          EventListScreen(),
-          PartnershipGivingScreen(),
-          KingdomCommonwealthScreen(),
-          _buildPlaceholderPage(context, _menuPages[10]),
-          ContactScreen(),
-          ProfileScreen(),
-          SettingsScreen(),
-          HelpSupportScreen(),
-        ],
+        children: _buildPageChildren(context),
       ),
       floatingActionButton: _buildFeedbackFAB(),
+    );
+  }
+
+  List<Widget> _buildPageChildren(BuildContext context) {
+    return [
+      _buildLandingPage(context),
+      AboutScreen(),
+      PrayerPlanScreen(),
+      BibleStudyCornerScreen(),
+      SalvationCornerScreenWrapper(
+        key: _salvationCornerKey,
+        shouldPreSelectTestimony: _shouldPreSelectTestimony,
+        onSelectionUsed: () {
+          setState(() {
+            _shouldPreSelectTestimony = false;
+          });
+        },
+      ),
+      CounselingCornerScreen(),
+      JKMGResourcesScreen(),
+      EventListScreen(),
+      PartnershipGivingScreen(),
+      KingdomCommonwealthScreen(),
+      _buildPlaceholderPage(context, _menuPages[10]),
+      ContactScreen(),
+      ProfileScreen(),
+      SettingsScreen(),
+      HelpSupportScreen(),
+    ];
+  }
+
+  Widget _buildDesktopLayout(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Scaffold(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      floatingActionButton: _buildFeedbackFAB(),
+      body: Row(
+        children: [
+          SizedBox(
+            width: Responsive.sidebarWidth,
+            child: _buildSidebar(context),
+          ),
+          VerticalDivider(
+            width: 1,
+            thickness: 1,
+            color: isDark
+                ? const Color(0xFFFFD700).withOpacity(0.15)
+                : const Color(0xFFDAA520).withOpacity(0.2),
+          ),
+          Expanded(
+            child: Column(
+              children: [
+                _buildDesktopTopBar(context),
+                Expanded(
+                  child: PageView(
+                    controller: pageController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    onPageChanged: (index) {
+                      setState(() {
+                        _currentPage = index;
+                      });
+                    },
+                    children: _buildPageChildren(context),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDesktopTopBar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final goldColor =
+        isDark ? const Color(0xFFFFD700) : const Color(0xFFB8860B);
+
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0A0A0A) : Colors.white,
+        border: Border(
+          bottom: BorderSide(
+            color: goldColor.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Row(
+        children: [
+          Expanded(
+            child: Text(
+              _menuPages[_currentPage]['title'],
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: goldColor,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ),
+          Stack(
+            children: [
+              IconButton(
+                icon: Icon(Icons.notifications_outlined, color: goldColor),
+                onPressed: () => _showNotifications(context),
+                tooltip: 'Notifications',
+              ),
+              Consumer(
+                builder: (context, ref, _) {
+                  final unreadCountAsync =
+                      ref.watch(unreadNotificationsCountProvider);
+                  return unreadCountAsync.when(
+                    data: (unreadCount) {
+                      if (unreadCount > 0) {
+                        return Positioned(
+                          right: 6,
+                          top: 6,
+                          child: Container(
+                            padding: const EdgeInsets.all(4),
+                            decoration: const BoxDecoration(
+                              color: Colors.red,
+                              shape: BoxShape.circle,
+                            ),
+                            constraints: const BoxConstraints(
+                              minWidth: 20,
+                              minHeight: 20,
+                            ),
+                            child: Text(
+                              unreadCount > 99 ? '99+' : '$unreadCount',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        );
+                      }
+                      return const SizedBox.shrink();
+                    },
+                    loading: () => const SizedBox.shrink(),
+                    error: (_, __) => const SizedBox.shrink(),
+                  );
+                },
+              ),
+            ],
+          ),
+          IconButton(
+            icon: Icon(Icons.logout_outlined, color: goldColor),
+            onPressed: () => _showLogoutDialog(context, ref),
+            tooltip: 'Logout',
+          ),
+          const SizedBox(width: 8),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebar(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final user = ref.watch(currentUserProvider).value;
+
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: isDark
+              ? [
+                  const Color(0xFF0A0A0A),
+                  const Color(0xFF1A1A1A),
+                  const Color(0xFF0F0F0F),
+                ]
+              : [
+                  const Color(0xFFFAFAFA),
+                  const Color(0xFFFFFFFF),
+                  const Color(0xFFF5F5F5),
+                ],
+        ),
+      ),
+      child: Column(
+        children: [
+          _buildSidebarHeader(context, user),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate([
+                      _buildDrawerSection(
+                        context,
+                        title: 'Main Features',
+                        icon: Icons.dashboard_rounded,
+                        isDesktop: true,
+                        items: [
+                          _DrawerItem(
+                            icon: Icons.home_rounded,
+                            title: 'Home',
+                            pageIndex: 0,
+                            onTap: () => navigateToPage(0),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.access_time_rounded,
+                            title: 'Rhema Prayer Plan',
+                            pageIndex: 2,
+                            onTap: () => navigateToPage(2),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.book_rounded,
+                            title: 'Bible Study Corner',
+                            pageIndex: 3,
+                            onTap: () => navigateToPage(3),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.favorite_rounded,
+                            title: 'Salvation Corner',
+                            pageIndex: 4,
+                            onTap: () => navigateToPage(4),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDrawerSection(
+                        context,
+                        title: 'Services & Resources',
+                        icon: Icons.library_books_rounded,
+                        isDesktop: true,
+                        items: [
+                          _DrawerItem(
+                            icon: Icons.support_rounded,
+                            title: 'Counseling & Care',
+                            pageIndex: 5,
+                            onTap: () => navigateToPage(5),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.library_books_rounded,
+                            title: 'JKMG Resources',
+                            pageIndex: 6,
+                            onTap: () => navigateToPage(6),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.event_rounded,
+                            title: 'Expression & Announcements',
+                            isNew: true,
+                            pageIndex: 7,
+                            onTap: () => navigateToPage(7),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.volunteer_activism_rounded,
+                            title: 'Partnership & Giving',
+                            pageIndex: 8,
+                            onTap: () => navigateToPage(8),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDrawerSection(
+                        context,
+                        title: 'Community',
+                        icon: Icons.groups_rounded,
+                        isDesktop: true,
+                        items: [
+                          _DrawerItem(
+                            icon: Icons.public_rounded,
+                            title: 'Kingdom Commonwealth',
+                            pageIndex: 9,
+                            onTap: () => navigateToPage(9),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.contact_support_rounded,
+                            title: 'Contact Us',
+                            pageIndex: 11,
+                            onTap: () => navigateToPage(11),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildDivider(context),
+                      const SizedBox(height: 16),
+                      _buildDrawerSection(
+                        context,
+                        title: 'Account & Settings',
+                        icon: Icons.settings_rounded,
+                        isDesktop: true,
+                        items: [
+                          _DrawerItem(
+                            icon: Icons.person_rounded,
+                            title: 'Profile',
+                            pageIndex: 12,
+                            onTap: () => navigateToPage(12),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.inbox_rounded,
+                            title: 'Inbox',
+                            onTap: () => _showNotifications(context),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.tune_rounded,
+                            title: 'Settings',
+                            pageIndex: 13,
+                            onTap: () => navigateToPage(13),
+                          ),
+                          _DrawerItem(
+                            icon: Icons.help_outline_rounded,
+                            title: 'Help & Support',
+                            pageIndex: 14,
+                            onTap: () => navigateToPage(14),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      _buildDrawerSection(
+                        context,
+                        title: 'Account',
+                        icon: Icons.logout_rounded,
+                        isDesktop: true,
+                        items: [
+                          _DrawerItem(
+                            icon: Icons.logout_rounded,
+                            title: 'Logout',
+                            isDestructive: true,
+                            onTap: () => _showLogoutDialog(context, ref),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 32),
+                    ]),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSidebarHeader(BuildContext context, dynamic user) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Container(
+      height: 120,
+      margin: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [
+                  const Color(0xFF2D1810),
+                  const Color(0xFF1A1A1A),
+                  const Color(0xFF0A0A0A),
+                ]
+              : [
+                  const Color(0xFFFFE066),
+                  const Color(0xFFFFD700),
+                  const Color(0xFFDAA520),
+                ],
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFFFFD700).withOpacity(0.15),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: Colors.white.withOpacity(0.15),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(22),
+                child: Image.asset(
+                  'assets/icon/icon.png',
+                  width: 36,
+                  height: 36,
+                  fit: BoxFit.contain,
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'JKMG Ministry',
+                    style: TextStyle(
+                      color: isDark ? const Color(0xFFFFE066) : Colors.white,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.3,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    user?.name != null
+                        ? 'Welcome, ${user!.name}'
+                        : 'Transforming Lives',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -363,7 +772,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Widget _buildDrawer(BuildContext context, WidgetRef ref) {
-    final _user = ref.watch(currentUserProvider).value;
+    final user = ref.watch(currentUserProvider).value;
     return Drawer(
       backgroundColor: Colors.transparent,
       elevation: 0,
@@ -387,7 +796,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         child: Column(
           children: [
-            _buildDrawerHeader(context, _user),
+            _buildDrawerHeader(context, user),
             Expanded(
               child: CustomScrollView(
                 slivers: [
@@ -683,6 +1092,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     required String title,
     required IconData icon,
     required List<_DrawerItem> items,
+    bool isDesktop = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -740,26 +1150,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
           ),
           // Section Items
-          ...items.map((item) => _buildDrawerTile(context, item)),
+          ...items.map((item) => _buildDrawerTile(context, item, isDesktop: isDesktop)),
           const SizedBox(height: 8),
         ],
       ),
     );
   }
 
-  Widget _buildDrawerTile(BuildContext context, _DrawerItem item) {
+  Widget _buildDrawerTile(BuildContext context, _DrawerItem item, {bool isDesktop = false}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isSelected = isDesktop && item.pageIndex != null && item.pageIndex == _currentPage;
+    final goldColor = isDark ? const Color(0xFFFFE066) : const Color(0xFFDAA520);
 
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-      decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        color: isSelected ? goldColor.withOpacity(0.12) : Colors.transparent,
+      ),
       child: Material(
         color: Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         child: InkWell(
           borderRadius: BorderRadius.circular(12),
           onTap: () {
-            Navigator.pop(context);
+            if (!isDesktop) Navigator.pop(context);
             item.onTap();
           },
           child: Container(
@@ -978,7 +1393,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ..._dynamicSliders.map((slider) => _buildDynamicHeroSlide(
           context: context,
           slider: slider,
-        )).toList(),
+        )),
         _buildIntroVideoSlide(context),
       ];
     }
@@ -3303,6 +3718,7 @@ class _DrawerItem {
   final VoidCallback onTap;
   final bool? isNew;
   final bool? isDestructive;
+  final int? pageIndex;
 
   _DrawerItem({
     required this.icon,
@@ -3310,6 +3726,7 @@ class _DrawerItem {
     required this.onTap,
     this.isNew,
     this.isDestructive,
+    this.pageIndex,
   });
 }
 
@@ -3691,7 +4108,7 @@ class _WelcomeVideoPlayerState extends State<WelcomeVideoPlayer> {
     }
 
     if (!_isInitialized) {
-      return Container(
+      return SizedBox(
         height: 300,
         child: const Center(
           child: Column(
@@ -3716,7 +4133,7 @@ class _WelcomeVideoPlayerState extends State<WelcomeVideoPlayer> {
 
     if (_isDesktop) {
       // Desktop version with MediaKit
-      return Container(
+      return SizedBox(
         height: 400,
         child: Stack(
           children: [

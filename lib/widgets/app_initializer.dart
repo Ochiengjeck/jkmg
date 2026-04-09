@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../screens/onboarding/onboarding.dart';
@@ -29,7 +30,7 @@ class AppInitializer extends ConsumerWidget {
       final prefs = await PreferenceService.getInstance();
       
       // Check if this is the first launch
-      if (prefs.isFirstLaunch()) {
+      if (prefs.isFirstLaunch() && !kIsWeb) {
         return const OnboardingScreen();
       }
       
@@ -54,7 +55,7 @@ class AppInitializer extends ConsumerWidget {
     } catch (e) {
       // On any error, default to login screen (not onboarding since onboarding might have been completed)
       final prefs = await PreferenceService.getInstance();
-      if (prefs.isFirstLaunch()) {
+      if (prefs.isFirstLaunch() && !kIsWeb) {
         return const OnboardingScreen();
       } else {
         return const LoginScreen();

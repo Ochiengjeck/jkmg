@@ -920,7 +920,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
           const SizedBox(height: 8),
 
           // Calendar Grid
-          Container(
+          SizedBox(
             height: 300,
             child: GridView.builder(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
@@ -1083,7 +1083,7 @@ class _BusinessForumScreenState extends ConsumerState<BusinessForumScreen>
                     ),
                   ),
                 )
-                .toList(),
+                ,
           ],
         ),
       ),

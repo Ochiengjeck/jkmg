@@ -298,7 +298,7 @@ class _DeeperPrayerState extends State<DeeperPrayer> {
           ),
           prefixIcon: const Icon(Icons.timer, color: AppTheme.primaryGold),
         ),
-        value: _selectedDuration,
+        initialValue: _selectedDuration,
         items: _availableDurations
             .map(
               (duration) => DropdownMenuItem(

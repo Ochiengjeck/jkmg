@@ -194,7 +194,7 @@ class _HolyBibleSectionState extends ConsumerState<HolyBibleSection> {
         const SizedBox(height: 8),
         translationsAsync.when(
           data: (translations) => DropdownButtonFormField<String>(
-            value: selectedTranslation,
+            initialValue: selectedTranslation,
             isExpanded: true,
             decoration: InputDecoration(
               prefixIcon: const Icon(Icons.translate, color: AppTheme.darkGold),

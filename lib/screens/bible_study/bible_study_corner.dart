@@ -126,7 +126,7 @@ class _BibleStudyCornerScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<BibleStudyType>(
-                value: selectedStudyType,
+                initialValue: selectedStudyType,
                 hint: Text(
                   'Select a study option',
                   style: TextStyle(

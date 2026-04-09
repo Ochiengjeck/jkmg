@@ -583,7 +583,7 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
                   onChanged: (value) {
                     ref.read(themeProvider.notifier).toggleTheme();
                   },
-                  activeColor: AppTheme.primaryGold,
+                  activeThumbColor: AppTheme.primaryGold,
                 );
               },
             ),
@@ -616,21 +616,21 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen>
               subtitle: const Text('Get reminded for prayer times'),
               value: true,
               onChanged: (value) {},
-              activeColor: AppTheme.primaryGold,
+              activeThumbColor: AppTheme.primaryGold,
             ),
             SwitchListTile(
               title: const Text('Event Notifications'),
               subtitle: const Text('Stay updated on upcoming events'),
               value: true,
               onChanged: (value) {},
-              activeColor: AppTheme.primaryGold,
+              activeThumbColor: AppTheme.primaryGold,
             ),
             SwitchListTile(
               title: const Text('Study Reminders'),
               subtitle: const Text('Bible study session reminders'),
               value: false,
               onChanged: (value) {},
-              activeColor: AppTheme.primaryGold,
+              activeThumbColor: AppTheme.primaryGold,
             ),
           ],
         ),

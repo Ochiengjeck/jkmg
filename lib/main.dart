@@ -1,17 +1,18 @@
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:timezone/data/latest.dart' as tz;
-import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 import 'package:media_kit/media_kit.dart';
 
 import 'provider/providers.dart';
 import 'utils/app_theme.dart';
 import 'services/alarm_service.dart';
 import 'widgets/app_initializer.dart';
+
+// Conditional imports for native-only packages
+import 'main_native.dart' if (dart.library.html) 'main_web.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,20 +22,16 @@ Future<void> main() async {
   // Initialize MediaKit for video playback
   MediaKit.ensureInitialized();
 
-  // Initialize sqflite for desktop platforms
-  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
-    sqfliteFfiInit();
-    databaseFactory = databaseFactoryFfi;
-  }
-
   // Initialize timezone data
   tz.initializeTimeZones();
 
-  // Initialize alarm manager and notifications
-  if (Platform.isAndroid) {
-    await AndroidAlarmManager.initialize();
+  // Initialize sqflite (platform-specific: FFI for desktop, WASM for web)
+  initializeSqflite();
+
+  if (!kIsWeb) {
+    // Initialize alarm manager and notifications (native only)
+    await initializeAlarms();
   }
-  await AlarmService.initialize();
 
   runApp(const ProviderScope(child: MyApp()));
 }

@@ -391,7 +391,7 @@ class _EventRegistrationScreenState extends ConsumerState<EventRegistrationScree
                             ),
                           ),
                           child: DropdownButtonFormField<String>(
-                            value: attendance,
+                            initialValue: attendance,
                             style: TextStyle(color: Colors.white, fontSize: 16),
                             dropdownColor: AppTheme.charcoalBlack,
                             decoration: InputDecoration(

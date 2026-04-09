@@ -299,7 +299,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<SalvationType>(
-                value: selectedSalvationType,
+                initialValue: selectedSalvationType,
                 hint: Text(
                   'Select an option',
                   style: TextStyle(
@@ -399,7 +399,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedGender,
+                  initialValue: selectedGender,
                   decoration: InputDecoration(
                     labelText: 'Gender',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),
@@ -622,7 +622,7 @@ class _SalvationCornerScreenState extends ConsumerState<SalvationCornerScreen>
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<String>(
-                  value: selectedGender,
+                  initialValue: selectedGender,
                   decoration: InputDecoration(
                     labelText: 'Gender',
                     labelStyle: const TextStyle(color: AppTheme.primaryGold),

@@ -148,7 +148,7 @@ class _CounselingCornerScreenState
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               DropdownButtonFormField<CounselingType>(
-                value: selectedCounselingType,
+                initialValue: selectedCounselingType,
                 hint: Text(
                   'Select a counseling option',
                   style: TextStyle(

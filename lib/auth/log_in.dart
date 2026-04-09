@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:jkmg/utils/app_theme.dart';
+import '../utils/responsive.dart';
 
 import '../provider/api_providers.dart';
 import '../screens/home.dart';
@@ -216,21 +217,27 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ),
         child: SafeArea(
-          child: AnimatedBuilder(
-            animation: _fadeAnimation,
-            builder: (context, child) {
-              return FadeTransition(
-                opacity: _fadeAnimation,
-                child: Transform.translate(
-                  offset: Offset(0, _slideAnimation.value),
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Form(
-                      key: _formKey,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          const SizedBox(height: 60),
+          child: Align(
+            alignment: Alignment.topCenter,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(
+                maxWidth: Responsive.isWeb() ? Responsive.authFormMaxWidth : double.infinity,
+              ),
+              child: AnimatedBuilder(
+                animation: _fadeAnimation,
+                builder: (context, child) {
+                  return FadeTransition(
+                    opacity: _fadeAnimation,
+                    child: Transform.translate(
+                      offset: Offset(0, _slideAnimation.value),
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.all(24.0),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              const SizedBox(height: 60),
                           
                           // App Logo with floating animation
                           AnimatedBuilder(
@@ -555,7 +562,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ),
         ),
       ),
-    );
+    ),
+    ),
+  );
   }
 
   Widget _buildTextField({

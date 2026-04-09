@@ -63,6 +63,13 @@ android {
             signingConfig = signingConfigs.getByName("release")
         }
     }
+
+    // 16KB page size support for Android 15+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 flutter {

@@ -283,7 +283,7 @@ class _AgentSelectionScreenState extends ConsumerState<AgentSelectionScreen>
             const SizedBox(height: 25),
             
             // Counsellors List
-            ..._counsellors.map((counsellor) => _buildCounsellorCard(counsellor)).toList(),
+            ..._counsellors.map((counsellor) => _buildCounsellorCard(counsellor)),
           ],
         ),
       ),
